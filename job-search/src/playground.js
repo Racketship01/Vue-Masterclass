@@ -115,3 +115,19 @@ Promise.resolve("Resolved Promise 2").then((res) => {
 // 2
 console.log("Test end");
 */
+
+/*
+// Slice Method
+const sushi = [
+  "Tuna",
+  "Salmon",
+  "Yellowtail",
+  "Eel",
+  "Shrimp",
+  "Octupos",
+  "Uni",
+];
+
+console.log(sushi.slice(2)); // [ 'Yellowtail', 'Eel', 'Shrimp', 'Octupos', 'Uni' ] --1 argument
+console.log(sushi.slice(2, 4)); // [ 'Yellowtail', 'Eel' ] --2 argument
+*/

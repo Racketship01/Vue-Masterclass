@@ -3,7 +3,7 @@
   <main class="flex-auto p-8 bg-brand-gray-2">
     <ol>
       <job-list
-        v-for="job in jobs"
+        v-for="job in displayedJobs"
         :key="job.id"
         :job="job"
         data-test="job-listings"
@@ -27,8 +27,13 @@ export default {
       jobs: [], // store jobs(endpoint) array being fetch in backend
     };
   },
+  computed: {
+    displayedJobs() {
+      return this.jobs.slice(0, 10);
+    },
+  },
   async mounted() {
-    const response = await axios.get("http://127.0.0.1:3000/jobs");
+    const response = await axios.get("http://localhost:3000/jobs");
     this.jobs = response.data;
   },
 };

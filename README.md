@@ -3853,8 +3853,58 @@ console.log(goodFood);
 
 ## Section 19: Dynamic Pagination
 
-- User Story
-  -
+- ## User Story
+  - ![](./images/sec19-UserStory.png)
+- Bonus Reviow: Slice Method Array
+
+  - slice method --returns a copy of an original, but can limit the elements in the original array based on our specified index positions.
+
+    - when no argument, you will get a copy of original array
+    - when there is an argument, we specify boundaries from where wed like to extract certain values from the original array
+      - one(1) argument -- specify lower bound --lower bound is the index from which we want to pull values from up to the end
+      - two(1,2) argument --provide the lower bound or starting index and the upper bound which is the ending index
+        - lower bound --is inclusive, JS will include the value at that index position the exact same way in 1 argument
+        - upper bound --is exclusive, value there is not going to be included. Were going to go up from that index to the lower bound
+
+    ```js
+    // Slice Method
+    const sushi = [
+      "Tuna",
+      "Salmon",
+      "Yellowtail",
+      "Eel",
+      "Shrimp",
+      "Octupos",
+      "Uni",
+    ];
+
+    console.log(sushi.slice(2)); // [ 'Yellowtail', 'Eel', 'Shrimp', 'Octupos', 'Uni' ] --1 argument
+    console.log(sushi.slice(2, 4)); // [ 'Yellowtail', 'Eel' ] --2 argument
+    ```
+
+- Display Only First 10 Jobs
+
+  - NOTE: use slice method not on the mounted() method as we going to lose all the original data we receive from the API, instead we do the slice at computed property
+
+  ```html
+  // JobListings.vue
+  <template>
+    <job-list
+      v-for="job in displayedJobs"
+      :key="job.id"
+      :job="job"
+      data-test="job-listings"
+    />
+  </template>
+
+  <script>
+      computed: {
+      displayedJobs() {
+        return this.jobs.slice(0, 10);
+      },
+    },
+  </script>
+  ```
 
 ## Section 20: Vuex I: State and Mutations
 
