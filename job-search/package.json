@@ -10,6 +10,7 @@
     "test:watch": "vue-cli-service test:unit --watchAll",
     "backend": "json-server --watch db.json"
   },
+  "proxy": "http://localhost:3000/jobs",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
     "@fortawesome/free-solid-svg-icons": "^6.2.0",

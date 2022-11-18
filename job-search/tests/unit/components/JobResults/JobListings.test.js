@@ -1,4 +1,3 @@
-/*
 import { flushPromises, shallowMount } from "@vue/test-utils";
 import axios from "axios";
 jest.mock("axios"); // loop through all of axios functionality then replaced that in its own mock function. We can now use functionality (e.g get) or invoke axios regularly here at test suite.
@@ -30,4 +29,3 @@ describe("JobListings", () => {
     //
   });
 });
-*/
