@@ -3906,6 +3906,44 @@ console.log(goodFood);
   </script>
   ```
 
+- Dynamic Pagination
+  - were going to enable paginayion using query params
+  ```js
+  // JobListings.vue
+  computed: {
+    displayedJobs() {
+      const pageString = this.$route.query.page || "1"; // page in query params
+      const pageNumber = Number.parseInt(pageString); // 1
+      const firstJobIndex = (pageNumber - 1) * 10; // 1 - 1 = 0 and so on
+      const lastJobIndex = pageNumber * 10; // 1 * 10 = 10(1st page last index) page 1 -> 10
+      return this.jobs.slice(firstJobIndex, lastJobIndex);
+    },
+  },
+  ```
+- Fixing Failing JobListings Component Tests
+
+  - NOTE:
+
+    - this.$route property does not exist at test suite resulting the test to fail
+    - SOLUTION: replace $route property with a mock object
+
+    ```js
+    // JobListing.test.js
+    const $route = {
+      query: {
+        page: "5",
+      },
+    };
+
+    shallowMount(JobListings, {
+      global: {
+        mocks: {
+          $route,
+        },
+      },
+    });
+    ```
+
 ## Section 20: Vuex I: State and Mutations
 
 ## Section 21: Vuex II: Actions
