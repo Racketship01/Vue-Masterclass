@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1668771517365" clover="3.2.0">
-  <project timestamp="1668771517365" name="All files">
-    <metrics statements="660" coveredstatements="505" conditionals="29" coveredconditionals="21" methods="27" coveredmethods="20" elements="716" coveredelements="546" complexity="0" loc="660" ncloc="660" packages="9" files="17" classes="17"/>
+<coverage generated="1669388554122" clover="3.2.0">
+  <project timestamp="1669388554122" name="All files">
+    <metrics statements="710" coveredstatements="552" conditionals="36" coveredconditionals="29" methods="30" coveredmethods="23" elements="776" coveredelements="604" complexity="0" loc="710" ncloc="710" packages="9" files="17" classes="17"/>
     <package name="src">
       <metrics statements="21" coveredstatements="0" conditionals="1" coveredconditionals="0" methods="1" coveredmethods="0"/>
       <file name="App.vue" path="C:\study\Vue Masterclass\job-search\src\App.vue">
@@ -30,7 +30,7 @@
       </file>
     </package>
     <package name="src.components.JobResults">
-      <metrics statements="115" coveredstatements="115" conditionals="5" coveredconditionals="4" methods="4" coveredmethods="4"/>
+      <metrics statements="162" coveredstatements="162" conditionals="12" coveredconditionals="12" methods="7" coveredmethods="7"/>
       <file name="JobList.vue" path="C:\study\Vue Masterclass\job-search\src\components\JobResults\JobList.vue">
         <metrics statements="71" coveredstatements="71" conditionals="1" coveredconditionals="1" methods="1" coveredmethods="1"/>
         <line num="1" count="1" type="stmt"/>
@@ -106,7 +106,7 @@
         <line num="71" count="1" type="stmt"/>
       </file>
       <file name="JobListings.vue" path="C:\study\Vue Masterclass\job-search\src\components\JobResults\JobListings.vue">
-        <metrics statements="44" coveredstatements="44" conditionals="4" coveredconditionals="3" methods="3" coveredmethods="3"/>
+        <metrics statements="91" coveredstatements="91" conditionals="11" coveredconditionals="11" methods="6" coveredmethods="6"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -131,26 +131,73 @@
         <line num="22" count="1" type="stmt"/>
         <line num="23" count="1" type="stmt"/>
         <line num="24" count="1" type="stmt"/>
-        <line num="25" count="1" type="cond" truecount="1" falsecount="0"/>
-        <line num="26" count="2" type="stmt"/>
-        <line num="27" count="2" type="stmt"/>
-        <line num="28" count="2" type="stmt"/>
-        <line num="29" count="2" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="28" count="1" type="stmt"/>
+        <line num="29" count="1" type="stmt"/>
         <line num="30" count="1" type="stmt"/>
-        <line num="31" count="1" type="cond" truecount="1" falsecount="0"/>
-        <line num="32" count="4" type="cond" truecount="0" falsecount="1"/>
-        <line num="33" count="4" type="stmt"/>
-        <line num="34" count="4" type="stmt"/>
-        <line num="35" count="4" type="stmt"/>
-        <line num="36" count="4" type="stmt"/>
-        <line num="37" count="4" type="stmt"/>
+        <line num="31" count="1" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="34" count="1" type="stmt"/>
+        <line num="35" count="1" type="stmt"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
         <line num="38" count="1" type="stmt"/>
-        <line num="39" count="1" type="cond" truecount="1" falsecount="0"/>
-        <line num="40" count="2" type="stmt"/>
-        <line num="41" count="2" type="stmt"/>
-        <line num="42" count="2" type="stmt"/>
+        <line num="39" count="1" type="stmt"/>
+        <line num="40" count="1" type="stmt"/>
+        <line num="41" count="1" type="stmt"/>
+        <line num="42" count="1" type="stmt"/>
         <line num="43" count="1" type="stmt"/>
         <line num="44" count="1" type="stmt"/>
+        <line num="45" count="1" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="47" count="1" type="stmt"/>
+        <line num="48" count="1" type="stmt"/>
+        <line num="49" count="1" type="stmt"/>
+        <line num="50" count="1" type="cond" truecount="1" falsecount="0"/>
+        <line num="51" count="8" type="stmt"/>
+        <line num="52" count="8" type="stmt"/>
+        <line num="53" count="8" type="stmt"/>
+        <line num="54" count="8" type="stmt"/>
+        <line num="55" count="1" type="stmt"/>
+        <line num="56" count="1" type="cond" truecount="1" falsecount="0"/>
+        <line num="57" count="8" type="cond" truecount="1" falsecount="0"/>
+        <line num="58" count="8" type="stmt"/>
+        <line num="59" count="8" type="stmt"/>
+        <line num="60" count="8" type="stmt"/>
+        <line num="61" count="1" type="cond" truecount="1" falsecount="0"/>
+        <line num="62" count="8" type="stmt"/>
+        <line num="63" count="8" type="stmt"/>
+        <line num="64" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="65" count="8" type="stmt"/>
+        <line num="66" count="1" type="cond" truecount="1" falsecount="0"/>
+        <line num="67" count="16" type="stmt"/>
+        <line num="68" count="16" type="stmt"/>
+        <line num="69" count="16" type="cond" truecount="2" falsecount="0"/>
+        <line num="70" count="16" type="stmt"/>
+        <line num="71" count="1" type="cond" truecount="1" falsecount="0"/>
+        <line num="72" count="16" type="stmt"/>
+        <line num="73" count="16" type="stmt"/>
+        <line num="74" count="16" type="stmt"/>
+        <line num="75" count="16" type="stmt"/>
+        <line num="76" count="16" type="stmt"/>
+        <line num="77" count="1" type="stmt"/>
+        <line num="78" count="1" type="cond" truecount="1" falsecount="0"/>
+        <line num="79" count="8" type="stmt"/>
+        <line num="80" count="8" type="stmt"/>
+        <line num="81" count="8" type="stmt"/>
+        <line num="82" count="8" type="stmt"/>
+        <line num="83" count="8" type="stmt"/>
+        <line num="84" count="8" type="stmt"/>
+        <line num="85" count="8" type="stmt"/>
+        <line num="86" count="8" type="stmt"/>
+        <line num="87" count="8" type="stmt"/>
+        <line num="88" count="8" type="stmt"/>
+        <line num="89" count="8" type="stmt"/>
+        <line num="90" count="1" type="stmt"/>
+        <line num="91" count="1" type="stmt"/>
       </file>
     </package>
     <package name="src.components.JobResults.JobFilterSideBar">
@@ -622,9 +669,9 @@
       </file>
     </package>
     <package name="src.router">
-      <metrics statements="43" coveredstatements="0" conditionals="1" coveredconditionals="0" methods="1" coveredmethods="0"/>
+      <metrics statements="46" coveredstatements="0" conditionals="1" coveredconditionals="0" methods="1" coveredmethods="0"/>
       <file name="index.js" path="C:\study\Vue Masterclass\job-search\src\router\index.js">
-        <metrics statements="43" coveredstatements="0" conditionals="1" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <metrics statements="46" coveredstatements="0" conditionals="1" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="1" count="0" type="cond" truecount="0" falsecount="1"/>
         <line num="2" count="0" type="stmt"/>
         <line num="3" count="0" type="stmt"/>
@@ -668,6 +715,9 @@
         <line num="41" count="0" type="stmt"/>
         <line num="42" count="0" type="stmt"/>
         <line num="43" count="0" type="stmt"/>
+        <line num="44" count="0" type="stmt"/>
+        <line num="45" count="0" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
       </file>
     </package>
     <package name="src.utils">

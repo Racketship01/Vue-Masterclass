@@ -3823,7 +3823,7 @@ console.log(goodFood);
         // axios.get.mockResolvedValue({ data: Array(15).fill({}) }); // simulation of async function that returns resolved value for an array response of data --Array(15) will create an array of a given length --fill({}) method that will provide a sample element and JS is going to emulate or copy that sample element 15 times(iteration). Doesnt care if real object or not pass as an argument, all care if the 15 items elements specified are being rendered to test the v-for functionality
 
         // The flushPromise function
-        axios.get.mockResolvedValue({ data: Array(15).fill({}) }); // --request to an API outside of the scope of vue component --Vue test suite isnt registering the return resolve value of this axios.get, we simulated this API reqs and response of 15 objects but not registering/ updating with component --nextTick will not work as Vue doesnt know unresolved promise, Solution? use flush Promise fn to resolve promise immediately
+        axios.get.mockResolvedValue({ data: Array(15).fill({}) }); // --request to an API outside of the scope of vue component --Vue test suite isnt registering the return resolve value of this axios.get, we simulated this API reqs and response of 15 objects but not registering/ updating with component as promise not fully completed --nextTick will not work as Vue doesnt know unresolved promise, Solution? use flush Promise fn to resolve promise immediately
 
         const wrapper = shallowMount(JobListings);
         await flushPromises(); // resolves all outstanding promises immediately --shoot off that promise after we mounted our component as the axios reqs going to run in the mounted hook lifecycle --after finish up all resolve promises, then the component will be updated, we now have 15 job listings because we have a jobs array of 15 elements.
@@ -3943,6 +3943,293 @@ console.log(goodFood);
       },
     });
     ```
+
+- Refractoring JobListings Test Suite
+
+  ```js
+  describe("JobListings", () => {
+    const createRoute = (queryParams = {}) => ({
+      query: {
+        page: "5",
+        ...queryParams,
+      },
+    });
+
+    const createConfig = ($route) => ({
+      global: {
+        mocks: {
+          $route,
+        },
+      },
+    });
+
+    it("fetches jobs", () => {
+      axios.get.mockResolvedValue({ data: [] });
+      const $route = createRoute();
+
+      shallowMount(JobListings, createConfig($route)); // for the purpose of the test, we dont care some kind of $route, we just need it to exist here to avoid failure in the terminal
+
+      expect(axios.get).toHaveBeenCalledWith("http://localhost:3000/jobs");
+    });
+
+    it("creates a job listings for a maximum of 10 jobs", async () => {
+      axios.get.mockResolvedValue({ data: Array(15).fill({}) });
+
+      const queryParams = {
+        page: 1,
+      };
+      const $route = createRoute(queryParams);
+      const wrapper = shallowMount(JobListings, createConfig($route)); // page property will be needed in this "it" test as the page will specify what to   render the max of 10 jobs
+      await flushPromises();
+
+      const jobListings = wrapper.findAll("[data-test='job-listings'");
+
+      expect(jobListings).toHaveLength(10);
+    });
+  });
+  ```
+
+- Displaying Page Number at JobListings
+
+  ```html
+  //JobListings.vue
+  <template>
+    <div class="mt-8 mx-auto">
+      <div class="flex flex-row flex-nowrap">
+        <p class="text-sm flex-grow">Page {{ currentPage }}</p>
+      </div>
+    </div>
+  </template>
+
+  <script>
+      computed: {
+      currentPage() {
+        const pageString = this.$route.query.page || "1"; // page in query params
+        // const pageNumber = Number.parseInt(pageString); // 1
+        return Number.parseInt(pageString); // 1
+      },
+      displayedJobs() {
+        const pageNumber = this.currentPage;
+        const firstJobIndex = (pageNumber - 1) * 10; // 1 - 1 = 0 and so on
+        const lastJobIndex = pageNumber * 10; // 1 * 10 = 10(1st page last index) page 1 -> 10
+        return this.jobs.slice(firstJobIndex, lastJobIndex);
+      },
+    },
+  </script>
+  ```
+
+- Wiring up computed properties for Next and Previous
+  ```js
+  computed: {
+    previousPage() {
+      const previousPage = this.currentPage - 1; // 1 - 1 = 0
+      const firstPage = 1;
+      return previousPage >= firstPage ? previousPage : undefined; // undefined (not rendering previous page link at 1st page)
+    },
+    nextPage() {
+      const nextPage = this.currentPage + 1;
+      const maxPage = this.jobs.length / 10; // 100 / 10 = 10
+      return nextPage <= maxPage ? nextPage : undefined; // nextPage
+    },
+  }
+  ```
+- Rendering Previous and Next Page
+
+```html
+<div class="mt-8 mx-auto">
+  <div class="flex flex-row flex-nowrap">
+    <p class="text-sm flex-grow">Page {{ currentPage }}</p>
+
+    <div class="flex items-center justify-center">
+      <router-link
+        v-if="previousPage"
+        :to="{ name: 'JobResults', query: { page: previousPage } }"
+        class="mx-3 text-sm font-semibold text-brand-blue-1"
+        >Previous
+      </router-link>
+
+      <router-link
+        v-if="nextPage"
+        :to="{ name: 'JobResults', query: { page: nextPage } }"
+        class="mx-3 text-sm font-semibold text-brand-blue-1"
+      >
+        Next</router-link
+      >
+    </div>
+  </div>
+</div>
+```
+
+- Scrolling to Top on Params Change
+  ```js
+  const router = createRouter({
+    history: createWebHashHistory(),
+    routes,
+    scrollBehavior() {
+      return { top: 0, left: 0, behavior: "smooth" };
+    }, // specifies how the router is going to behave in regards to scrolling whenever there is a change in route
+  });
+  ```
+- Adding test for page number
+
+  - NOTE: we nest our describe function whenever we want to provide additional specific context or set up a scenario or situation under which we want to make an assertion
+
+  ```js
+  // JobListings.test.js
+  describe("when query params exclude page number", () => {
+    it("displays page number 1", () => {
+      const queryParams = { page: undefined }; //falsy value that will fall to 1 (this.$route.query.page || "1")
+
+      const $route = createRoute(queryParams);
+      const wrapper = shallowMount(JobListings, createConfig($route));
+      expect(wrapper.text()).toMatch("Page 1");
+    });
+  });
+
+  describe("when query params include page number", () => {
+    it("displays page numbers", () => {
+      const queryParams = { page: "3" };
+
+      const $route = createRoute(queryParams);
+      const wrapper = shallowMount(JobListings, createConfig($route));
+      expect(wrapper.text()).toMatch("Page 3");
+    });
+  });
+  ```
+
+- Fixing Test Pollution
+
+  - fit --allow to run one test in the file isolation. Instead of running entire joblisting file, can focus on only one test -- f means focus on 'it' function
+    - advantage:
+      - one test will run quicker than the entire test suite
+      - can run one test in isolation
+    - disadvnatage:
+      - can create test pollution
+  - what is test pollution? means that something left over from a previous test is affecting the result in the next test
+    - the reason we weren't seeing a warning when we were running the test suite as a whole is because some previous test was changing some kind of setting that was allowing a test to run without warning.
+    - tests are not independent. They're dependent on some kind of additional setup that is coming from a previous test. And this can become very hard to debug when running a test in isolation (isolating from previous set up causing test to have a warning)
+  - ![](./images/testPollution.png)
+  - NOTE: axios.get mock in test suite are the one polluting the test --its still continuing after its done running in a single test resulting for a warning when running other test in isolation --In mounted lifecycle hook the jest test suite for axios.get will return its default implementation of axios.get mock instead of our own custumize data ({ data: Array(10).fill({}) }) that causing a warning that our test says `I cant read the property data of undefined`
+    - Solution:
+      - copy the custom jest mock up for axios.get in every single test
+        - use the beforeEach() method
+      - cleaning up after every test (make axios.get the default mock and return it back to jest default implementation resolved value which is undefined { data: [] })
+        - use the afterEach() method --allow us to run something after each test that will allow us to clean up any customize axios.get mocks that we have set up in any of our individual tests
+      - NOTE: Setting this beforeEach() and afterEach() method made the test independent to each other avoiding any test pollution
+
+  ```js
+  // JobListings test
+  beforeEach(() => {
+    axios.get.mockResolvedValue({ data: Array(15).fill({}) });
+  });
+
+  afterEach(() => {
+    axios.get.mockReset(); // return mock in its default implementation (not mean to its real axios.get function implementation but in its jest mock) --clearing our custom implementation we specified in every test of what the get method will resolve or return whenever it is invoked in our test suite component.
+  });
+  ```
+
+- More test for JobListings
+
+  ```js
+  describe("when user is on first page", () => {
+    it("does not show link to previous page", () => {
+      const queryParams = { page: "1" };
+      const $route = createRoute(queryParams);
+      const wrapper = shallowMount(JobListings, createConfig($route));
+      const previousPage = wrapper.find("[data-test = 'previous-page-link']");
+      expect(previousPage.exists()).toBe(false);
+    });
+
+    it("show link to next page", async () => {
+      const queryParams = { page: "1" };
+      const $route = createRoute(queryParams);
+      const wrapper = shallowMount(JobListings, createConfig($route));
+      await flushPromises();
+      const nextPage = wrapper.find("[data-test = 'next-page-link']");
+      expect(nextPage.exists()).toBe(true);
+    });
+  });
+
+  //NOTE: theres still a bug in the 'show link to next page' test, thought using flushPromise will solve but cant
+  ```
+
+- Fixing Bug
+
+  - first make 'show link to next page' test to fit as this test is the only one that has a bug. We dont need to run other when debugging as this slows down the feedback loop and eliminate the possibility of test pollution
+  - Problem: floating division is not rounding up to the next integer to the next whole number if the this.jobs.length is odd number divided by 10.
+    - ![](./images/bugs.png)
+  - Solution: take the floating point number and round up to the next whole number
+    - ![](./images/bugs1.png)
+
+- Adding more Test for JobListing Component
+
+  ```js
+  describe("when user is on the last page", () => {
+    it("does not show link to next page", async () => {
+      const queryParams = { page: "2" };
+      const $route = createRoute(queryParams);
+      const wrapper = shallowMount(JobListings, createConfig($route));
+      await flushPromises();
+      const nextPage = wrapper.find("[data-test = 'next-page-link']");
+      expect(nextPage.exists()).toBe(false);
+    });
+
+    it("show link to previous page", async () => {
+      const queryParams = { page: "2" };
+      const $route = createRoute(queryParams);
+      const wrapper = shallowMount(JobListings, createConfig($route));
+      await flushPromises();
+      const previousPage = wrapper.find("[data-test = 'previous-page-link']");
+      expect(previousPage.exists()).toBe(true);
+    });
+  });
+  ```
+
+- Environment Variable
+
+  - environment variables help us whenever there is variation in our app that is due to the environment in which we are running.
+  - mode of execution in which we are running our vue app.
+  - THREE ENVIRONMENTS: --each environments is optimized for a specific use case
+    - Development --specifically suited for the developer writing additional code
+      - e.g Hot Reload --whenever makes changes in code, Vue CLI understands those changes and automatically reloads the page as see results --features only exist in development mode
+    - Production --bundling vue app
+      - e.g running `npm run build` and we get all of our code inside a single JS file and then we go to some server on the internet and we deploy the code
+    - Test --whenever running a test suite, we tell the vue cli to use specific configuration settings, specific optimizations that make the test suite run faster.
+  - where do we bundle up these kinds of configuration settings?
+    - We do this in plain text files(create 3 files on the top level of codebase, each file represents settings or configuration) and all these files are is really just a collection of key value pairs.
+    - have a text file for each environment (dev, deploy and test)
+      - `.env` --extension for environment and it will apply to every single environement weve running
+      - `.env.development` --more specific setting to certain environment --if we save our file in .env.development it will be save to our source control (e.g git)
+      - `.env.development.local` --file not gonna be save in git, not added to git or to source code
+      - NOTE:
+        - you should know that in your .env file that you commit to source control, you should not have any private information. e.g API key or some kind of pw or something that enabling to get access to sensitive information
+    - then the vue cli will look for a corresponding file of key value pairs based on the environment were running in, load that file and those key value pairs
+    - We can now allow that config file to store custom info pertainning to that environment such as custom URL
+  - Setting up
+    - ![](./images/environment.png)
+    - VUE_APP --any environment variable to be available in vue app must start with this prefix
+      - followed by actual varible name that will be serves as a constant and be available in our vue app
+      - which ever file is loaded is the const that vue is going to load and make available in code
+    - NOTE: depending on which environment vue loads, its going to be a different string value sets in .env file
+
+  ```js
+  // JobListings.vue
+  async mounted() {
+    /*
+      THREE ENVIRONMENTS:
+        - development --localhost:3000/jobs
+        - production --api.mycompany.com/jobs --can customize URL
+        - test
+    */
+
+    const baseURL = process.env.VUE_APP_API_URL; // process --automaticaly available whenever running a node app, no need to import --env.variable name --access whatever environment variable defined at .env file that loaded in
+    const response = await axios.get(`${baseURL}/jobs`); //using template string to access baseURL
+    this.jobs = response.data;
+  },
+
+  // JobListings.test.js
+  expect(axios.get).toHaveBeenCalledWith("http://myfakeapi.com/jobs");
+  ```
 
 ## Section 20: Vuex I: State and Mutations
 

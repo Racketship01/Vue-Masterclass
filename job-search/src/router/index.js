@@ -35,6 +35,9 @@ const routes = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
+  scrollBehavior() {
+    return { top: 0, left: 0, behavior: "smooth" };
+  }, // specifies how the router is going to behave in regards to scrolling whenever there is a change in route
 });
 // createRouter --takes an options argument which is a plain JS obj that configures the settings for how the router works
 // history --keep track of what routes the user has been on
