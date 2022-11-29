@@ -83,6 +83,7 @@
   - global NPM dependecy --global means, is its not isolated to a specific project or specific project folder `npm install -g @vue/cli`
   - also help us adding plugins to Vue adding additional NPM pagkages like Vuex and Vue Router
   - advantages of Vue CLI over NPM is not only does it download and fetch those packages from NPM but also created starter files and basic boilerplate code
+  - NOTE: Vue CLI can create some starter files for us with some small configuration so it takes care of a little bit more of the boilerplate code and spares us the need to write some of that extra stuff.
     ![](./images/vueCommand.png)
 
 - The Vue Create Command
@@ -4231,7 +4232,36 @@ console.log(goodFood);
   expect(axios.get).toHaveBeenCalledWith("http://myfakeapi.com/jobs");
   ```
 
+- REVIEW:
+  - ![](./images/sec19.png)
+  - ![](./images/sec19-1.png)
+  - ![](./images/sec19-2.png)
+
 ## Section 20: Vuex I: State and Mutations
+
+- What is Vuex?
+  - ![](./images/vuex.png)
+  - ![](./images/vuex1.png)
+  - library for managing global state.
+  - separate NPM library (dont be confused with the core vue library but still part of the larger vue ecosystem
+    - ![](./images/vuex2.png)
+    - responsible for storing higher level state or data (global)
+    - serves as centralized store of global state
+      - whenever have a data that is more higher level or global that has the ability to impact multiple components, we can extract at the vuex then connect it to components needed that data
+      - NOTE: not every component has to connect to vuex
+    - extracted global data to another separate entity in vue app then put into constraints(variables) and how we can change the data (define possible operation for mutation) within the vuex store
+      - allows us to have predictable changes so that components can know that there is a subset of actions (delete or add) that can happen that can update components to ensure no errors encountered by accidentally
+  - Benefits:
+  - ![](./images/vuex3.png)
+    - separation of data manipulation to vue
+      - can move to vuex store and the components will simply receive final data and do something with it.
+      - component are called dumb component, dont really care where there getting the data from or how its calculated, they just know how to render it visually in the HTML
+  - ![](./images/vuex4.png)
+- Add Vuex Store to App
+  - in terminal,run the command `vue add vuex` to idd the vuex store
+    - vue --global installation of Vue CLI and npm
+    - add -- commands to allows adding a package
+    - vuex --library
 
 ## Section 21: Vuex II: Actions
 
