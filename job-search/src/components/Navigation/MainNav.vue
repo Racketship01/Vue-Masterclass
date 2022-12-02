@@ -33,7 +33,7 @@
             v-else
             text="Sign in"
             data-test="login-button"
-            @click="loginUser"
+            @click="LOGIN_USER()"
           />
           <!-- <action-button v-if="!isLoggedIn" /> -->
         </div>
@@ -45,9 +45,13 @@
 </template>
 
 <script>
+import { mapMutations, mapState } from "vuex";
+
 import ActionButton from "@/components/Shared/ActionButton.vue";
 import ProfileImage from "@/components/Navigation/ProfileImage.vue";
 import Subnav from "@/components/Navigation/Subnav.vue";
+
+import { LOGIN_USER } from "@/store";
 
 export default {
   name: "MainNav",
@@ -66,7 +70,6 @@ export default {
         { text: "Students", url: "/" },
         { text: "Jobs", url: "/jobs/results" },
       ],
-      isLoggedIn: false,
     };
   },
   computed: {
@@ -76,11 +79,22 @@ export default {
         "h-32": this.isLoggedIn,
       };
     },
+
+    // reading vuex store state
+    // isLoggedIn() {
+    //   return this.$store.state.isLoggedIn; //false --starting state value
+    // },
+
+    // mapState --connect vuex store state properties to component computed properties
+    ...mapState(["isLoggedIn"]), // use both has same name properties
   },
   methods: {
-    loginUser() {
-      this.isLoggedIn = true;
-    },
+    // writing store state from component
+    // LOGIN_USER() {
+    //   this.$store.commit(LOGIN_USER); //LOGIN_USER method will run and mutate the store state at vuex store then re run the isLoggedIn computed property with updated mutation value (false -> true) then re-render the template
+    // },
+
+    ...mapMutations([LOGIN_USER]), // sytactical shortcut for invoking commit method --use this syntax if component method name has same name at the mutations method name
   },
 }; // this JS object is the configuration object for this component --how component work
 </script>

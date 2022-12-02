@@ -76,15 +76,8 @@ export default {
     },
   },
   async mounted() {
-    /*
-      THREE ENVIRONMENTS:
-        - development --localhost:3000/jobs
-        - production --api.mycompany.com/jobs --can customize URL 
-        - test 
-    */
-
-    const baseURL = process.env.VUE_APP_API_URL; // process --automaticaly available whenever running a node app, no need to import --env.variable name --access whatever environment variable defined at .env file that loaded in
-    const response = await axios.get(`${baseURL}/jobs`); //using template string to access baseURL
+    const baseURL = process.env.VUE_APP_API_URL;
+    const response = await axios.get(`${baseURL}/jobs`);
     this.jobs = response.data;
   },
 };

@@ -4223,7 +4223,7 @@ console.log(goodFood);
         - test
     */
 
-    const baseURL = process.env.VUE_APP_API_URL; // process --automaticaly available whenever running a node app, no need to import --env.variable name --access whatever environment variable defined at .env file that loaded in
+    const baseURL = process.env.VUE_APP_API_URL; // process --global node object --automaticaly available whenever running a node app, no need to import --env.variable name --access whatever environment variable defined at .env file that loaded in
     const response = await axios.get(`${baseURL}/jobs`); //using template string to access baseURL
     this.jobs = response.data;
   },
@@ -4258,10 +4258,349 @@ console.log(goodFood);
       - component are called dumb component, dont really care where there getting the data from or how its calculated, they just know how to render it visually in the HTML
   - ![](./images/vuex4.png)
 - Add Vuex Store to App
-  - in terminal,run the command `vue add vuex` to idd the vuex store
+  - ![](./images/addVuex.png)
+  - in terminal, run the command `vue add vuex` to idd the vuex store
     - vue --global installation of Vue CLI and npm
     - add -- commands to allows adding a package
     - vuex --library
+  - ![](./images/addVuex1.png)
+  - ![](./images/addVuex2.png)
+- Creating Vuex Store
+
+  ```js
+  // index.js --store folder
+  import { createStore } from "vuex"; // createStore --references for global collection of data that Vuex storing for us
+
+  const store = createStore({
+    state() {
+      return {
+        isLoggedin: false,
+      };
+    }, // data property in a component that changes overtime --has same syntax to data method within a component
+    /*
+    getters: {},
+    mutations: {},
+    actions: {},
+    modules: {},
+    */
+  });
+
+  export default store;
+
+  //NOTE: cant modify the state store
+  ```
+
+  - Add First Mutation
+
+    - mutation
+      - limit the possiblle ways that can change the store state to predefined limited set of operations.
+      - mutation is the only place and the only way that we are allowed to modify a view store.
+      - mutate means to change
+      - methods that modify the vuex store state and instruct store how to update (like methods property at a component)
+      - a component can only update store state by calling a specific set or a specific mutation
+      - mutations names are all UPPER_CASE to represents constant nature of this operation
+      - every single mutation defined is going to receive the store state as the first argument
+      - NOTE:
+        - mutation should be synchronous not an async
+        - cannot do things like make an API call or read a file from a file system
+        - Any asynchronous operation, anything that takes some amount of time, you have to do it in a separate place in the View Store
+        - for good practice, do not create or delete any new properties in mutations.
+        - Should have the default starting state store and if you dont have an initial value provided for a property, just provide undefined or null or empty string. Always start off with a base state and then modify its value through mutations
+
+    ```js
+    const store = createStore({
+      mutations: {
+        LOGIN_USER(state) {
+          state.isLoggedin = true;
+        },
+      }, // same as method property within a  component
+
+      strict: process.env.NODE_ENV !== "production", // a lot more strict for making sure dont have any place where accidentally modifying the store state outside of mutation. --using this makes helpful during developement mode but not in production as this will slow down the app and consume more storage
+      // NOTE: process -> global node object || env. -> receive environment variable defined on .env file || NODE_ENV --> predefined environment variable on env object defined by node or vue team --the variable name (with a string value) of the development environment we are running
+    });
+    ```
+
+  - The Commit Method for Mutations
+    - commit
+      - method to invoke store object to run a mutation
+      - takes one argument representing the mutation to run as a string
+      - commit is really the way that you should be modifying the store state.
+      - never be reaching into state and manually adjusting a property.Instead use a mutation to the store in order to get it to change its internal state.
+    ```js
+    console.log(store.state.isLoggedin); // false
+    store.commit("LOGIN_USER"); // use to invoke mutation
+    console.log(store.state.isLoggedin); // true after commit invoke mutation
+    ```
+  - Refractoring Exports from Store File
+
+    ```js
+    import { createStore } from "vuex";
+
+    export const state = () => {
+      return {
+        isLoggedin: false,
+      };
+    };
+
+    export const mutations = {
+      LOGIN_USER(state) {
+        state.isLoggedin = true;
+      },
+    };
+
+    const store = createStore({
+      state,
+      mutations,
+      strict: process.env.NODE_ENV !== "production",
+    });
+
+    export default store;
+    ```
+
+- Adding Tests for Vuex State and Mutations
+
+  ```js
+  import { state, mutations } from "@/store";
+
+  // dont need to incorporate all of the vuex store complexity inorder to test the state function and mutations object
+
+  // one describe test per property of vuex store
+  describe("state", () => {
+    it("keeps track of whether user is logged in", () => {
+      const startingState = state();
+      expect(startingState.isLoggedin).toBe(false);
+    });
+  });
+
+  describe("mutations", () => {
+    // one describe test for each mutations
+    describe("LOGIN_USER", () => {
+      it("logs the user in", () => {
+        const state = { isLoggedin: false };
+        mutations.LOGIN_USER(state); // no need to import a real life store (state) as we only testing a basic JS method
+
+        expect(state).toEqual({ isLoggedin: true });
+        //NOTE: cannot use toBe matcher when using JS object
+      });
+    });
+  });
+  ```
+
+- Reading from Vuex Store in Components
+
+  - similarly in the $route and $router, any component has an access to vuex store and have access to all methods and properties at store object
+  - it gives every single component in vue app access to a property called $store.
+  - BAD PRACTICE: import directly store into component
+  - as soon as we commit a mutation and change the value property value property of the state, will alert any component that is reading the store that its state has changed
+  - we can use the store state in order to render something to the screem or we can use it for some kind of conditional logic such as v-if and for iteration using v-for
+
+  - store object ![](./images/readStore.png)
+
+- Writing to Vuex Store from Component
+
+  - writing --updating the store
+    - how do we update a store state? use a mutation
+    - how can we issue mutation? via commit method on the store
+
+  ```html
+  <!-- MainNav.vue -->
+  <script>
+    computed: {
+      // reading vuex store state
+      isLoggedIn() {
+      return this.$store.state.isLoggedIn; //false --starting state value
+    },
+
+     methods: {
+    // writing store state from component
+    loginUser() {
+      this.$store.commit("LOGIN_USER"); //LOGIN_USER method will run and mutate the store state at vuex store then re run the isLoggedIn computed property with updated mutation value (false -> true) then re-render the template
+      },
+    },
+
+    // NOTE: vuex store state can still interpolate at template in v-if and v-for directives
+    }
+  </script>
+  ```
+
+  - Interacting with Vuex Store in DevTools
+    - tracks how the vuex store state changes in vue devtools in chrome as this will allow us to debug mutations as they flow through the app
+    - timeline --visual representation of graphic of time. Vue is keeping track of everythhing that is happening in our app
+    - Vue DevTools in Chrome ![](./images/vuexChrome.png)
+    - ![](./images/vuexChrome1.png)
+
+- Fixing Failing MainNav Test
+
+  - 1st approach: test component using a real world vuex store by importing createStore function not mocking it
+  - benefit of this approach even we are coupling with a real implementation, can fit a small version of the store and still follow many of the same principles
+
+  ```js
+  import { createStore } from "vuex"; // importing real life vuex store - createStore function
+
+  // factory function
+  const createConfig = (store) => ({
+    global: {
+      plugins: [store], // this extension from library can store a real life library like vuex store
+      stubs: {
+        "router-link": RouterLinkStub,
+      },
+    },
+  });
+
+  it("displays company name", () => {
+    // no need to configure store as this test will only display company name
+    const store = createStore();
+    const wrapper = shallowMount(MainNav, createConfig(store));
+    expect(wrapper.text()).toMatch("Bobo Careers");
+  });
+
+  describe("when user logs in", () => {
+    it("displays user profile picture", async () => {
+      // needed to configure store as displaying profile picture depends on conditional of isLoggedIn state at vuex store
+      const store = createStore({
+        state() {
+          return {
+            isLoggedIn: true,
+          };
+        },
+      });
+      const wrapper = shallowMount(MainNav, createConfig(store));
+      const profileImage = wrapper.find("[data-test='profile-image']");
+      expect(profileImage.exists()).toBe(true);
+    });
+  });
+  ```
+
+  - Testing Button Click at MainNav.vue
+
+    - add test for LoginUser method if sending right message to the store object
+    - replace commit method with a mock jest function
+
+    ```js
+    describe("when user is logged out", () => {
+      it("issues a call to Vuex to login user", async () => {
+        const store = createStore();
+        const commit = jest.fn();
+        store.commit = commit; //mock commit function
+        const wrapper = shallowMount(MainNav, createConfig(store));
+        const loginButton = wrapper.find("[data-test='login-button']");
+
+        await loginButton.trigger("click");
+
+        expect(commit).toHaveBeenCalledWith("LOGIN_USER");
+      });
+    });
+    ```
+
+  - A second Testing Approach for Vuex Store
+
+    - use a mock for more lightweight test
+    - refractor test at MainNav test suite
+
+    ```js
+    describe("MainNav", () => {
+      const createConfig = ($store) => ({
+        global: {
+          mocks: {
+            $store,
+          },
+          stubs: {
+            "router-link": RouterLinkStub,
+          },
+        },
+      });
+
+      it("issues a call to Vuex to login user", async () => {
+        const commit = jest.fn();
+        const $store = {
+          state: {
+            isLoggedIn: false,
+          },
+          commit,
+        };
+        // store.commit = commit; //mock commit function
+        const wrapper = shallowMount(MainNav, createConfig($store));
+        const loginButton = wrapper.find("[data-test='login-button']");
+
+        await loginButton.trigger("click");
+
+        expect(commit).toHaveBeenCalledWith("LOGIN_USER");
+      });
+    });
+    ```
+
+- Creating Constant for Mutations
+
+  ```js
+  // index.js /store
+  export const LOGIN_USER = "LOGIN_USER"; // strings that dynamically referencing to mutation method name to avoid typos in multiple component
+
+  export const mutations = {
+    [LOGIN_USER](state) {
+      state.isLoggedIn = true;
+    },
+  };
+
+  // MainNav.vue
+  import { LOGIN_USER } from "@/store";
+
+  methods: {
+    // writing store state from component
+    loginUser() {
+      this.$store.commit(LOGIN_USER);
+    },
+  },
+  ```
+
+- The mapState Helper Function
+
+  - mapState
+
+    - helper function from Vuex Library, this function help us do is map or connect vuex store state properties to component computed properties
+    - gonna return a JS objext that have essentially going to computed methods
+    - whenever we invoke mapState, we need to destructure the return object properties to computed object properties
+    - can take a variety of inputs such as JS object, and that object can provide a property representing the computed property that we want to have in our MainNav (typically same name we want to connect to store state property)
+    - Advantage:
+      - can easily defined a properties
+      - short syntax
+
+    ```js
+    import { mapState } from "vuex";
+
+    computed: {
+      // reading vuex store state
+    // isLoggedIn() {
+    //   return this.$store.state.isLoggedIn; //false --starting state value
+    // },
+
+    // mapState --connect vuex store state properties to component computed properties
+      ...mapState({
+      // isLoggedIn: (state) => state.isLoggedIn,
+
+      isLoggedIn : 'isLoggedIn', //reference a top level property on vuex store state without using arrow function
+    }),
+
+    ...mapState(['isLoggedIn']), // use this syntax if computed properties has a same name property of vuex store state
+    }
+    ```
+
+- The mapMutations Helper Function
+
+  - helps to connect mutations to vuex store to methods in a component
+
+  ```js
+    import { mapMutations } from "vuex";
+
+    methods: {
+
+    ...mapMutations([LOGIN_USER]), // sytactical shortcut for invoking commit method --use this syntax if component method name has same name at the mutations method name
+    }
+  ```
+
+  - Fixing MainNav Test (mapMutations)
+    - external error(internal implementation detail of how map works) that the test read the array of strings at the mapMutations being mounted at MainNav but followed a correspondent error
+    - Error: ![](./images/mapMutationsErr.png)
+    - solution: manually invoking a method at the template boilerplate ` @click="LOGIN_USER()"`
 
 ## Section 21: Vuex II: Actions
 

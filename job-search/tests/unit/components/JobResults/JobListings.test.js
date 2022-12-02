@@ -25,9 +25,9 @@ describe("JobListings", () => {
       mocks: {
         $route,
       },
-    },
-    stubs: {
-      "router-link": RouterLinkStub,
+      stubs: {
+        "router-link": RouterLinkStub,
+      },
     },
   });
 
