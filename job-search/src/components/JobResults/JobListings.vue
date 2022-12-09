@@ -38,8 +38,8 @@
 </template>
 
 <script>
-import axios from "axios";
-
+import { mapState } from "vuex";
+import { FETCH_JOBS } from "@/store";
 import JobList from "@/components/JobResults/JobList.vue";
 
 export default {
@@ -47,11 +47,11 @@ export default {
   components: {
     JobList,
   },
-  data() {
-    return {
-      jobs: [], // store jobs(endpoint) array being fetch in backend
-    };
-  },
+  // data() {
+  //   return {
+  //     jobs: [], // store jobs(endpoint) array being fetch in backend
+  //   };
+  // },
   computed: {
     currentPage() {
       const pageString = this.$route.query.page || "1"; // page in query params
@@ -74,11 +74,14 @@ export default {
       const lastJobIndex = pageNumber * 10; // 1 * 10 = 10(1st page last index) page 1 -> 10
       return this.jobs.slice(firstJobIndex, lastJobIndex);
     },
+    ...mapState(["jobs"]), // vuex store state
   },
   async mounted() {
-    const baseURL = process.env.VUE_APP_API_URL;
-    const response = await axios.get(`${baseURL}/jobs`);
-    this.jobs = response.data;
+    // const baseURL = process.env.VUE_APP_API_URL;
+    // const response = await axios.get(`${baseURL}/jobs`);
+    // this.jobs = response.data;
+
+    this.$store.dispatch(FETCH_JOBS); // API call from action at vuex store
   },
 };
 </script>

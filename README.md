@@ -45,7 +45,7 @@
 - Evan You said that Vue falls between react and angular
 - **Angular** is opinionated
 
-  - means that we you have beliefs on how things should work
+  - means that we have beliefs on how things should work
   - angular has a certain set of conventions or rules or standards to use the framework effectively e.g auto ships with a library to make HTTP reqs to make API reqs to get data from some server.
   - Also requires to write code in TypeScript.
   - Advantage of opinionated is that have a consistent code from code base to code base.
@@ -64,8 +64,8 @@
 - **Vue** middle between opinionated and unopinionated
   - has a very extensive ecosystem --means theres a bunch of addtional tools that are complementary to view built by the Vue Core team that same team that develops Vue.
   - Vue has a solution for routing called Vue Router
-  - also has a state management plan called Vuex which is storing data that is gloval above your app that is developed by the Blue Team
-  - If you want to test Vue components or the view code that we're going to be writing, Vue has a recommended test library that it develops called Vue Test Utils, again developed by the View Core Team.
+  - also has a state management plan called Vuex which is storing data that is global above your app that is developed by the Vue Team
+  - If you want to test Vue components or the vue code that we're going to be writing, Vue has a recommended test library that it develops called Vue Test Utils, again developed by the View Core Team.
   - Difference between Vue and Angular? vue doesnt require to use tools in ecosystem but those ecosystem tools are built with Vue for working with Vue
   - You have the core Vue library, which is just like react pretty and opinionated (angular). But then when you want to add more features and functionality to your app, you can also add.
   - Slide deck by Evan You (entire review ecosystem)
@@ -4400,7 +4400,7 @@ console.log(goodFood);
 
   - writing --updating the store
     - how do we update a store state? use a mutation
-    - how can we issue mutation? via commit method on the store
+    - how can we issue mutation? via commit method on the store state
 
   ```html
   <!-- MainNav.vue -->
@@ -4412,7 +4412,7 @@ console.log(goodFood);
     },
 
      methods: {
-    // writing store state from component
+    // writing/updating store state from component
     loginUser() {
       this.$store.commit("LOGIN_USER"); //LOGIN_USER method will run and mutate the store state at vuex store then re run the isLoggedIn computed property with updated mutation value (false -> true) then re-render the template
       },
@@ -4533,7 +4533,7 @@ console.log(goodFood);
 
   ```js
   // index.js /store
-  export const LOGIN_USER = "LOGIN_USER"; // strings that dynamically referencing to mutation method name to avoid typos in multiple component
+  export const LOGIN_USER = "LOGIN_USER"; // dynamically referencing to mutation method name whenever we are committing these mutations to the vuex store to ensure that we have no chance of typos in multiple components
 
   export const mutations = {
     [LOGIN_USER](state) {
@@ -4602,7 +4602,211 @@ console.log(goodFood);
     - Error: ![](./images/mapMutationsErr.png)
     - solution: manually invoking a method at the template boilerplate ` @click="LOGIN_USER()"`
 
+- REVIEW
+
 ## Section 21: Vuex II: Actions
+
+- Intro to Section
+
+  - action is a different construct that allow us to deal with asynchronous operations. Once the data has been fetched by an action from an API call, we can now commit a mutations
+  - ![](./images/sec21.png)
+  - ![](./images/sec21-1.png)
+  - ![](./images/sec21-2.png)
+
+- Review jest.mock and Building out API Call
+  ```js
+  import axios from "axios";
+  jest.mock("axios"); //mocking out all property and methods of axios
+  console.log(axios);
+  ```
+- TDD Adding Test for Jobs API Call
+
+  ```js
+  // getJobs.test.js
+  import axios from "axios";
+  jest.mock("axios");
+
+  import getJobs from "@/api/getJob";
+
+  describe("getJob", () => {
+    beforeEach(() => {
+      axios.get.mockResolvedValue({
+        data: [
+          {
+            id: 1,
+            title: "Java Engineer",
+          },
+        ],
+      });
+    });
+
+    it("fetches jobs that candidates can apply to", async () => {
+      await getJobs();
+      expect(axios.get).toHaveBeenCalledWith("http://myfakeapi.com/jobs");
+    });
+
+    it("extracts jobs data from response", async () => {
+      const data = await getJobs();
+      expect(data).toEqual([
+        {
+          id: 1,
+          title: "Java Engineer",
+        },
+      ]);
+    });
+  });
+
+  // getJobs.js
+  import axios from "axios";
+
+  const getJob = async () => {
+    const baseURL = process.env.VUE_APP_API_URL;
+    const response = await axios.get(`${baseURL}/jobs`);
+    return response.data;
+  };
+
+  export default getJob;
+  ```
+
+- TDD Adding Test for Jobs State
+
+  ```js
+  //index.test.js
+  describe("state", () => {
+    it("stores job listings", () => {
+      const startingState = state();
+      expect(startingState.jobs).toEqual([]);
+    });
+  });
+
+  // store/index.js
+  export const state = () => {
+    return {
+      jobs: [],
+    };
+  };
+  ```
+
+- TDD Adding Test for RECEIVE_JOBS Mutations
+
+  - NOTE: In test, whenever we invoke mutations, 1st argument must be always the state and the additional argument will be our own customize data that will be pass in, in order to overwrite a property in state.
+
+  ```js
+  // index.test.js
+  describe("RECEIVE_JOBS", () => {
+    it("receives jobs from API response", () => {
+      const state = { jobs: [] };
+      mutations.RECEIVE_JOBS(state, ["Jobs 1", "Job 2"]); // 2nd argument --array of jobs that will be overwrite the jobs state(validating the receive_jobs mutations is correctly overwriting jobs state property )
+      expect(state).toEqual({ jobs: ["Job 1", "Job 2"] });
+    });
+  });
+
+  // index.js /store
+  export const RECEIVE_JOBS = "RECEIVE_JOBS";
+
+  export const state = () => {
+    return {
+      jobs: [],
+    };
+  };
+
+  export const mutations = {
+    [RECEIVE_JOBS](state, jobs) {
+      state.jobs = jobs;
+    }, // 1st parameter: state || 2nd parameter: data to be pass in that will overwrite a state property (new array of jobs that will overwrite empty jobs array in state)
+  };
+  ```
+
+- Writing First Action
+
+  - the difference between action and mutation is that an action is allowed to be asynchronous (API call)
+  - whenever we run an action, will automatically provide the context object as a parameter same as we invoke mutation will always provide the current state of the vuex store.
+    - context object
+      - basically similar to a store and has the exact same API
+      - in vuex store object, we can call a commit method to run a mutations. In action, context object(API) are the one invoking commit method to run a mutations
+      - NOTE:
+        - any subsequent arguments we provide to the commit method will flow in as the second and third and so on in the subsequent parameter we provide at the mutations method after state.
+        - commit need to know which mutation method (1st argument) will be running and what will the overwrite data be (2nd argument).
+
+  ```js
+  // store/index.js
+  import getJobs from "@/api/getJob";
+
+  export const FETCH_JOBS = "FETCH_JOBS";
+
+  export const actions = {
+    [FETCH_JOBS]: async (context) => {
+      const jobListings = await getJobs();
+      context.commit(RECEIVE_JOBS, jobListings); // RECEIVE_JOBS(state, jobListings) --run an existing mutations to pass jobListings data fetch in API
+    },
+  };
+
+  const store = createStore({
+    state,
+    mutations,
+    actions,
+    strict: process.env.NODE_ENV !== "production",
+  });
+  ```
+
+- Testing Vuex Actions
+
+  - NOTE:
+    - 1: similar to mutations, do not test actions method with actual vuex store.
+      - We do not need to spin up a vuex store in our tests in order to unit test FETCH_JOBS functionality, because all of this functionality by itself is regular JavaScript.
+    - 2: We can import axios library at the test to mock out but to make it more better, when we test action method, we will only mock out getJobs functions (simply test if its invoking correctly)
+
+  ```js
+  import { state, mutations, actions } from "@/store";
+
+  import getJobs from "@/api/getJob";
+  jest.mock("@/api/getJob");
+
+  describe("actions", () => {
+    describe("FETCH_JOBS", () => {
+      beforeEach(() => {
+        getJobs.mockResolvedValue([
+          {
+            id: 1,
+            title: "Software Developer",
+          },
+        ]);
+      });
+
+      it("makes request to  fetches job", async () => {
+        const context = { commit: jest.fn() };
+        await actions.FETCH_JOBS(context);
+        expect(getJobs).toHaveBeenCalled();
+      });
+    });
+  });
+  ```
+
+- The Vuex Store's Dispatch Method
+
+  - dispatch method
+    - use to invoke actions from vuex store 0
+    - accepts name of an action as a string
+    - exactly works same as commit method does except commit is for mutations and dispatches for asynchronous actions
+
+  ```js
+  // jobListings.vue
+  import { mapState } from "vuex";
+  import { FETCH_JOBS } from "@/store";
+
+  computed: {
+    ...mapstate(['jobs']); // vuex store state
+  },
+  async mounted() {
+    // const baseURL = process.env.VUE_APP_API_URL;
+    // const response = await axios.get(`${baseURL}/jobs`);
+    // this.jobs = response.data;
+
+    this.$store.dispatch(FETCH_JOBS); // API call from action at vuex store
+  },
+  ```
+
+  - ![](./images/dispatchMethod.png)
 
 ## Section 22: Slots I: Intro to Slots
 
