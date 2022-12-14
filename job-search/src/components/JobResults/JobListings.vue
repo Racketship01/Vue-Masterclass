@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapActions, mapState } from "vuex";
 import { FETCH_JOBS } from "@/store";
 import JobList from "@/components/JobResults/JobList.vue";
 
@@ -81,7 +81,12 @@ export default {
     // const response = await axios.get(`${baseURL}/jobs`);
     // this.jobs = response.data;
 
-    this.$store.dispatch(FETCH_JOBS); // API call from action at vuex store
+    // this.$store.dispatch(FETCH_JOBS); // API call from action at vuex store
+
+    this.FETCH_JOBS(); //dispatch action to the store
+  },
+  methods: {
+    ...mapActions([FETCH_JOBS]), // provide action names and creates methods with same names on our action store which will then invoke dispatch method in action store
   },
 };
 </script>

@@ -3,7 +3,11 @@ import { createApp } from "vue"; //importing a function from the Vue library cal
 //Global component --from installed fontawesome package
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"; // font-awesome vue component --FontAwesomeIcon is the magic that renders icons in our Vue projects.
 import { library } from "@fortawesome/fontawesome-svg-core"; // importing a library --collection of available icons then register any icon we want to use in this library
-import { faSearch } from "@fortawesome/free-solid-svg-icons"; //import actual icon that want to make globally available then add to library
+import {
+  faAngleDown,
+  faAngleUp,
+  faSearch,
+} from "@fortawesome/free-solid-svg-icons"; //import actual icon that want to make globally available then add to library
 
 // App Component
 import App from "@/App.vue"; //importing the root component from vue file
@@ -11,7 +15,9 @@ import "@/assets/tailwind.css"; //importing tailwind package
 import router from "@/router"; // node will look for a file called index.js then import by default at the router folder
 import store from "@/store"; // vuex store
 
-library.add(faSearch); //adding/ registering icon to the library but not yet connected to the vue
+library.add(faAngleDown);
+library.add(faAngleUp);
+library.add(faSearch); // adding/registering icon to the library but not yet connected to the vue
 
 createApp(App)
   .use(store)

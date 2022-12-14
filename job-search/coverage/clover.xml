@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1670583839937" clover="3.2.0">
-  <project timestamp="1670583839937" name="All files">
-    <metrics statements="786" coveredstatements="628" conditionals="40" coveredconditionals="33" methods="34" coveredmethods="27" elements="860" coveredelements="688" complexity="0" loc="786" ncloc="786" packages="11" files="19" classes="19"/>
+<coverage generated="1670928880337" clover="3.2.0">
+  <project timestamp="1670928880337" name="All files">
+    <metrics statements="794" coveredstatements="636" conditionals="39" coveredconditionals="32" methods="33" coveredmethods="26" elements="866" coveredelements="694" complexity="0" loc="794" ncloc="794" packages="11" files="19" classes="19"/>
     <package name="src">
       <metrics statements="21" coveredstatements="0" conditionals="1" coveredconditionals="0" methods="1" coveredmethods="0"/>
       <file name="App.vue" path="C:\study\Vue Masterclass\job-search\src\App.vue">
@@ -45,7 +45,7 @@
       </file>
     </package>
     <package name="src.components.JobResults">
-      <metrics statements="155" coveredstatements="155" conditionals="12" coveredconditionals="12" methods="7" coveredmethods="7"/>
+      <metrics statements="163" coveredstatements="163" conditionals="11" coveredconditionals="11" methods="6" coveredmethods="6"/>
       <file name="JobList.vue" path="C:\study\Vue Masterclass\job-search\src\components\JobResults\JobList.vue">
         <metrics statements="71" coveredstatements="71" conditionals="1" coveredconditionals="1" methods="1" coveredmethods="1"/>
         <line num="1" count="1" type="stmt"/>
@@ -121,7 +121,7 @@
         <line num="71" count="1" type="stmt"/>
       </file>
       <file name="JobListings.vue" path="C:\study\Vue Masterclass\job-search\src\components\JobResults\JobListings.vue">
-        <metrics statements="84" coveredstatements="84" conditionals="11" coveredconditionals="11" methods="6" coveredmethods="6"/>
+        <metrics statements="92" coveredstatements="92" conditionals="10" coveredconditionals="10" methods="5" coveredmethods="5"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
         <line num="3" count="1" type="stmt"/>
@@ -171,10 +171,10 @@
         <line num="47" count="1" type="stmt"/>
         <line num="48" count="1" type="stmt"/>
         <line num="49" count="1" type="stmt"/>
-        <line num="50" count="1" type="cond" truecount="1" falsecount="0"/>
-        <line num="51" count="8" type="stmt"/>
-        <line num="52" count="8" type="stmt"/>
-        <line num="53" count="8" type="stmt"/>
+        <line num="50" count="1" type="stmt"/>
+        <line num="51" count="1" type="stmt"/>
+        <line num="52" count="1" type="stmt"/>
+        <line num="53" count="1" type="stmt"/>
         <line num="54" count="1" type="stmt"/>
         <line num="55" count="1" type="stmt"/>
         <line num="56" count="1" type="cond" truecount="1" falsecount="0"/>
@@ -188,24 +188,32 @@
         <line num="64" count="8" type="cond" truecount="2" falsecount="0"/>
         <line num="65" count="1" type="stmt"/>
         <line num="66" count="1" type="cond" truecount="1" falsecount="0"/>
-        <line num="67" count="16" type="stmt"/>
-        <line num="68" count="16" type="stmt"/>
-        <line num="69" count="16" type="cond" truecount="2" falsecount="0"/>
+        <line num="67" count="8" type="stmt"/>
+        <line num="68" count="8" type="stmt"/>
+        <line num="69" count="8" type="cond" truecount="2" falsecount="0"/>
         <line num="70" count="1" type="stmt"/>
         <line num="71" count="1" type="cond" truecount="1" falsecount="0"/>
-        <line num="72" count="16" type="stmt"/>
-        <line num="73" count="16" type="stmt"/>
-        <line num="74" count="16" type="stmt"/>
-        <line num="75" count="16" type="stmt"/>
-        <line num="76" count="16" type="stmt"/>
+        <line num="72" count="8" type="stmt"/>
+        <line num="73" count="8" type="stmt"/>
+        <line num="74" count="8" type="stmt"/>
+        <line num="75" count="8" type="stmt"/>
+        <line num="76" count="1" type="stmt"/>
         <line num="77" count="1" type="stmt"/>
-        <line num="78" count="1" type="cond" truecount="1" falsecount="0"/>
-        <line num="79" count="8" type="stmt"/>
+        <line num="78" count="1" type="stmt"/>
+        <line num="79" count="1" type="cond" truecount="1" falsecount="0"/>
         <line num="80" count="8" type="stmt"/>
         <line num="81" count="8" type="stmt"/>
         <line num="82" count="8" type="stmt"/>
-        <line num="83" count="1" type="stmt"/>
-        <line num="84" count="1" type="stmt"/>
+        <line num="83" count="8" type="stmt"/>
+        <line num="84" count="8" type="stmt"/>
+        <line num="85" count="8" type="stmt"/>
+        <line num="86" count="8" type="stmt"/>
+        <line num="87" count="1" type="stmt"/>
+        <line num="88" count="1" type="stmt"/>
+        <line num="89" count="1" type="stmt"/>
+        <line num="90" count="1" type="stmt"/>
+        <line num="91" count="1" type="stmt"/>
+        <line num="92" count="1" type="stmt"/>
       </file>
     </package>
     <package name="src.components.JobResults.JobFilterSideBar">
@@ -755,11 +763,11 @@
         <line num="7" count="1" type="stmt"/>
         <line num="8" count="1" type="stmt"/>
         <line num="9" count="1" type="cond" truecount="1" falsecount="0"/>
-        <line num="10" count="4" type="stmt"/>
-        <line num="11" count="4" type="stmt"/>
-        <line num="12" count="4" type="stmt"/>
-        <line num="13" count="4" type="stmt"/>
-        <line num="14" count="4" type="stmt"/>
+        <line num="10" count="5" type="stmt"/>
+        <line num="11" count="5" type="stmt"/>
+        <line num="12" count="5" type="stmt"/>
+        <line num="13" count="5" type="stmt"/>
+        <line num="14" count="5" type="stmt"/>
         <line num="15" count="1" type="stmt"/>
         <line num="16" count="1" type="stmt"/>
         <line num="17" count="1" type="cond" truecount="1" falsecount="0"/>

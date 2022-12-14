@@ -4808,7 +4808,153 @@ console.log(goodFood);
 
   - ![](./images/dispatchMethod.png)
 
+- Fixing JobListings test Error
+
+  ```js
+  //JobListings.test.js
+
+  const createStore = (store = {}) => ({
+    state: {
+      jobs: Array(15).fill({}), // mocking store state of jobs with 15 object iteration
+    },
+    dispatch: jest.fn(), // jest mocking dispatch method in the store object imvoking at the mounted lifecyle
+    ...store,
+  });
+
+  const createConfig = ($route, $store) => ({
+    global: {
+      mocks: {
+        $route,
+        $store,
+      },
+      stubs: {
+        "router-link": RouterLinkStub,
+      },
+    },
+  });
+
+  describe("when component mounts", () => {
+    it("makes call to fetch jobs from API", () => {
+      const $route = createRoute();
+      const dispatch = jest.fn();
+      const $store = createStore({ dispatch });
+      shallowMount(JobListings, createConfig($route, $store));
+      expect(dispatch).toHaveBeenCalledWith("FETCH_JOBS");
+    });
+  });
+
+  it("creates a job listings for a maximum of 10 jobs", async () => {
+    const queryParams = {
+      page: 1,
+    };
+    const $route = createRoute(queryParams);
+    const numberOfJobsInStore = 15;
+    const $store = createStore({
+      state: {
+        jobs: Array(numberOfJobsInStore).fill({}),
+      },
+    });
+    const wrapper = shallowMount(JobListings, createConfig($route, $store));
+
+    await flushPromises();
+
+    const jobListings = wrapper.findAll("[data-test='job-listings'");
+    expect(jobListings).toHaveLength(10);
+  });
+  ```
+
+- The mapActions Helper Functions
+
+  - ...mapActions
+    - helper function that helps us with translating/connecting the vuex store actions to the methods on our component
+
+  ```js
+  //JobListings.vue
+  import {mapActions} from vuex;
+
+  async mounted() {
+
+    // this.$store.dispatch(FETCH_JOBS); // API call from action at vuex store
+
+    this.FETCH_JOBS(); //dispatch action to the store
+  },
+  methods: {
+    ...mapActions([FETCH_JOBS]), // provide action names and creates methods with same names on our action store which will then invoke dispatch method in action store
+  },
+  ```
+
+- Review
+  - ![](./images/sec21Rev.png)
+  - ![](./images/sec21Rev-1.png)
+  - ![](./images/sec21Rev-2.png)
+  - ![](./images/sec21Rev-3.png)
+
 ## Section 22: Slots I: Intro to Slots
+
+- Intro to Slots
+
+  - ![](./images/sec22User.png)
+  - ![](./images/sec22User-1.png)
+
+- CSS Adding Initial Styles for JobFilterSidebar Component
+
+  ```html
+  <template>
+    <section class="pb-5">
+      <div class="flex flex-row justify-between">
+        <h3 class="my-4 text-base font-semibold">What do you want to do?</h3>
+        <div class="flex items-center text-sm">
+          <action-button text="Clear Filters" type="secondary" />
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <script>
+    import ActionButton from "@/components/Shared/ActionButton.vue";
+
+    export default {
+      name: "JobFilterSidebar",
+      components: {
+        ActionButton,
+      },
+    };
+  </script>
+  ```
+
+- Update FontAwesome Icon
+
+  - adding faAngleUp and faAngleDown in fontAwesome component
+
+  ```js
+  //Main.js
+  import {
+    faAngleDown,
+    faAngleUp,
+    faSearch,
+  } from "@fortawesome/free-solid-svg-icons"; //import actual icon that want to make globally available then add to library
+
+  library.add(faAngleDown);
+  library.add(faAngleUp);
+  library.add(faSearch); // adding/registering icon to the library but not yet connected to the vue
+  ```
+
+- Create Accordion Component (CSS Styling)
+
+  ```html
+  // Accordion.vue
+  <template>
+    <div>My Accordion</div>
+  </template>
+
+  <script>
+    export default {
+      name: "Accordion",
+    };
+  </script>
+
+  <!-- then import to this component to the JobFilterSidebar.vue -->
+  ```
 
 ## Section 23: Slots II: Named Slots
 
