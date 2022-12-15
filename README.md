@@ -4944,16 +4944,120 @@ console.log(goodFood);
   ```html
   // Accordion.vue
   <template>
-    <div>My Accordion</div>
+    <div class="py-5 border-b border-solid border-brand-gray-2">
+      <div
+        class="flex flex-wrap items-center justify-between cursor-pointer"
+        @click="open"
+      >
+        <h3 class="text-base font-semibold">Organizations</h3>
+        <font-awesome-icon :icon="caretIcon" />
+      </div>
+
+      <div v-if="isOpen" class="w-full mt-5">Child</div>
+    </div>
   </template>
 
   <script>
     export default {
       name: "Accordion",
+      data() {
+        return {
+          isOpen: false,
+        };
+      },
+      computed: {
+        caretIcon() {
+          return this.isOpen ? ["fas", "angle-up"] : ["fas", "angle-down"];
+        },
+      },
+      methods: {
+        open() {
+          this.isOpen = !this.isOpen;
+        },
+      },
     };
   </script>
 
   <!-- then import to this component to the JobFilterSidebar.vue -->
+  ```
+
+- Introduction to Slots
+
+  - slots
+
+    - global component that allow us to do is to have a parent component specify a dynamic injectable slice of html that can be rendered inside a components
+      - e.g whenever a parent component renders an accordion that has an availble slot, it can provide a child vue tag inside accordion component and that child vue will be the slot(dynamic) content
+
+    ```html
+    <!-- Accordion.vue -->
+    <template>
+      <div v-if="isOpen" class="w-full mt-5">
+        <!-- SLOTS in Vue --dynamic content -->
+        <slot></slot>
+      </div>
+    </template>
+
+    <!-- JobFilterSidebar.vue (parent component that renders accordion with slot content) -->
+    <template>
+      <accordion>
+        <h3>Hello, slot content</h3>
+      </accordion>
+    </template>
+    ```
+
+    - optimal when we need to inject different content in between consistent other contents
+    - it is a place in our component where we can customize the content that we want to provide or inject the slot into the component
+
+- Renders Slot Content
+  ```html
+  <!-- JobFilterSidebar -->
+  <accordion>
+    <div class="mt-5">
+      <fieldset>
+        <ul class="flex flex-row flex-wrap">
+          <li class="w-1/2 h-8">
+            <input id="VueTube" type="checkbox" class="mr-3" />
+            <label for="VueTube">Vuetube</label>
+          </li>
+          <li class="w-1/2 h-8">
+            <input id="Between Vue and Me" type="checkbox" class="mr-3" />
+            <label for="Between Vue and Me">Between Vue</label>
+          </li>
+          <li class="w-1/2 h-8">
+            <input id="Et Vue Brute" type="checkbox" class="mr-3" />
+            <label for="Et Vue Brute">Et Vue Brute</label>
+          </li>
+          <li class="w-1/2 h-8">
+            <input id="Vue and a Half Men" type="checkbox" class="mr-3" />
+            <label for="Vue and a Half Men">Vue and a Half Men</label>
+          </li>
+        </ul>
+      </fieldset>
+    </div>
+  </accordion>
+  ```
+- Slots and Props
+
+  - Difference between props and slots?
+    - kind of similar in a sense that parent component can provide some kind of info down to child component. For props info being passed is not a HTML but a data type. For slots it pass down a whole chunk of HTML
+
+  ```html
+  <!-- JobFilterSidebar -->
+  <accordion header="Organizations"> </accordion>
+
+  <!-- Accordion -->
+  <template>
+    <h3 class="text-base font-semibold">{{ header }}</h3>
+  </template>
+
+  <script>
+    props: {
+      header: {
+        type: String,
+        required: true,
+      },
+    },
+  </script>
   ```
 
 ## Section 23: Slots II: Named Slots
