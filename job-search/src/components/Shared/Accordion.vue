@@ -2,6 +2,7 @@
   <div class="py-5 border-b border-solid border-brand-gray-2">
     <div
       class="flex flex-wrap items-center justify-between cursor-pointer"
+      data-test="clikable-area"
       @click="open"
     >
       <h3 class="text-base font-semibold">{{ header }}</h3>
@@ -10,7 +11,10 @@
 
     <div v-if="isOpen" class="w-full mt-5">
       <!-- SLOTS in Vue --dynamic content -->
-      <slot></slot>
+      <slot>
+        <!-- default fallback -->
+        <p>Whoops, somebody forgot to populate me!</p>
+      </slot>
     </div>
   </div>
 </template>

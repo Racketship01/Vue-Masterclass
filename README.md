@@ -5060,6 +5060,131 @@ console.log(goodFood);
   </script>
   ```
 
+- Writing Tests for Slots
+
+  - How to specify slot content in configuration object ?
+    - there is an available slots property in config object set to an object
+    - slot object properties represents the slot name and value represents the html injected into the slot
+  - NOTE: we can have a multiple slot in a component by giving slot its own custom name. If we didnt provide a slot name, vue automaticaly gives a slot name of default
+
+  ```js
+  import { mount } from "@vue/test-utils";
+
+  import Accordion from "@/components/Shared/Accordion.vue";
+
+  describe("Accordion", () => {
+    const createConfig = (config = {}) => ({
+      global: {
+        stubs: {
+          FontAwesomeIcon: true,
+        },
+      },
+      props: {
+        header: "Test Header",
+      },
+      slots: {
+        ...config,
+      },
+    });
+
+    it("renders child", async () => {
+      const slots = { default: "<h3>My nested child</h3>" };
+      const wrapper = mount(Accordion, createConfig(slots));
+
+      expect(wrapper.text()).not.toMatch("My nested child");
+
+      const clickableArea = wrapper.find("[data-test='clikable-area']");
+      await clickableArea.trigger("click");
+
+      expect(wrapper.text()).toMatch("My nested child");
+    });
+  });
+  ```
+
+- Fallback Content for Slots
+  - if parent component not giving any html injection (custom slot content), it will fallback to defaul slot content
+  ```js
+   <div v-if="isOpen" class="w-full mt-5">
+      <!-- SLOTS in Vue --dynamic content -->
+      <slot>
+        <!-- default fallback -->
+        <p>Whoops, somebody forgot to populate me!</p>
+      </slot>
+    </div>
+  ```
+- Adding Tests for Fallback Slot Content
+
+  - to test, we dont need a slot obj at config object as we all need to try to test the text for default slot content
+
+  ```js
+  describe("when dont provide custom child content", () => {
+    it("renders default content", async () => {
+      const slots = {};
+      const wrapper = mount(Accordion, createConfig(slots));
+
+      const clickableArea = wrapper.find("[data-test='clikable-area']");
+      await clickableArea.trigger("click");
+
+      expect(wrapper.text()).toMatch("Whoops, somebody forgot to populate me!");
+    });
+  });
+  ```
+
+- Extracting Organizations Dropdown to New Component
+
+  - Vue Style Guide --set of recommendations or best practices from Vue dev team
+    - one of the recommendations:
+      - when have child components that are closely coupled to the parent, e.g accordion (organization) to jobfilter component, reccommends to include the parents component name as a prefix in the childs component name. (job-filter-sidebar-organization)
+
+  ```html
+  <!-- JobFilterSidebarOrganization.vue -->
+  <template>
+    <accordion header="Organizations">
+      <div class="mt-5">
+        <fieldset>
+          <ul class="flex flex-row flex-wrap">
+            <li class="w-1/2 h-8">
+              <input id="VueTube" type="checkbox" class="mr-3" />
+              <label for="VueTube">Vuetube</label>
+            </li>
+            <li class="w-1/2 h-8">
+              <input id="Between Vue and Me" type="checkbox" class="mr-3" />
+              <label for="Between Vue and Me">Between Vue</label>
+            </li>
+            <li class="w-1/2 h-8">
+              <input id="Et Vue Brute" type="checkbox" class="mr-3" />
+              <label for="Et Vue Brute">Et Vue Brute</label>
+            </li>
+            <li class="w-1/2 h-8">
+              <input id="Vue and a Half Men" type="checkbox" class="mr-3" />
+              <label for="Vue and a Half Men">Vue and a Half Men</label>
+            </li>
+          </ul>
+        </fieldset>
+      </div>
+    </accordion>
+  </template>
+
+  <script>
+    import Accordion from "@/components/Shared/Accordion.vue";
+
+    export default {
+      name: "JobFilterSidebarOrganization",
+      components: {
+        Accordion,
+      },
+    };
+  </script>
+
+  NOTE: then renders this component to the parent component
+  (JobFilterSidebar.vue)
+  ```
+
+- REVIEW:
+  - ![](./images/sec22Rev.png)
+  - ![](./images/sec22Rev-1.png)
+  - ![](./images/sec22Rev-2.png)
+
 ## Section 23: Slots II: Named Slots
 
 ## Section 24: Slots III: Advanced Slots
