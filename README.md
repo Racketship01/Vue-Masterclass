@@ -2859,14 +2859,14 @@ console.log(goodFood);
 - Vue Router in Action
 
   - Its possiblle that Vue app will no longer be compiling after adding the Vue router dependency
-  - after installing router, brand new directory of views folder and have two new vue component files --this new component are regular vue component but the key difference is what a view is supposed to represent is a page like a specific page at a given route.
+  - after installing router, brand new directory of views folder and automatically have two new vue component files --this new component are regular vue component but the key difference is, what a view is supposed to represent, is a page like a specific page at a given route.
     - ![](./images/viewFolder.png)
     - e.g in our app, we consider a view to be the job resulting view then we can almost think of it like the top of hierarchy and its the very first component that we want vue to render when we reach a certain route and then that top level view is going to render all of the resulting child components that the page needs. Then on a different page, as our Home page were going to have a different vue component
-  - Now we have no longer one kind of top level component in our app (App.vue) at the main.js file as we have different pages, and in the context of page to page, one page have one top level vue component and another page may have a totally different vue component and they are totally different visual UI's within the app
+    - NOTE: Views is a plain vue component that represents a top level component, the top of the hierarchy at a given route. Every vue in view folder corresponds to a route in router index file
   - the reason why we call it View and the reason we put it in a separate views directory is because it supposed to represent the beginning of the page, the top level pryramid component, the top of the hierarchy of components at a given router that going to begin that cascading effect of rendering all of the children and grandchildren and so forth
-    ![](./images/homeView.png)
     - NOTE: the reason we are having issues in compiling the vue app is the Vue CLI tries to add this HelloWorld component (component generated as we first create the vue app) solution: Delete this inline
-      ![](./images/vueRouter1.png)
+    - ![](./images/homeView.png)
+    - ![](./images/vueRouter1.png)
 
 - Rewriting the Router File from Scratch
 
@@ -2885,7 +2885,7 @@ console.log(goodFood);
     },
     {
       path: "/jobs/results",
-      name: "JobReusults",
+      name: "JobResults",
       component: JobResultsView,
     },
     //localhost:8080/jobs/results
@@ -5186,6 +5186,112 @@ console.log(goodFood);
   - ![](./images/sec22Rev-2.png)
 
 ## Section 23: Slots II: Named Slots
+
+- User Story: Building Reusable Header
+
+  - Named Slot --assigning a name as a unique identifier --advantage? to have a multiple slots within a single child component
+
+- Named Slots I
+
+  ```html
+  <template>
+    <div class="w-full border-b border-solid border-brand-gray-1">
+      <div class="mx-auto my-16 text-center">
+        <slot name="Title">Sample Title</slot>
+        <slot name="Subtitle">Sample Subtitle</slot>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    export default {
+      name: "HeaderContainer",
+    };
+  </script>
+  ```
+
+- Creating TeamsPageView
+
+  ```html
+  <template>
+    <header-container />
+  </template>
+
+  <script>
+    import HeaderContainer from "@/components/Shared/HeaderContainer.vue";
+
+    export default {
+      name: "TeamsView",
+      components: {
+        HeaderContainer,
+      },
+    };
+  </script>
+
+  <!-- add this view component as a route to router index.js  -->
+  <!-- update path link to MainNav component Teams -->
+  ```
+
+- Name Slot II
+
+  - If have a multiple slot in child compnent, to specify which slot name need to inject custom content by using `v-slot:<slot name>` directives in parent component
+  - NOTE:
+    - use `<template />` to inject html element with a specific slot name
+    - Named Slots Shorthand: `#<slot name>`
+
+  ```html
+  <!--TeamsView.vue -->
+  <header-container>
+    <template #title>
+      <h1 class="w-full text-4xl font-normal">Teams</h1>
+    </template>
+
+    <template #subtitle>
+      <h2 class="w-full my-4 text-base font-light">
+        It's awesome working here. Why don't you come join us?
+      </h2>
+    </template>
+  </header-container>
+  ```
+
+- Default Slots
+
+  - vue automatically name slot a default if named slot not defined
+  - NOTE: can only have one slot without a name in multiple named slot
+  - ![](./images/defaultSlot.png)
+
+- Testing Name Slot
+
+  ```js
+  import { mount } from "@vue/test-utils";
+
+  import HeaderContainer from "@/components/Shared/HeaderContainer.vue";
+
+  describe("HeadContainer", () => {
+    it("allows parent component to provide title content", () => {
+      const wrapper = mount(HeaderContainer, {
+        slots: {
+          title: "<h2>Some title</h2>",
+        },
+      });
+      expect(wrapper.text()).toMatch("Some title");
+    });
+
+    it("allows parent component to provide subtitle content", () => {
+      const wrapper = mount(HeaderContainer, {
+        slots: {
+          title: "<h3>Some subtitle</h3>",
+        },
+      });
+      expect(wrapper.text()).toMatch("Some subtitle");
+    });
+  });
+  ```
+
+- REVIEW:
+  - ![](./images/sec23Rev.png)
+  - ![](./images/sec23Rev-1.png)
+  - ![](./images/sec23Rev-2.png)
 
 ## Section 24: Slots III: Advanced Slots
 

@@ -12,6 +12,8 @@ const JobResultsView = () =>
 const JobView = () =>
   import(/* webpackChunkName: 'jobs' */ "@/views/JobView.vue");
 
+const TeamsView = () => import("@/views/TeamsView.vue");
+
 const routes = [
   {
     path: "/", // url which component should render --slash is the indication of root route --root page is the kind of standard starting route
@@ -28,6 +30,11 @@ const routes = [
     path: "/jobs/results/:id", // :id --colon followed by identifier (id) router will recognize it as dynamic variable (for a specific section)
     name: "JobListing",
     component: JobView,
+  },
+  {
+    path: "/teams",
+    name: "TeamsView",
+    component: TeamsView,
   },
 ];
 // routes --JS obj that specify the URL and then the component to render when the user has navigated to that path/URL --each object represents one single route --one mapping between a URL and corresponding vue component to render --components are the ones inside view folder that represent top level page component

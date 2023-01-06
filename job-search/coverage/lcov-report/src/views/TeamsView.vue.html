@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/views/JobResultsView.vue</title>
+    <title>Code coverage report for src/views/TeamsView.vue</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -19,13 +19,13 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/views</a> JobResultsView.vue</h1>
+        <h1><a href="../../index.html">All files</a> / <a href="index.html">src/views</a> TeamsView.vue</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/19</span>
+                <span class='fraction'>0/24</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/19</span>
+                <span class='fraction'>0/24</span>
             </div>
         
             
@@ -82,7 +82,17 @@
 <a name='L17'></a><a href='#L17'>17</a>
 <a name='L18'></a><a href='#L18'>18</a>
 <a name='L19'></a><a href='#L19'>19</a>
-<a name='L20'></a><a href='#L20'>20</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -102,21 +112,26 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" >&lt;template&gt;</span></span></span>
-<span class="cstat-no" title="statement not covered" >  &lt;div class="flex flex-row flex-nowrap w-full"&gt;</span>
-<span class="cstat-no" title="statement not covered" >    &lt;job-filter-sidebar /&gt;</span>
-<span class="cstat-no" title="statement not covered" >    &lt;job-listings /&gt;</span>
-<span class="cstat-no" title="statement not covered" >  &lt;/div&gt;</span>
+<span class="cstat-no" title="statement not covered" >  &lt;header-container&gt;</span>
+<span class="cstat-no" title="statement not covered" >    &lt;template #title&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;h1 class="w-full text-4xl font-normal"&gt;Teams&lt;/h1&gt;</span>
+<span class="cstat-no" title="statement not covered" >    &lt;/template&gt;</span>
+<span class="cstat-no" title="statement not covered" ></span>
+<span class="cstat-no" title="statement not covered" >    &lt;template #subtitle&gt;</span>
+<span class="cstat-no" title="statement not covered" >      &lt;h2 class="w-full my-4 text-base font-light"&gt;</span>
+<span class="cstat-no" title="statement not covered" >        It's awesome working here. Why don't you come join us?</span>
+<span class="cstat-no" title="statement not covered" >      &lt;/h2&gt;</span>
+<span class="cstat-no" title="statement not covered" >    &lt;/template&gt;</span>
+<span class="cstat-no" title="statement not covered" >  &lt;/header-container&gt;</span>
 <span class="cstat-no" title="statement not covered" >&lt;/template&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >&lt;script&gt;</span>
-<span class="cstat-no" title="statement not covered" >import JobFilterSidebar from "@/components/JobResults/JobFilterSideBar/JobFilterSidebar.vue";</span>
-<span class="cstat-no" title="statement not covered" >import JobListings from "@/components/JobResults/JobListings.vue";</span>
+<span class="cstat-no" title="statement not covered" >import HeaderContainer from "@/components/Shared/HeaderContainer.vue";</span>
 <span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >export default {</span>
-<span class="cstat-no" title="statement not covered" >  name: "JobResultsView",</span>
+<span class="cstat-no" title="statement not covered" >  name: "TeamsView",</span>
 <span class="cstat-no" title="statement not covered" >  components: {</span>
-<span class="cstat-no" title="statement not covered" >    JobFilterSidebar,</span>
-<span class="cstat-no" title="statement not covered" >    JobListings,</span>
+<span class="cstat-no" title="statement not covered" >    HeaderContainer,</span>
 <span class="cstat-no" title="statement not covered" >  },</span>
 <span class="cstat-no" title="statement not covered" >};</span>
 <span class="cstat-no" title="statement not covered" >&lt;/script&gt;</span>
