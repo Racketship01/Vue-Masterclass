@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for src/components/Navigation/Subnav.vue</title>
+    <title>Code coverage report for src/components/JobSearch/Spotlight.vue</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../../prettify.css" />
     <link rel="stylesheet" href="../../../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/components/Navigation</a> Subnav.vue</h1>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/components/JobSearch</a> Spotlight.vue</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>23/23</span>
+                <span class='fraction'>32/32</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>23/23</span>
+                <span class='fraction'>32/32</span>
             </div>
         
             
@@ -86,7 +86,16 @@
 <a name='L21'></a><a href='#L21'>21</a>
 <a name='L22'></a><a href='#L22'>22</a>
 <a name='L23'></a><a href='#L23'>23</a>
-<a name='L24'></a><a href='#L24'>24</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -104,31 +113,49 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">&lt;template&gt;
-  &lt;div class="w-full h-16 bg-white border-b border-solid border-x-brand-gray-1"&gt;
-    &lt;div class="flex items-center h-full px-8"&gt;
-      &lt;div v-if="onJobResultsPage" data-test="job-count"&gt;
-        &lt;!-- global component --parent component of subnav rendering a child component --used a props called icon(docu for vue implementation of fontawesom) to customize details how child renders  --&gt;
-        &lt;font-awesome-icon :icon="['fas', 'search']" class="mr-3" /&gt;
-        &lt;!-- icon is a automatic prop in fontawesome package --2 array of strings: 1st fas short for fontawesome 2nd actual fontawesome icon --&gt;
-        &lt;span&gt; &lt;span class="text-brand-green-1"&gt;1653&lt;/span&gt; jobs matched&lt;/span&gt;
-      &lt;/div&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
+  &lt;ul&gt;
+    &lt;li v-for="spotlight in spotlights" :key="spotlight.id"&gt;
+      &lt;!-- &lt;slot :spotlight="spotlight"&gt;&lt;/slot&gt; --&gt;
+      &lt;slot
+        :img="spotlight.img"
+        :title="spotlight.title"
+        :description="spotlight.description"
+      &gt;&lt;/slot&gt;
+    &lt;/li&gt;
+  &lt;/ul&gt;
 &lt;/template&gt;
 &nbsp;
 &lt;script&gt;
+import axios from "axios";
 export default {
-  name: "Subnav",
-  computed: {
-    onJobResultsPage() {
-      return this.$route.name === "JobResults";
-    },
+  name: "Spotlight",
+  data() {
+    return {
+      spotlights: [],
+    };
+  },
+  async mounted() {
+    const baseURL = process.env.VUE_APP_API_URL;
+    const url = `${baseURL}/spotlights`;
+    const response = await axios.get(url);
+    // console.log(response.data);
+&nbsp;
+    this.spotlights = response.data;
   },
 };
 &lt;/script&gt;

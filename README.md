@@ -5295,7 +5295,253 @@ console.log(goodFood);
 
 ## Section 24: Slots III: Advanced Slots
 
+- User Story
+
+  - ![](./images/sec24-UserStory.png)
+
+- Adding Spotlight Endpoint to db.json
+  ```js
+  "spotlights": [
+  {
+    "id": 1,
+    "img": "https://images.unsplash.com/photo-1556075798-4825dfaaf498",
+    "title": "Cloud Engineering",
+    "description": "Build fun stuff in the cloud. It's a lot of fun, we promise!"
+  },
+  {
+    "id": 2,
+    "img": "https://images.unsplash.com/photo-1511376777868-611b54f68947",
+    "title": "Executive Leadership",
+    "description": "Be a leader for everyone. Leadership builds character."
+  }
+  ]
+  ```
+- Create Spotlights Component
+
+  - ![](./images/slotProps.png)
+  - how can we provide an information from a v-for array(e.g spotlight.title) child component to the parent component rendering a slot component ? use a **SLOT PROPS**
+    - SLOT PROPS --the parent component thats going to render the component with slots have an access to whatever props defined at slot element by using v-bind directives to give a dynamic reference to object we are iterating (e.g `<slot :spotlight='spotlight'></slot>`)
+
+  ```html
+  <template>
+    <ul>
+      <li v-for="spotlight in spotlights" :key="spotlight.id">
+        <slot :spotlight="spotlight"></slot>
+      </li>
+    </ul>
+  </template>
+
+  <script>
+    import axios from "axios";
+    export default {
+      name: "Spotlight",
+      data() {
+        return {
+          spotlights: [],
+        };
+      },
+      async mounted() {
+        const baseURL = process.env.VUE_APP_API_URL;
+        const url = `${baseURL}/spotlights`;
+        const response = await axios.get(url);
+        this.spotlights = response.data;
+      },
+    };
+  </script>
+  ```
+
+- Rendering Spotlight Component
+
+  - we can access the piece of data that we passed up via slot props to parent component by using `v-slot:default="slotProps"` directive into template (`v-slot:<name of slot>="<object name(--bundled up in JS object with all of the slot props we provided in child slot component --reference this object to use data in the template custom HTML we provide in parent component to inject into the slot component)>"`)
+  - **NOTE:**
+    - in every iteration, template were going to inject into every slot
+    - for eslint correction, use shortcut for vslot to #hashtag
+
+  ```html
+  <!-- Hero.vue -->
+  <spotlight class="flex flex-row justify-center pb-16">
+    <template #default="slotProps">
+      <!-- slotProps = {spotlight property name: {spotlight object in iteration}} -->
+
+      <router-link
+        to="/jobs/results"
+        class="flex flex-col mx-5 border rounded-lg w-72 bg-brand-gray-2 h-96"
+      >
+        <img :src="slotProps.spotlight.img" class="object-contain" />
+
+        <div class="h-48 px-6 py-4 mt-3">
+          <h3 class="text-lg font-medium">{{ slotProps.spotlight.title }}</h3>
+
+          <p class="mt-3 text-sm">{{ slotProps.spotlight.description }}</p>
+        </div>
+
+        <router-link
+          to="/jobs/results"
+          class="px-4 pb-4 text-sm text-brand-blue-1"
+          >See jobs</router-link
+        >
+      </router-link>
+    </template>
+  </spotlight>
+  ```
+
+- Alternate Render Data
+
+  - create a totally different looking card object by switching up the HTML into CSS style while still relying on slot props
+  - ![](./images/altSlot.png)
+  - ![](./images/altSlot-1.png)
+
+- Passing Multiple Props from Scoped Slot
+
+  ```html
+  <!-- Spotlight.vue -->
+  <slot
+    :img="spotlight.img"
+    :title="spotlight.title"
+    :description="spotlight.description"
+  ></slot>
+
+  <!-- Hero.vue -->
+  <spotlight class="flex flex-row justify-center pb-16">
+    <template #default="slotProps">
+      <!-- multiple scoped slot --slotProps object = {img: spotlight.img, title="spotlight.title", description="spotlight.description" } -->
+
+      <router-link
+        to="/jobs/results"
+        class="flex flex-col mx-5 border rounded-lg w-72 bg-brand-gray-2 h-96"
+      >
+        <img :src="slotProps.img" class="object-contain" />
+
+        <div class="h-48 px-6 py-4 mt-3">
+          <h3 class="text-lg font-medium">{{ slotProps.title }}</h3>
+
+          <p class="mt-3 text-sm">{{ slotProps.description }}</p>
+        </div>
+
+        <router-link
+          to="/jobs/results"
+          class="px-4 pb-4 text-sm text-brand-blue-1"
+          >See jobs</router-link
+        >
+      </router-link>
+    </template>
+  </spotlight>
+  ```
+
+- Object Destructuring with Scoped Slots
+- NOTE: for optimization, we can destructure slotProps object same as how we destruct JS object
+
+  ```html
+  <!-- Spotlight.vue -->
+  <slot
+    :img="spotlight.img"
+    :title="spotlight.title"
+    :description="spotlight.description"
+  ></slot>
+
+  <!-- Hero.vue -->
+  <spotlight class="flex flex-row justify-center pb-16">
+    <template #default="{ img, title, description }">
+      <router-link
+        to="/jobs/results"
+        class="flex flex-col mx-5 border rounded-lg w-72 bg-brand-gray-2 h-96"
+      >
+        <img :src="img" class="object-contain" />
+
+        <div class="h-48 px-6 py-4 mt-3">
+          <h3 class="text-lg font-medium">{{ title }}</h3>
+
+          <p class="mt-3 text-sm">{{ description }}</p>
+        </div>
+
+        <router-link
+          to="/jobs/results"
+          class="px-4 pb-4 text-sm text-brand-blue-1"
+          >See jobs</router-link
+        >
+      </router-link>
+    </template>
+  </spotlight>
+  ```
+
+- Testing Scoped Slots
+
+  - NOTE: whenever we async reqs inside a test, need to use `flushPromises()` to make sure it completes and resolves request and that our component updates the changes. Because otherwise its possible that request still be running while we mount component at test suite and thus not going to register the changes
+
+  ```js
+  import { flushPromises, mount } from "@vue/test-utils";
+  import axios from "axios";
+  jest.mock("axios");
+
+  import Spotlight from "@/components/JobSearch/Spotlight.vue";
+
+  describe("Spotlight", () => {
+    const mockResponseData = (data = {}) => {
+      axios.get.mockResolvedValue({
+        data: [
+          {
+            img: "Some image",
+            title: "Some title",
+            description: "Some description",
+            ...data,
+          },
+        ],
+      });
+    };
+
+    it("provides img attribute to parent component", async () => {
+      const data = { img: "Some image" };
+      mockResponseData({ data });
+      const wrapper = mount(Spotlight, {
+        slots: {
+          default: ` <template #default="slotProps"> 
+            <h2>{{slotProps.img}}</h2>
+          </template>`,
+        },
+      });
+      await flushPromises();
+      expect(wrapper.text()).toMatch("Some image");
+    });
+
+    it("provides title attribute to parent component", async () => {
+      const data = { title: "Some title" };
+      mockResponseData({ data });
+      const wrapper = mount(Spotlight, {
+        slots: {
+          default: ` <template #default="slotProps"> 
+            <h2>{{slotProps.title}}</h2>
+          </template>`,
+        },
+      });
+      await flushPromises();
+      expect(wrapper.text()).toMatch("Some title");
+    });
+
+    it("provides description attribute to parent component", async () => {
+      const data = { description: "Some description" };
+      mockResponseData({ data });
+      const wrapper = mount(Spotlight, {
+        slots: {
+          default: ` <template #default="slotProps"> 
+            <h2>{{slotProps.description}}</h2>
+          </template>`,
+        },
+      });
+      await flushPromises();
+      expect(wrapper.text()).toMatch("Some description");
+    });
+  });
+  ```
+
+- REVIEW:
+  - ![](./images/sec24-Rev.png)
+  - ![](./images/sec24-Rev1.png)
+  - ![](./images/sec24-Rev2.png)
+  - ![](./images/sec24-Rev3.png)
+
 ## Section 25: Vuex III: Getters
+
+- User Story
 
 ## Section 26: Vuex IV: More Practice
 
