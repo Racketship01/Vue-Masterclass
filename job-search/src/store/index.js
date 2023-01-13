@@ -6,6 +6,8 @@ export const LOGIN_USER = "LOGIN_USER"; // dynamically referencing to mutation m
 export const RECEIVE_JOBS = "RECEIVE_JOBS";
 export const FETCH_JOBS = "FETCH_JOBS";
 
+export const UNIQUE_ORGANIZATIONS = "UNIQUE_ORGANIZATIONS";
+
 export const state = () => {
   return {
     isLoggedIn: false,
@@ -21,6 +23,14 @@ export const mutations = {
     state.jobs = jobs;
   }, // 1st parameter: state || 2nd parameter:  data that will overwrite a state property (new array of jobs that will overwrite empty jobs array in state)
 };
+
+export const getters = {
+  [UNIQUE_ORGANIZATIONS](state) {
+    const uniqueOrganizations = new Set();
+    state.jobs.forEach((job) => uniqueOrganizations.add(job.organization));
+    return uniqueOrganizations;
+  },
+}; // derived or computed data from store state (same logic as computed property in a component --vuex automatically rerun getter whenever theres a changes at store state)
 
 export const actions = {
   [FETCH_JOBS]: async (context) => {
@@ -44,6 +54,7 @@ const store = createStore({
 
   state,
   mutations,
+  getters,
   actions,
   strict: process.env.NODE_ENV !== "production", // a lot more strict for making sure dont have any place where accidentally modifying the store state outside of mutation. --using this makes helpful during developement mode but not in production as this will slow down the app and consume more storage
   // NOTE: process -> global node object || env. -> receive environment variable defined on .env file || NODE_ENV --> predefined environment variable on env object defined by node or vue team --the variable name (with a string value) of the development environment we are running

@@ -131,3 +131,20 @@ const sushi = [
 console.log(sushi.slice(2)); // [ 'Yellowtail', 'Eel', 'Shrimp', 'Octupos', 'Uni' ] --1 argument
 console.log(sushi.slice(2, 4)); // [ 'Yellowtail', 'Eel' ] --2 argument
 */
+
+// REVIEW: Array Sets
+
+// Arrays --order
+// Object --association
+// Sets --uniqueness --prohibits duplication --unordered --a lot easier to finf whether an element exists in a set compared to an array
+
+const number = new Set();
+number.add(5);
+number.add(10);
+number.add(15);
+
+number.add(5);
+number.add(15);
+
+number.add(25);
+console.log(number);

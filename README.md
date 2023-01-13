@@ -1314,7 +1314,7 @@
 
   - their function is pretty similarly to how our data properties work but they are reserved for a specific use case in vue
   - computed properties is where we want to put any pieces of information that are dependent on other pieces of data that change, but only change as other pieces of data change around them that are derived, or in other words, that come from calculations based on other pieces of information.
-  - Computed property -- re-evaluated by vue based on some kind of dependecy or some kind of other piece of information changing(property). They are derived data because they are dependent on properties that is changing.
+  - Computed property --re-evaluated by vue based on some kind of dependency or some kind of other piece of information changing(property). They are derived data because they are dependent on properties that is changing.
   - also use a computed property to generate JS object to provide for css classes and that object was dependent on an existing piece of data that come literally from the components data property and can be also come from a props that we pass in
 
     - works exacts the same way as our methods object and define methods(functions) inside.
@@ -4672,6 +4672,9 @@ console.log(goodFood);
 
   ```js
   //index.test.js
+
+  import { state, mutations, actions } from "@/store";
+  // dont need to incorporate all of the vuex store complexity inorder to test the state function and mutations object
   describe("state", () => {
     it("stores job listings", () => {
       const startingState = state();
@@ -4693,6 +4696,8 @@ console.log(goodFood);
 
   ```js
   // index.test.js
+  import { state, mutations, actions } from "@/store";
+
   describe("RECEIVE_JOBS", () => {
     it("receives jobs from API response", () => {
       const state = { jobs: [] };
@@ -4726,7 +4731,7 @@ console.log(goodFood);
       - in vuex store object, we can call a commit method to run a mutations. In action, context object(API) are the one invoking commit method to run a mutations
       - NOTE:
         - any subsequent arguments we provide to the commit method will flow in as the second and third and so on in the subsequent parameter we provide at the mutations method after state.
-        - commit need to know which mutation method (1st argument) will be running and what will the overwrite data be (2nd argument).
+        - commit need to know which mutation method (1st argument) will be running and what will the overwrite data be (2nd argument). [e.g ` context.commit(RECEIVE_JOBS, jobListings);`]
 
   ```js
   // store/index.js
@@ -5542,6 +5547,49 @@ console.log(goodFood);
 ## Section 25: Vuex III: Getters
 
 - User Story
+
+  - ![](./images/sec25User.png)
+  - ![](./images/sec25User1.png)
+
+- ES6 REVIEW: Sets
+
+  - ![](./images/sets.png)
+
+- Intro to Getter
+  - Getter
+    - in getter, never modify store state, never add properties or delete properties
+    - all you can do in a getter is use the existing store state properties to give something new
+    - getter will consist a bunch of methods
+    - just like a mutation, each getter is going to receive the current store state in its 1st parameter called (state).
+      - whenever state changes, vuex automatically rerun the getter
+  - Why do we use getters in vuex?
+    - to rerun automatically a computed logic whenever a piece of original store state changes
+    - we use getters to define derived piece of logic from our store state. It could be whatever we want as long as its not original data
+
+```js
+// index.js --store
+export const UNIQUE_ORGANIZATIONS = "UNIQUE_ORGANIZATIONS";
+
+export const state = () => {
+  return {
+    isLoggedIn: false,
+    jobs: [],
+  };
+};
+
+export const getters = {
+  [UNIQUE_ORGANIZATIONS](state) {
+    const uniqueOrganizations = new Set();
+    state.jobs.forEach((job) => uniqueOrganizations.add(job.organization));
+    return uniqueOrganizations;
+  },
+};
+
+const store = createStore({
+  state,
+  getters,
+});
+```
 
 ## Section 26: Vuex IV: More Practice
 
