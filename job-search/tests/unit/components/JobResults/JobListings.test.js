@@ -28,10 +28,16 @@ describe("JobListings", () => {
   });
 
   const createStore = (store = {}) => ({
+    /*
     state: {
       jobs: Array(15).fill({}), // mocking store state of jobs with 15 object iteration
     },
-    dispatch: jest.fn(), // jest mocking dispatch method in the store object imvoking at the mounted lifecyle
+    */
+    getters: {
+      FILTERED_JOBS_BY_ORGANIZATIONS: [],
+    },
+    dispatch: jest.fn(), // jest mocking dispatch method in the store object invoking at the mounted lifecyle
+
     ...store,
   });
 
@@ -83,8 +89,8 @@ describe("JobListings", () => {
     const $route = createRoute(queryParams);
     const numberOfJobsInStore = 15;
     const $store = createStore({
-      state: {
-        jobs: Array(numberOfJobsInStore).fill({}),
+      getters: {
+        FILTERED_JOBS_BY_ORGANIZATIONS: Array(numberOfJobsInStore).fill({}),
       },
     });
     const wrapper = shallowMount(JobListings, createConfig($route, $store)); // page property will be needed in this "it" test as the page will specify what to  render the max of 10 jobs
@@ -123,12 +129,8 @@ describe("JobListings", () => {
     it("does not show link to previous page", () => {
       const queryParams = { page: "1" };
       const $route = createRoute(queryParams);
-      const numberOfJobsInStore = 15;
-      const $store = createStore({
-        state: {
-          jobs: Array(numberOfJobsInStore).fill({}),
-        },
-      });
+
+      const $store = createStore();
       const wrapper = shallowMount(JobListings, createConfig($route, $store));
       const previousPage = wrapper.find("[data-test = 'previous-page-link']");
       expect(previousPage.exists()).toBe(false);
@@ -139,8 +141,8 @@ describe("JobListings", () => {
       const $route = createRoute(queryParams);
       const numberOfJobsInStore = 15;
       const $store = createStore({
-        state: {
-          jobs: Array(numberOfJobsInStore).fill({}),
+        getters: {
+          FILTERED_JOBS_BY_ORGANIZATIONS: Array(numberOfJobsInStore).fill({}),
         },
       });
       const wrapper = shallowMount(JobListings, createConfig($route, $store));
@@ -154,12 +156,7 @@ describe("JobListings", () => {
     it("does not show link to next page", async () => {
       const queryParams = { page: "2" };
       const $route = createRoute(queryParams);
-      const numberOfJobsInStore = 15;
-      const $store = createStore({
-        state: {
-          jobs: Array(numberOfJobsInStore).fill({}),
-        },
-      });
+      const $store = createStore();
       const wrapper = shallowMount(JobListings, createConfig($route, $store));
       await flushPromises();
       const nextPage = wrapper.find("[data-test = 'next-page-link']");
@@ -169,12 +166,7 @@ describe("JobListings", () => {
     it("show link to previous page", async () => {
       const queryParams = { page: "2" };
       const $route = createRoute(queryParams);
-      const numberOfJobsInStore = 15;
-      const $store = createStore({
-        state: {
-          jobs: Array(numberOfJobsInStore).fill({}),
-        },
-      });
+      const $store = createStore();
       const wrapper = shallowMount(JobListings, createConfig($route, $store));
       await flushPromises();
       const previousPage = wrapper.find("[data-test = 'previous-page-link']");

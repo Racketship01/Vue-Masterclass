@@ -5,16 +5,26 @@
         <!-- global component --parent component of subnav rendering a child component --used a props called icon(docu for vue implementation of fontawesom) to customize details how child renders  -->
         <font-awesome-icon :icon="['fas', 'search']" class="mr-3" />
         <!-- icon is a automatic prop in fontawesome package --2 array of strings: 1st fas short for fontawesome 2nd actual fontawesome icon -->
-        <span> <span class="text-brand-green-1">1653</span> jobs matched</span>
+        <span>
+          <span class="text-brand-green-1">{{
+            FILTERED_JOBS_BY_ORGANIZATIONS.length
+          }}</span>
+          jobs matched</span
+        >
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from "vuex";
+
+import { FILTERED_JOBS_BY_ORGANIZATIONS } from "@/store/constants";
+
 export default {
   name: "Subnav",
   computed: {
+    ...mapGetters([FILTERED_JOBS_BY_ORGANIZATIONS]),
     onJobResultsPage() {
       return this.$route.name === "JobResults";
     },

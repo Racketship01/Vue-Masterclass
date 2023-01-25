@@ -38,8 +38,8 @@
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex";
-import { FETCH_JOBS } from "@/store";
+import { mapActions, mapGetters } from "vuex";
+import { FETCH_JOBS, FILTERED_JOBS_BY_ORGANIZATIONS } from "@/store/constants";
 import JobList from "@/components/JobResults/JobList.vue";
 
 export default {
@@ -53,6 +53,8 @@ export default {
   //   };
   // },
   computed: {
+    // ...mapState(["jobs"]), // vuex store state
+    ...mapGetters([FILTERED_JOBS_BY_ORGANIZATIONS]),
     currentPage() {
       const pageString = this.$route.query.page || "1"; // page in query params
       // const pageNumber = Number.parseInt(pageString); // 1
@@ -65,16 +67,20 @@ export default {
     },
     nextPage() {
       const nextPage = this.currentPage + 1;
-      const maxPage = Math.ceil(this.jobs.length / 10); // 100 / 10 = 10
+      const maxPage = Math.ceil(
+        this.FILTERED_JOBS_BY_ORGANIZATIONS.length / 10
+      ); // 100 / 10 = 10
       return nextPage <= maxPage ? nextPage : undefined; //nextPage
     },
     displayedJobs() {
       const pageNumber = this.currentPage;
       const firstJobIndex = (pageNumber - 1) * 10; // 1 - 1 = 0 and so on
       const lastJobIndex = pageNumber * 10; // 1 * 10 = 10(1st page last index) page 1 -> 10
-      return this.jobs.slice(firstJobIndex, lastJobIndex);
+      return this.FILTERED_JOBS_BY_ORGANIZATIONS.slice(
+        firstJobIndex,
+        lastJobIndex
+      );
     },
-    ...mapState(["jobs"]), // vuex store state
   },
   async mounted() {
     // const baseURL = process.env.VUE_APP_API_URL;

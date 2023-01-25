@@ -1,43 +1,9 @@
 import { createStore } from "vuex"; // createStore --references for global collection of data that Vuex storing for us
 
-import getJobs from "@/api/getJob";
-
-export const LOGIN_USER = "LOGIN_USER"; // dynamically referencing to mutation method name whenever we are committing these mutations to the vuex store to ensure that we have no chance of typos in multiple components
-export const RECEIVE_JOBS = "RECEIVE_JOBS";
-export const FETCH_JOBS = "FETCH_JOBS";
-
-export const UNIQUE_ORGANIZATIONS = "UNIQUE_ORGANIZATIONS";
-
-export const state = () => {
-  return {
-    isLoggedIn: false,
-    jobs: [],
-  };
-};
-
-export const mutations = {
-  [LOGIN_USER](state) {
-    state.isLoggedIn = true;
-  },
-  [RECEIVE_JOBS](state, jobs) {
-    state.jobs = jobs;
-  }, // 1st parameter: state || 2nd parameter:  data that will overwrite a state property (new array of jobs that will overwrite empty jobs array in state)
-};
-
-export const getters = {
-  [UNIQUE_ORGANIZATIONS](state) {
-    const uniqueOrganizations = new Set();
-    state.jobs.forEach((job) => uniqueOrganizations.add(job.organization));
-    return uniqueOrganizations;
-  },
-}; // derived or computed data from store state (same logic as computed property in a component --vuex automatically rerun getter whenever theres a changes at store state)
-
-export const actions = {
-  [FETCH_JOBS]: async (context) => {
-    const jobListings = await getJobs();
-    context.commit(RECEIVE_JOBS, jobListings); // RECEIVE_JOBS(state, jobListings) --run an existing mutations to pass jobListings data fetch in API
-  },
-};
+import state from "@/store/state.js";
+import getters from "@/store/getters.js";
+import mutations from "@/store/mutations.js";
+import actions from "@/store/actions.js";
 
 const store = createStore({
   // state() {

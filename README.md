@@ -2424,7 +2424,7 @@ console.log(goodFood);
 
   - value attribute --not specifically tied to vue but as a general that exists on every input element
   - how to bind component data to template value attribute? use v-bind directives
-  - bind component data to template value attribute are only in **one direction** -- means we can only change our data and see that change in our template but not the otherwise(cannot change template and see that change reflected in data to do so use bidirectional direcitives).
+  - bind component data to template value attribute are only in **one direction** -- means we can only change our data and see that change in our template but not the otherwise(cannot change template and see that change reflected in data to do so use bidirectional directives).
 
   ```html
   <template>
@@ -2447,7 +2447,7 @@ console.log(goodFood);
 
 - Binding Form Input to Component Data
 
-  - input --whenever the user types a single character into an input field it automatically emits an event called input. This event help to have a bidirectional --two ways as it flows both direction (changing template reflected to data property and vice versa)
+  - input --whenever the user types a single character into an input field it automatically emits an event called input. This **event** help to have a **bidirectional** --two ways as it flows both direction (changing template reflected to data property and vice versa)
   - aside from passing an event object into a method vue config object --can also give us access to it right in line tag. (using $ sign plus the event) `@input="location = $event.target.value"`
     - difference between this and our methods down below is in our methods vue will automatically pass the event object to the method and define whatever parameter name we want to pass in (e.g event or e)
     - but in inline the name is not up to us, we have to write dollar sign event in order for other developer to distinguish it is a special variable
@@ -2479,7 +2479,7 @@ console.log(goodFood);
 
 - Two-Way Data Binding with v-model Directive
 
-  - v-model --creates a two way binding on a form input element or a component(on data property) --valid way to establish 2 way data binding as modern way --connecting data to our template and keeping the two in sync with two way data binding.
+  - v-model --creates a two way binding on a form input element to a component data (on data property) --valid way to establish 2 way data binding as modern way --connecting data to our template and keeping the two in sync with two way data binding.
   - no shortcut unlike other v-directives
 
   ```html
@@ -3341,7 +3341,7 @@ console.log(goodFood);
     - ![](./images/formProb.png)
     - form submission has something to do with rendering in the actual vue component, as we in the test util we mount component in isolation outside of the browser and vue test does not attach DOM nodes to the document by default
     - Solution
-      - attachTo --hunch: force the component to simulate the mounting of it to an actual element in a simulated document and simulated browser environment --hunch: attaching mounted component to a simulated browser document
+      - attachTo --hint: force the test to simulate the mounting of it to an actual element in a simulated document and simulated browser environment --hint: attaching mounted component to a simulated browser document
 
 - REVIEW:
   - ![](./images/sec16.png)
@@ -4524,7 +4524,7 @@ console.log(goodFood);
 
         await loginButton.trigger("click");
 
-        expect(commit).toHaveBeenCalledWith("LOGIN_USER");
+        expect(commit).toHaveBeenCalledWith[LOGIN_USER]("LOGIN_USER");
       });
     });
     ```
@@ -4557,8 +4557,8 @@ console.log(goodFood);
   - mapState
 
     - helper function from Vuex Library, this function help us do is map or connect vuex store state properties to component computed properties
-    - gonna return a JS objext that have essentially going to computed methods
-    - whenever we invoke mapState, we need to destructure the return object properties to computed object properties
+    - gonna return a JS object that have essentially going to computed methods
+    - NOTE: whenever we invoke mapState, we need to destructure the return object properties to computed object properties so they become top level computed properties
     - can take a variety of inputs such as JS object, and that object can provide a property representing the computed property that we want to have in our MainNav (typically same name we want to connect to store state property)
     - Advantage:
       - can easily defined a properties
@@ -4790,7 +4790,7 @@ console.log(goodFood);
 - The Vuex Store's Dispatch Method
 
   - dispatch method
-    - use to invoke actions from vuex store 0
+    - use to invoke actions from vuex store
     - accepts name of an action as a string
     - exactly works same as commit method does except commit is for mutations and dispatches for asynchronous actions
 
@@ -5590,6 +5590,526 @@ const store = createStore({
   getters,
 });
 ```
+
+- Testing Getters
+
+  - NOTE: to test getters, we simply invoke it as a plain JS method, no need to invoke vuex store, we can simply test it as a regular bit of JS functionality
+
+  ```js
+  // index.test.js
+  import { getters } from "@/store";
+
+  describe("getters", () => {
+    describe("UNIQUE_ORGANIZATION", () => {
+      it("finds unique organizations from list of jobs", () => {
+        const state = {
+          jobs: [
+            { organization: "Google" },
+            { organization: "Amazon" },
+            { organization: "Google" },
+          ],
+        };
+        const result = getters.UNIQUE_ORGANIZATIONS(state);
+        expect(result).toEqual(new Set(["Google", "Amazon"]));
+      });
+    });
+  });
+  ```
+
+  Wire Up UNIQUE_ORGANIZATIONS Getter and Rendering v-for
+
+  - :key in iteraing Set will be each element as Set are unique
+
+  ```html
+  // JobFilterSidebarOrganization
+  <accordion header="Organizations">
+    <div class="mt-5">
+      <fieldset>
+        <ul class="flex flex-row flex-wrap">
+          <li
+            v-for="organization in UNIQUE_ORGANIZATIONS"
+            :key="organization"
+            class="w-1/2 h-8"
+          >
+            <input :id="organization" type="checkbox" class="mr-3" />
+            <label :for="organization">{{ organization }}</label>
+          </li>
+        </ul>
+      </fieldset>
+    </div>
+  </accordion>
+
+  <script>
+    computed: {
+      UNIQUE_ORGANIZATIONS() {
+        return this.$store.getters.UNIQUE_ORGANIZATIONS;
+      },
+    },
+  </script>
+  ```
+
+- Testing Getters in JobFilterSidebarOrganization
+
+```js
+import { mount } from "@vue/test-utils"; // not stubbing out accordion child component --not using a shallowMount as accordion need to test its child element at accordion component and its dynamic slot content
+
+import JobFilterSidebarOrganization from "@/components/JobResults/JobFilterSideBar/JobFilterSidebarOrganization.vue";
+
+describe("JobFilterSidebarOrganization", () => {
+  const createConfig = ($store) => ({
+    global: {
+      mocks: {
+        $store,
+      },
+      stubs: {
+        FontAwesomeIcon: true, // need to stub font awesome icon component being rendered at accordion component
+      },
+    },
+  });
+  it("renders unique list of organization for filtering jobs", async () => {
+    const $store = {
+      getters: {
+        UNIQUE_ORGANIZATIONS: new Set(["Google", "Amazon"]),
+      },
+    };
+    const wrapper = mount(JobFilterSidebarOrganization, createConfig($store));
+
+    const clickableArea = wrapper.find("[data-test='clickable-area']"); // need to test user action --accordion is a collapsable component that will renders if trigger a click action
+    await clickableArea.trigger("click");
+
+    const organizationLabels = wrapper.findAll("[data-test='organization'"); // find and findAll method will return an array of nodes that stores all the matches element found at the implementation
+    const organizations = organizationLabels.map((node) => node.text()); // return a new array of two strings --give actual text that is rendering to the DOM to the browser
+
+    expect(organizations).toEqual(["Google", "Amazon"]);
+  });
+});
+```
+
+- NOTE:
+
+  - the problem will be at the test perspective, accordion(component that will be using a slot) is a child component and if we will use shallowMount, child element under accordion will be stub out. In order to keep all the functionality of the slotted content in accordion, we'll be using mount
+  - The component is just testing the interaction (invoke) with the store and its nested properties (`this.$store`) and its nested getters (`this.$store.getters.UNIQUE_ORGANIZATIONS`) and not the complexity of how vuex store getter method will be executed and pass state. All we want to test our code, our component and how its accessing properties.
+
+- The mapGetters Helper Function
+
+  - another helper function available in vuex
+  - mapGetters --allows us to have a shorthand syntax for connecting getter method from vuex store to being a regular component method (in computed properties)
+  - NOTE: map helper function such as mapState, mapMutations, mapActions and mapGetters take some part of the vuex and make it available as some part of the component, usually as a local property or a local method
+
+  ```js
+  // JobFilterSidebarOrganization
+  import { mapGetters } from "vuex";
+  import { UNIQUE_ORGANIZATIONS } from "@/store";
+
+  computed: {
+    ...mapGetters([UNIQUE_ORGANIZATIONS]), // top-level property --**this.UNIQUE_ORGANIATIONS
+
+    // UNIQUE_ORGANIZATIONS() {
+    //   return this.$store.getters.UNIQUE_ORGANIZATIONS;
+    // },
+  },
+  ```
+
+- Add v-model to checkbox for organizations
+
+  ```html
+  <!-- jobfiltersidebarorganization -->
+  <template>
+    <ul class="flex flex-row flex-wrap">
+      <li
+        v-for="organization in UNIQUE_ORGANIZATIONS"
+        :key="organization"
+        class="w-1/2 h-8"
+      >
+        <input
+          :id="organization"
+          v-model="selectedOrganizations"
+          :value="organization"
+          type="checkbox"
+          class="mr-3"
+        />
+        <label :for="organization" data-test="organization"
+          >{{ organization }}</label
+        >
+      </li>
+    </ul>
+  </template>
+
+  <script>
+    data() {
+      return {
+        selectedOrganizations: [],
+      };
+    },
+  </script>
+  ```
+
+- The v-on: change Handler
+
+  - NOTE:
+
+    - can manually set up the logic of v-model, as v-model abstracts away the complexity of capturing the browsers event and then saving it to a local data then also making a bidirectional way(data -> template and vice versa), and as a reminder browser emits a change event whenever the user interacts with input element.
+    - v-on event handler: a method that we can use to connects the updated data from local data to vuex store (e.g as the user interacts with a checkbox, also updates vuex)
+      - `v-on:change="<name of method>"`
+      - change event is an event that occurs whenever user interacts with an input element(e.g checking checkbox)
+      - shorthand for v-on: `@`sign
+    - Proxy object
+      - an array under the hood but its wrapped in a special helper object around it that adds extra functionality
+      - an implementation detail vue needed to take and wrap it with additional functionality to enable the reactivity to connect it to our template and automatically update the template. In order to build the logic that watches for change, it needs to wrap our core data structure in this case, an array in proxy object
+
+    ```html
+    <!-- jobfiltersidebarorganization -->
+    <template>
+      <input
+        :id="organization"
+        v-model="selectedOrganizations"
+        :value="organization"
+        type="checkbox"
+        class="mr-3"
+        @change="selectOrganization"
+      />
+    </template>
+
+    <script>
+        data() {
+          return {
+            selectedOrganizations: [],
+          };
+        },
+        methods: {
+        selectOrganization() {
+
+
+          // NOTE: whenever this method runs, our array is already going to store the updated collection of organization strings. Then take this updated array of string at the vuex
+          // as soon as this change occurs, the vuex needs to get the data and then run its filter logic to filter its 100 jobs to only the ones that are going to have the organizations listed here
+        },
+      },
+    </script>
+    ```
+
+- TDD: Add selectedOrganizations Property to Vuex Store State and Create ADD_SELECTED_ORGANIZATION in store mutation
+
+  ```js
+  // index.test.js --store
+  describe("state", () => {
+    it("stores organizations that the user would like to filter jobs by", () => {
+      const startingState = state();
+      expect(startingState.selectedOrganizations).toEqual([]);
+    });
+  });
+
+  describe("mutations", () => {
+    describe("ADD_SELECTED_ORGANIZATIONS", () => {
+      it("updates organizations that the user has chose to filter jobs by", () => {
+        const state = { selectedOrganizations: [] };
+        mutations.ADD_SELECTED_ORGANIZATIONS(state, ["Org1", "Org2"]);
+        expect(state).toEqual({ selectedOrganizations: ["Org1", "Org2"] });
+      });
+    });
+  });
+
+  //index.js --store
+  export const ADD_SELECTED_ORGANIZATIONS = "ADD_SELECTED_ORGANIZATIONS";
+
+  export const state = () => {
+    return {
+      selectedOrganizations: [],
+    };
+  };
+
+  export const mutations = {
+    [ADD_SELECTED_ORGANIZATIONS](state, organizations) {
+      state.selectedOrganizations = organizations;
+    },
+  };
+  ```
+
+- Commit Mutation to Receive Organizations from JobFiltersSidebarOrganizations Component
+
+  ```js
+  // JobFiltersSidebarOrganizations
+  import { mapMutations } from "vuex";
+  import { ADD_SELECTED_ORGANIZATIONS } from "@/store";
+
+  data() {
+    return {
+      selectedOrganizations: [],
+    };
+  },
+  methods: {
+    ...mapMutations([ADD_SELECTED_ORGANIZATIONS]),
+
+    selectOrganization() {
+      this.ADD_SELECTED_ORGANIZATIONS(this.selectedOrganizations);
+      // NOTE: whenever this method runs, our array is already going to store the updated collection of organization strings. Then take this updated array of string at the vuex
+      // as soon as this change occurs, the vuex needs to get the data and then run its filter logic to filter its 100 jobs to only the ones that are going to have the organizations listed here
+    },
+  },
+  ```
+
+  - ![](./images/localDataToVuex.png)
+
+- REVIEW: filter method on Array
+
+  - ![](./images/filterArr.png)
+
+- TDD: Adding Getter to Filter Jobs by Organization
+
+  ```js
+  // index.test.js
+  describe("FILTERED_JOBS_BY_ORGANIZATIONS", () => {
+    it("identifies jobs that are associated with the given organizations", () => {
+      const state = {
+        jobs: [
+          { organization: "Google" },
+          { organization: "Amazon" },
+          { organization: "Microsoft" },
+        ],
+        selectedOrganizations: ["Google", "Microsoft"],
+      };
+
+      const filteredJobs = getters.FILTERED_JOBS_BY_ORGANIZATIONS(state);
+      expect(filteredJobs).toEqual([
+        { organization: "Google" },
+        { organization: "Microsoft" },
+      ]);
+    });
+  });
+
+  // index.js --store
+  export const FILTERED_JOBS_BY_ORGANIZATIONS =
+    "FILTERED_JOBS_BY_ORGANIZATIONS";
+
+  export const getters = {
+    [FILTERED_JOBS_BY_ORGANIZATIONS](state) {
+      if (state.selectedOrganizations.length === 0) {
+        return state.jobs;
+      }
+      // else {
+      //   return state.jobs.filter((job) =>
+      //     state.selectedOrganizations.includes(job.organization)
+      //   );
+      // }
+      return state.jobs.filter((job) =>
+        state.selectedOrganizations.includes(job.organization)
+      );
+    },
+  };
+  ```
+
+- Rendering Filtered Organization Jobs in JobListings Component
+
+  ```js
+  import { mapGetters } from "vuex";
+  import { FILTERED_JOBS_BY_ORGANIZATIONS } from "@/store";
+
+  computed: {
+    ...mapGetters([FILTERED_JOBS_BY_ORGANIZATIONS]),
+    currentPage() {
+      const pageString = this.$route.query.page || "1"; // page in query params
+      // const pageNumber = Number.parseInt(pageString); // 1
+      return Number.parseInt(pageString); // 1
+    },
+    previousPage() {
+      const previousPage = this.currentPage - 1; // 1 - 1 = 0
+      const firstPage = 1;
+      return previousPage >= firstPage ? previousPage : undefined; // undefined (not rendering previous page link at 1st page)
+    },
+    nextPage() {
+      const nextPage = this.currentPage + 1;
+      const maxPage = Math.ceil(
+        this.FILTERED_JOBS_BY_ORGANIZATIONS.length / 10
+      ); // 100 / 10 = 10
+      return nextPage <= maxPage ? nextPage : undefined; //nextPage
+    },
+    displayedJobs() {
+      const pageNumber = this.currentPage;
+      const firstJobIndex = (pageNumber - 1) * 10; // 1 - 1 = 0 and so on
+      const lastJobIndex = pageNumber * 10; // 1 * 10 = 10(1st page last index) page 1 -> 10
+      return this.FILTERED_JOBS_BY_ORGANIZATIONS.slice(
+        firstJobIndex,
+        lastJobIndex
+      );
+    },
+  }
+  ```
+
+- Fixing Failing JobListings Test
+
+  ```js
+  const createStore = (store = {}) => ({
+    /*
+    state: {
+      jobs: Array(15).fill({}), // mocking store state of jobs with 15 object iteration
+    },
+    */
+    getters: {
+      FILTERED_JOBS_BY_ORGANIZATIONS: [],
+    },
+    dispatch: jest.fn(), // jest mocking dispatch method in the store object invoking at the mounted lifecyle
+
+    ...store,
+  });
+
+  it("creates a job listings for a maximum of 10 jobs", async () => {
+    const queryParams = {
+      page: 1,
+    };
+
+    const $route = createRoute(queryParams);
+    const numberOfJobsInStore = 15;
+    const $store = createStore({
+      getters: {
+        FILTERED_JOBS_BY_ORGANIZATIONS: Array(numberOfJobsInStore).fill({}),
+      },
+    });
+    const wrapper = shallowMount(JobListings, createConfig($route, $store));
+
+    await flushPromises();
+
+    const jobListings = wrapper.findAll("[data-test='job-listings'");
+    expect(jobListings).toHaveLength(10);
+  });
+
+  it("show link to next page", async () => {
+    const queryParams = { page: "1" };
+    const $route = createRoute(queryParams);
+    const numberOfJobsInStore = 15;
+    const $store = createStore({
+      getters: {
+        FILTERED_JOBS_BY_ORGANIZATIONS: Array(numberOfJobsInStore).fill({}),
+      },
+    });
+    const wrapper = shallowMount(JobListings, createConfig($route, $store));
+    await flushPromises();
+    const nextPage = wrapper.find("[data-test = 'next-page-link']");
+    expect(nextPage.exists()).toBe(true);
+  });
+  ```
+
+- Adding Tests for JobFiltersSidebarOrganizations
+
+```html
+// component
+<template>
+  <input
+    :id="organization"
+    v-model="selectedOrganizations"
+    :value="organization"
+    type="checkbox"
+    class="mr-3"
+    :data-test="organization"
+    @change="selectOrganization"
+  />
+</template>
+
+// test suite
+<script>
+  it("renders unique list of organization for filtering jobs", async () => {
+    const commit = jest.fn();
+    const $store = {
+      getters: {
+        UNIQUE_ORGANIZATIONS: new Set(["Google", "Amazon"]),
+      },
+      commit,
+    };
+    const wrapper = mount(JobFilterSidebarOrganization, createConfig($store));
+
+    const clickableArea = wrapper.find("[data-test='clickable-area']");
+    await clickableArea.trigger("click");
+
+    const googleInput = wrapper.find("[data-test='Google']");
+    await googleInput.setChecked(); // setChecked() --simulate a checkbox
+
+    expect(commit).toHaveBeenCalledWith("ADD_SELECTED_ORGANIZATIONS", [
+      "Google",
+    ]);
+  });
+</script>
+```
+
+- Displaying Accurate Number of Filtered Jobs
+
+  ```html
+  <!-- Subnav.vue -->
+  <template>
+    <div v-if="onJobResultsPage" data-test="job-count">
+      <font-awesome-icon :icon="['fas', 'search']" class="mr-3" />
+      <span>
+        <span class="text-brand-green-1"
+          >{{ FILTERED_JOBS_BY_ORGANIZATIONS.length }}</span
+        >
+        jobs matched</span
+      >
+    </div>
+  </template>
+
+  <script>
+    import { mapGetters } from "vuex";
+
+    import { FILTERED_JOBS_BY_ORGANIZATIONS } from "@/store";
+
+    export default {
+      name: "Subnav",
+      computed: {
+        ...mapGetters([FILTERED_JOBS_BY_ORGANIZATIONS]),
+        onJobResultsPage() {
+          return this.$route.name === "JobResults";
+        },
+      },
+    };
+  </script>
+  ```
+
+  ```js
+  // subnav test
+  const createConfig = (routeName, $store = {}) => ({
+    global: {
+      mocks: {
+        $route: {
+          name: routeName,
+        },
+        $store,
+      },
+      stubs: {
+        FontAwesomeIcon: true,
+      },
+    },
+  });
+  describe("when user is on the job page", () => {
+    it("display job count", () => {
+      const $store = {
+        getters: {
+          FILTERED_JOBS_BY_ORGANIZATIONS: [{ id: 1 }, { id: 2 }],
+        },
+      };
+      const wrapper = mount(Subnav, createConfig("JobResults", $store));
+
+      const jobCount = wrapper.find("[data-test='job-count']");
+      expect(jobCount.text()).toEqual("2 jobs matched");
+    });
+  });
+  ```
+
+- Refactor our Vuex Store by Splitting it up Across Files
+
+  - ![](./images/refactorVuex.png)
+  - NOTE:
+
+    - Name Export --exporting a variable
+      - `export const {variable/function name}`
+    - Name Import
+
+      - `import {variable/function name} from 'file path';`
+
+    - Default Export --can give any name of a function when importing
+      - `export default variableName`
+      - `import variableName from 'filepath'`
+
+- Refactor our Vuex Test Suite
+  ![](./images/refactorVuexTest.png)
+- Refactoring our Components
+  ![](./images/refactorComponent.png)
 
 ## Section 26: Vuex IV: More Practice
 
