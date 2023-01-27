@@ -12,9 +12,7 @@
 
       <accordion header="Degree"></accordion>
 
-      <accordion header="Job Types">
-        <p>Placeholder for now</p>
-      </accordion>
+      <job-filter-sidebar-job-type />
 
       <job-filter-sidebar-organization />
     </section>
@@ -26,12 +24,15 @@ import ActionButton from "@/components/Shared/ActionButton.vue";
 import Accordion from "@/components/Shared/Accordion.vue";
 import JobFilterSidebarOrganization from "@/components/JobResults/JobFilterSideBar/JobFilterSidebarOrganization.vue";
 
+import JobFilterSidebarJobType from "@/components/JobResults/JobFilterSideBar/JobFilterSidebarJobType.vue";
+
 export default {
   name: "JobFilterSidebar",
   components: {
     ActionButton,
     Accordion,
     JobFilterSidebarOrganization,
+    JobFilterSidebarJobType,
   },
 };
 </script>

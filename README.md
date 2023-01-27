@@ -5632,7 +5632,9 @@ const store = createStore({
             class="w-1/2 h-8"
           >
             <input :id="organization" type="checkbox" class="mr-3" />
+            <!-- :id -- binding id attribute --specify a unique id for a HTML element -->
             <label :for="organization">{{ organization }}</label>
+            <!-- :for --binding the for attribute --specify the type of input element a label is bound to-->
           </li>
         </ul>
       </fieldset>
@@ -5651,7 +5653,7 @@ const store = createStore({
 - Testing Getters in JobFilterSidebarOrganization
 
 ```js
-import { mount } from "@vue/test-utils"; // not stubbing out accordion child component --not using a shallowMount as accordion need to test its child element at accordion component and its dynamic slot content
+import { mount } from "@vue/test-utils"; // // --not using a shallowMount(stubbing out child component) as accordion (child component) need to test its child elements (dynamic slot content)
 
 import JobFilterSidebarOrganization from "@/components/JobResults/JobFilterSideBar/JobFilterSidebarOrganization.vue";
 
@@ -6005,7 +6007,7 @@ describe("JobFilterSidebarOrganization", () => {
 
 // test suite
 <script>
-  it("renders unique list of organization for filtering jobs", async () => {
+  it("communicates that user has selected checkbox for organization", async () => {
     const commit = jest.fn();
     const $store = {
       getters: {
@@ -6018,7 +6020,7 @@ describe("JobFilterSidebarOrganization", () => {
     const clickableArea = wrapper.find("[data-test='clickable-area']");
     await clickableArea.trigger("click");
 
-    const googleInput = wrapper.find("[data-test='Google']");
+    const googleInput = wrapper.find("[data-test='Google']"); // referencing dynamic data-test at the elemnt in component -- :data-test=""
     await googleInput.setChecked(); // setChecked() --simulate a checkbox
 
     expect(commit).toHaveBeenCalledWith("ADD_SELECTED_ORGANIZATIONS", [
@@ -6110,8 +6112,198 @@ describe("JobFilterSidebarOrganization", () => {
   ![](./images/refactorVuexTest.png)
 - Refactoring our Components
   ![](./images/refactorComponent.png)
+- ## REVIEW:
+  - ![](./images/sec25Rev.png)
+  - ![](./images/sec25Rev1.png)
+  - ![](./images/sec25Rev2.png)
+  - ![](./images/sec25Rev3.png)
+  - ![](./images/sec25Rev4.png)
 
 ## Section 26: Vuex IV: More Practice
+
+- User Story
+  - ![](./images/sec26UserStory.png)
+- TDD: Adding State for Job Types
+
+  ```js
+  // state.test.js
+  it("stores job types that the user would like to filter jobs by", () => {
+    const startingState = state();
+    expect(startingState.selectedJobTypes).toEqual([]);
+  });
+
+  // state.js
+  const state = () => {
+    return {
+      isLoggedIn: false,
+      jobs: [],
+      selectedJobTypes: [],
+      selectedOrganizations: [],
+    };
+  };
+
+  export default state;
+  ```
+
+- TDD: Adding Mutations for SeletedJobTypes
+
+```js
+// mutations test
+describe("ADD_SELECTED_JOB_TYPES", () => {
+  it("updates jobs types that the user has chose to filter jobs by", () => {
+    const state = { selectedJobTypes: [] };
+    mutations.ADD_SELECTED_JOB_TYPES(state, ["Full-time", "Part-time"]);
+    expect(state).toEqual({
+      selectedJobTypes: ["Full-time", "Part-time"],
+    });
+  });
+});
+
+// constants.js
+export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
+
+// mutations.js
+[ADD_SELECTED_JOB_TYPES](state, jobTypes) {
+    state.selectedJobTypes = jobTypes;
+  },
+```
+
+- TDD: Adding Getter for Unique Job Types
+
+  ```js
+  // getters test
+  describe("UNIQUE_JOB_TYPES", () => {
+    it("finds unique job type from list of jobs", () => {
+      const state = {
+        jobs: [
+          { jobType: "Full-time" },
+          { jobType: "Full-time" },
+          { jobType: "Intern" },
+        ],
+      };
+      const result = getters.UNIQUE_JOB_TYPES(state);
+      expect(result).toEqual(new Set(["Intern", "Full-time"]));
+    });
+  });
+
+  // constants.js
+  export const UNIQUE_JOB_TYPES = "UNIQUE_JOB_TYPES";
+
+  // getters.js
+  [UNIQUE_JOB_TYPES](state) {
+    const uniqueJobTypes = new Set();
+    state.jobs.forEach((job) => uniqueJobTypes.add(job.jobType));
+    return uniqueJobTypes;
+  },
+  ```
+
+- TDD: Adding Getter for Filtered Jobs for Job Types
+
+  ```js
+  // getter test
+  describe("FILTERED_JOBS_BY_JOB_TYPES", () => {
+    it("identifies jobs that are associated with the given job types", () => {
+      const state = {
+        jobs: [
+          { jobType: "Full-time" },
+          { jobType: "Part-time" },
+          { jobType: "Intern" },
+        ],
+        selectedJobTypes: ["Full-time", "Intern"],
+      };
+
+      const filteredJobs = getters.FILTERED_JOBS_BY_JOB_TYPES(state);
+      expect(filteredJobs).toEqual([
+        { jobType: "Full-time" },
+        { jobType: "Intern" },
+      ]);
+    });
+
+    describe("when the user has not selected any organizations", () => {
+      it("returns all jobs", () => {
+        const state = {
+          jobs: [
+            { jobType: "Full-time" },
+            { jobType: "Part-time" },
+            { jobType: "Intern" },
+          ],
+          selectedJobTypes: [],
+        };
+
+        const filteredJobs = getters.FILTERED_JOBS_BY_JOB_TYPES(state);
+        expect(filteredJobs).toEqual([
+          { jobType: "Full-time" },
+          { jobType: "Part-time" },
+          { jobType: "Intern" },
+        ]);
+      });
+    });
+  });
+
+
+  // constants.js
+  export const FILTERED_JOBS_BY_JOB_TYPES = "FILTERED_JOBS_BY_JOB_TYPES"
+
+
+  // getters.js
+  [FILTERED_JOBS_BY_JOB_TYPES](state) {
+    if (state.selectedJobTypes.length === 0) {
+      return state.jobs;
+    }
+
+    return state.jobs.filter((job) =>
+      state.selectedJobTypes.includes(job.jobType)
+    );
+  },
+  ```
+
+- TDD: New JobFiltersSidebarJobTypes Component
+
+  - Create JobFilterSidebarJobType.test.js file at the test folder
+    - identical to the JobFilterSidebarOrganization.test, the only difference is to change the appropriate word from organization to job types, accordingly
+  - Create JobFilterSidebarJobType.vue component at the '@/components/JobResults/JobSidebar'
+    - identical to the implementation of JobFilterSidebarOrganization component, the only difference is to change the appropriate word from organization to job types, accordingly to what being defined in vuex or in local data of JobFilterSidebarJobTypes
+
+- Wire up Job Type Filters in Sidebar
+
+  ```html
+  <!-- JobFilterSidebar.vue component -->
+  <template>
+    <div
+      class="flex flex-col p-4 bg-white border-r border-solid border-brand-gray-1 w-96"
+    >
+      <section class="pb-5">
+        <div class="flex flex-row justify-between">
+          <h3 class="my-4 text-base font-semibold">What do you want to do?</h3>
+          <div class="flex items-center text-sm">
+            <action-button text="Clear Filters" type="secondary" />
+          </div>
+        </div>
+
+        <accordion header="Degree"></accordion>
+
+        <job-filter-sidebar-job-type />
+
+        <job-filter-sidebar-organization />
+      </section>
+    </div>
+  </template>
+
+  <script>
+    import JobFilterSidebarJobType from "@/components/JobResults/JobFilterSideBar/JobFilterSidebarJobType.vue";
+
+    export default {
+      name: "JobFilterSidebar",
+      components: {
+        JobFilterSidebarJobType,
+      },
+    };
+  </script>
+  ```
+
+- Filter for Job Types in Job Listings
+  - ![](./images/jobListingJobTypes.png)
+  - ![](./images/JFS-JobType.png)
 
 ## Section 27: Reactivity
 

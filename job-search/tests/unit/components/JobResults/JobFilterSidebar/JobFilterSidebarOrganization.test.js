@@ -1,4 +1,4 @@
-import { mount } from "@vue/test-utils"; // not stubbing out accordion child component --not using a shallowMount as accordion need to test its child element at accordion component and its dynamic slot content
+import { mount } from "@vue/test-utils"; // --not using a shallowMount(stubbing out child component) as accordion (child component) need to test its child elements (dynamic slot content)
 
 import JobFilterSidebarOrganization from "@/components/JobResults/JobFilterSideBar/JobFilterSidebarOrganization.vue";
 
@@ -31,7 +31,7 @@ describe("JobFilterSidebarOrganization", () => {
     expect(organizations).toEqual(["Google", "Amazon"]);
   });
 
-  it("renders unique list of organization for filtering jobs", async () => {
+  it("communicates that user has selected checkbox for organization", async () => {
     const commit = jest.fn();
     const $store = {
       getters: {
@@ -44,7 +44,7 @@ describe("JobFilterSidebarOrganization", () => {
     const clickableArea = wrapper.find("[data-test='clickable-area']");
     await clickableArea.trigger("click");
 
-    const googleInput = wrapper.find("[data-test='Google']");
+    const googleInput = wrapper.find("[data-test='Google']"); // referencing dynamic data-test at the elemnt in component -- :data-test=""
     await googleInput.setChecked(); // setChecked() --simulate a checkbox
 
     expect(commit).toHaveBeenCalledWith("ADD_SELECTED_ORGANIZATIONS", [

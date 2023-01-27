@@ -27,4 +27,14 @@ describe("mutations", () => {
       expect(state).toEqual({ selectedOrganizations: ["Org1", "Org2"] });
     });
   });
+
+  describe("ADD_SELECTED_JOB_TYPES", () => {
+    it("updates jobs types that the user has chose to filter jobs by", () => {
+      const state = { selectedJobTypes: [] };
+      mutations.ADD_SELECTED_JOB_TYPES(state, ["Full-time", "Part-time"]);
+      expect(state).toEqual({
+        selectedJobTypes: ["Full-time", "Part-time"],
+      });
+    });
+  });
 });
