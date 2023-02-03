@@ -34,7 +34,7 @@ describe("JobListings", () => {
     },
     */
     getters: {
-      FILTERED_JOBS_BY_ORGANIZATIONS: [],
+      FILTERED_JOBS: [],
     },
     dispatch: jest.fn(), // jest mocking dispatch method in the store object invoking at the mounted lifecyle
 
@@ -90,7 +90,7 @@ describe("JobListings", () => {
     const numberOfJobsInStore = 15;
     const $store = createStore({
       getters: {
-        FILTERED_JOBS_BY_ORGANIZATIONS: Array(numberOfJobsInStore).fill({}),
+        FILTERED_JOBS: Array(numberOfJobsInStore).fill({}),
       },
     });
     const wrapper = shallowMount(JobListings, createConfig($route, $store)); // page property will be needed in this "it" test as the page will specify what to  render the max of 10 jobs
@@ -142,7 +142,7 @@ describe("JobListings", () => {
       const numberOfJobsInStore = 15;
       const $store = createStore({
         getters: {
-          FILTERED_JOBS_BY_ORGANIZATIONS: Array(numberOfJobsInStore).fill({}),
+          FILTERED_JOBS: Array(numberOfJobsInStore).fill({}),
         },
       });
       const wrapper = shallowMount(JobListings, createConfig($route, $store));

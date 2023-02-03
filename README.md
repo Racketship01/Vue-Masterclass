@@ -6302,10 +6302,264 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
   ```
 
 - Filter for Job Types in Job Listings
+
   - ![](./images/jobListingJobTypes.png)
   - ![](./images/JFS-JobType.png)
 
+- Allow User to Apply Multiple Filters
+
+  - ![](./images/multiplerFilter.png)
+
+  ```js
+  // constants.js
+  export const FILTERED_JOBS = "FILTERED_JOBS";
+
+  // getters.js
+  import { FILTERED_JOBS } from "@/store/constants.js";
+
+  [FILTERED_JOBS](state) {
+    const noSelectedOrganization = state.selectedOrganizations.length === 0;
+    const noSelectedJobTypes = state.selectedJobTypes.length === 0;
+
+    if (noSelectedOrganization && noSelectedJobTypes) return state.jobs;
+
+    return state.jobs
+      .filter((job) => state.selectedOrganizations.includes(job.organization))
+      .filter((job) => state.selectedJobTypes.includes(job.jobType));
+  },
+  ```
+
+- Use New Getter in JobListings Component
+
+  - ![](./images/filteredJobBug.png)
+
+  ```js
+  // getters.js
+  [FILTERED_JOBS](state) {
+    const noSelectedOrganization = state.selectedOrganizations.length === 0;
+    const noSelectedJobTypes = state.selectedJobTypes.length === 0;
+
+    if (noSelectedOrganization && noSelectedJobTypes) return state.jobs;
+
+    return state.jobs
+      .filter((job) => {
+        if (noSelectedOrganization) return true; // if the user has not selected an organization for this filter, I do always want to pass in this filter function all the job iterating over. Always going to return true, So all of our jobs will pass the filter test.
+
+        return state.selectedOrganizations.includes(job.organization); // otherwise, if the user selected org, then well check whether they include the current jobs organization
+      })
+      .filter((job) => {
+        if (noSelectedJobTypes) return true;
+        return state.selectedJobTypes.includes(job.jobType);
+      });
+
+    // NOTE:
+    // 1st filter: if have selected an org, return filtered org array 2nd filter: if have no selected job types, return filtered org array at first filtered operation
+
+    // 1st filter: if have no selected org, return all jobs will pass then pass to next filter operation 2nd filter: if have selected job types, return filtered job types array
+
+    // 1st filter: if have selected org, return filtered org array then pass to next filter operation 2nd filter: if have selected job types, return filtered job types array from filtered org array
+  },
+  ```
+
+- Getters with Arguments
+
+  - NOTE:
+    - getter method in vuex can invoke or call other getter methods
+    - can also pass arguments to getters by returning a function
+    - image below is a sample of getters with arguments:
+    - ![](./images/getterArguments.png)
+    - getTodoById is a getter method whose return value is a function that accepts an ID parameter. (The body of the return function is not the body of the getter method) **NOTE:** --when invoking getTodoById function, we do not need to pass state because vuex does it automatically, instead what we pass as the argument will be the parameter needed to the returned function of the getter method which is e.g the (id).
+      - due to the JS feature called closures, in the nested function body, have access to the state parameter from original getter method
+      - Closures
+        - gives a function access to all the variables of its parent function, even after that parent function has returned. The function keeps a reference to its outer scope, which preserves the scope chain throughtout time
+        - also includes the argumens because they are really just a local variable
+        - will execute local variable inside a function first, then when no local variable declared in function, closure will execute varibable in the global scope
+
+  ```js
+  // constants.js
+  export const INCLUDE_JOB_BY_ORGANIZATION = "INCLUDE_JOB_BY_ORGANIZATION";
+  export const INCLUDE_JOB_BY_JOB_TYPE = "INCLUDE_JOB_BY_JOB_TYPE";
+
+  // getters.js
+  [INCLUDE_JOB_BY_ORGANIZATION]: (state) => (job) => {
+    if (state.selectedOrganizations === 0) return true; // if user has not selected any organization, job must be included, so im going to return true
+
+    return state.selectedOrganizations.includes(job.organization); // in the individual single job and look for its organization property then see if it will be found within the state selected organization if found, job must be included
+
+    // This getter will return  a true or false value, and thats the entire responsibility of this getter
+  },
+  [INCLUDE_JOB_BY_JOB_TYPE]: (state) => (job) => {
+    if (state.selectedJobTypes === 0) return true;
+
+    return state.selectedJobTypes.includes(job.jobType);
+  },
+  ```
+
+- Test for Getters with Arguments
+
+  ```js
+  describe("INCLUDE_JOB_BY_ORGANIZATION", () => {
+    describe("when the user has not selected any organization", () => {
+      it("includes job", () => {
+        const state = {
+          selectedOrganizations: [],
+        };
+        const job = {
+          organization: "Google",
+        };
+        const includeJob = getters.INCLUDE_JOB_BY_ORGANIZATION(state)(job); // INCLUDE_BY_ORGANIZATION getter method automatically pass state as first argument and returns a function that accepts a job parameter. We can directly invoke in line by passing a pair of parenthesis the exact same way that we invoke any other function in JS (closures)
+        expect(includeJob).toBe(true);
+      });
+
+      it("identifies if job is associated woth given organizations", () => {
+        const state = {
+          selectedOrganizations: ["Google", "Microsoft"],
+        };
+        const job = {
+          organization: "Google",
+        };
+        const includeJob = getters.INCLUDE_JOB_BY_ORGANIZATION(state)(job);
+        expect(includeJob).toBe(true);
+      });
+    });
+  });
+  ```
+
+- Applying our Changes to FILTERED_JOBS
+
+  - NOTE:
+
+    - In getters, whenever we need a getter that accepts **custom argument**, we need to define a **getter that returns a function** thats accepts an argument e.g `[Getter method]: (state) => (custom argument) => {return function body}`
+    - In comparison in the original getter method, if we provide a second argument after the state, that second argument vuex will always provide the complete object of getters e.g `[Getter method](state, getters){method body}`
+      - can actually receive a reference to every available getter as the second argument to a getter method. `[getter method](state, getter){}`
+      - the 2nd argument in a getter method is an object that has all of the getters(entire getters object) on it.
+
+  ```js
+    // getters.js
+    [FILTERED_JOBS](state, getters) {
+    return state.jobs
+      .filter(
+        (job) => getters.INCLUDE_JOB_BY_ORGANIZATION(job)
+        // invoking INCLUDE_JOB_BY_ORGANIZATION, vuex will automatically pass the state, then returning function in will now have access to the job(current job in iteration) being pass as the argument.
+      )
+      .filter((job) => getters.INCLUDE_JOB_BY_JOB_TYPE(job));
+  }
+  ```
+
+- Fixing JobListings & Subnav Tests
+
+  - replace FILTERED_JOBS_BY_ORGANIZATIONS to FILTERED_JOBS
+  - ![](./images/JobListingsFixedTest.png)
+  - ![](./images/JobListingsFixedTest1.png)
+
+- Delete Old Two Getters
+
+  - remove FILTERED_JOBS_BY_ORGANIZATIONS & FILTERED_JOBS_BY_JOB_TYPES at getters.js
+
+  - remove FILTERED_JOBS_BY_ORGANIZATIONS & FILTERED_JOBS_BY_JOB_TYPES at getters.test.js
+
+- Adding Test for FILTERED_JOBS Getter
+
+  ```js
+  // getter.test
+  describe("FILTERED_JOBS", () => {
+    it("filter jobs by organization and job type", () => {
+      const INCLUDE_JOB_BY_ORGANIZATION = jest.fn().mockReturnValue(true);
+      const INCLUDE_JOB_BY_JOB_TYPE = jest.fn().mockReturnValue(true);
+      // jest.fn() just mock the fn and return a value of undefined, thats not going to work with filter as filter needs a true or false. Solution? invoking mock return value and passing in the return value we want (mockResolvedValue() ---for async) (mockReturnValue() ----sync)
+
+      const mockGetters = {
+        INCLUDE_JOB_BY_ORGANIZATION,
+        INCLUDE_JOB_BY_JOB_TYPE,
+      };
+
+      const job = { id: 1, title: "Best Job Ever" };
+      const state = {
+        jobs: [job],
+      };
+
+      const result = getters.FILTERED_JOBS(state, mockGetters); // from the filter job getter perspective, all it need is a method called include job organization thats going to return a boolean. Why boolean? because the filter method depends on having a function that returns a true or false
+      expect(result).toEqual([job]);
+      expect(INCLUDE_JOB_BY_ORGANIZATION).toHaveBeenCalledWith(job);
+      expect(INCLUDE_JOB_BY_JOB_TYPE).toHaveBeenCalledWith(job);
+    });
+  });
+  ```
+
+- Fixing Bug
+
+  ```js
+  // JobFilterSidebarJobType.vue
+  methods: {
+
+    selectedJobType() {
+      this.ADD_SELECTED_JOB_TYPES(this.selectedJobTypes);
+      this.$router.push({ name: "JobResults" });
+    },
+  },
+
+  // Test
+  describe("when user clicks checkbox", () => {
+    it("navigates user to job results page to see fresh batch of filters", async () => {
+      const $store = {
+        getters: {
+          UNIQUE_JOB_TYPES: new Set(["Full-time", "Part-time"]),
+        },
+        commit: jest.fn(),
+      };
+      const push = jest.fn();
+      const $router = {
+        push,
+      };
+      const wrapper = mount(
+        JobFilterSidebarJobType,
+        createConfig($store, $router)
+      );
+
+      const clickableArea = wrapper.find("[data-test='clickable-area']");
+      await clickableArea.trigger("click");
+
+      const fullTimeInput = wrapper.find("[data-test='Full-time']");
+      await fullTimeInput.setChecked();
+
+      expect(push).toHaveBeenCalledWith({ name: "JobResults" });
+    });
+  });
+
+  // same logi applies at JobFilterSidebarOrganization
+  ```
+
+- REVIEW:
+  - if we want to feed in any supplemental data to a getter, so that it can use it to derive some piece of new state, we can pass that in as the parametrs to the function that we return from the vuex getter method e.g `[Getter method]: (state) => (custom argument) => {return function body (---supplemental data)}`
+  - dont confude the parameter list for the getter method `(state, getters)` ---its always going to be state first, then the getters object that can invoke other getters \*\*vs parameter list for returned function `(state) => (job) => {}`
+  - ![](./images/sec26Rev.png)
+  - ![](./images/sec26Rev1.png)
+  - ![](./images/sec26Rev2.png)
+
 ## Section 27: Reactivity
+
+- What is Reactivity?
+
+  ```js
+  let a = 1;
+  let b = 2;
+  let c = a + b;
+  console.log(c); // output: 3 ---JS works is it evaluate the right side of the equal sign first (1 + 2).
+
+  // JS does not establish a connection with variable C in terms of saying C is going to be equal to whatever A and B is. A and B are just placeholders for actual number.
+
+  a = 8; // --if value of A change to 8, the value of c is not going to change to 10 to reflect the value of 8 + value of 3.
+
+  console.log(c); // output: 3 ---- The new value of A + existing value of B is not going to update, instead the value of C is going to be its original value at the time C was assigned which is 3.
+
+  // **THEREFORE: c is not reactive --it is not reacting to the changes in A and B because this syntax in JS(vanilla) does not mean connect C to whatever value A + whatever value B. It just simply does a one time SUM of the present value A + the present value of B at the time C was assigned
+  ```
+
+  - reactivity as they pertain the composition API introduced in Vue 3
+    - reactivity word means recalculated or reacted to a change/event
+    - ![](./images/reactivity.png)
+  - Composition API
+    - gives us a bunch of helper functions from Vue Library that allow us to emulate the same reactivity ideas but do so outside the confines of a specific component
 
 ## Section 28: Composition API I
 

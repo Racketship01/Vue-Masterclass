@@ -39,7 +39,7 @@
 
 <script>
 import { mapActions, mapGetters } from "vuex";
-import { FETCH_JOBS, FILTERED_JOBS_BY_ORGANIZATIONS } from "@/store/constants";
+import { FETCH_JOBS, FILTERED_JOBS } from "@/store/constants";
 import JobList from "@/components/JobResults/JobList.vue";
 
 export default {
@@ -54,7 +54,7 @@ export default {
   // },
   computed: {
     // ...mapState(["jobs"]), // vuex store state
-    ...mapGetters([FILTERED_JOBS_BY_ORGANIZATIONS]),
+    ...mapGetters([FILTERED_JOBS]),
     currentPage() {
       const pageString = this.$route.query.page || "1"; // page in query params
       // const pageNumber = Number.parseInt(pageString); // 1
@@ -67,19 +67,14 @@ export default {
     },
     nextPage() {
       const nextPage = this.currentPage + 1;
-      const maxPage = Math.ceil(
-        this.FILTERED_JOBS_BY_ORGANIZATIONS.length / 10
-      ); // 100 / 10 = 10
+      const maxPage = Math.ceil(this.FILTERED_JOBS.length / 10); // 100 / 10 = 10
       return nextPage <= maxPage ? nextPage : undefined; //nextPage
     },
     displayedJobs() {
       const pageNumber = this.currentPage;
       const firstJobIndex = (pageNumber - 1) * 10; // 1 - 1 = 0 and so on
       const lastJobIndex = pageNumber * 10; // 1 * 10 = 10(1st page last index) page 1 -> 10
-      return this.FILTERED_JOBS_BY_ORGANIZATIONS.slice(
-        firstJobIndex,
-        lastJobIndex
-      );
+      return this.FILTERED_JOBS.slice(firstJobIndex, lastJobIndex);
     },
   },
   async mounted() {

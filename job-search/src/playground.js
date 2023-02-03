@@ -151,6 +151,7 @@ number.add(25);
 console.log(number);
 */
 
+/*
 // Filter Array
 const numbers = [1, 3, 5, 7, 2, 9, 11, 6];
 
@@ -163,3 +164,56 @@ const jobs = [
 ];
 
 console.log(jobs.filter((job) => job.organization === "Microsoft"));
+
+// CLOSURES
+let f;
+
+const g = function () {
+  const a = 23;
+  f = function () {
+    console.log(a * 2);
+  };
+};
+
+g();
+f();
+// 46
+
+const h = function () {
+  const b = 777;
+  f = function () {
+    console.log(b * 2);
+  };
+};
+
+h();
+f();
+// 1554
+
+const secureBooking = function () {
+  let passengerCount = 0;
+
+  return function () {
+    passengerCount++;
+    console.log(`${passengerCount} passenger`);
+  };
+};
+const booker = secureBooking();
+booker();
+booker();
+booker();
+*/
+
+// REACTIVITY
+let a = 1;
+let b = 2;
+let c = a + b;
+console.log(c); // 3 ---JS works is it evaluate the right side of the equal sign first (1 + 2).
+
+// JS does not establish a connection with variable C in terms of saying C is going to be equal to whatever A and B is. A and B are just placeholders for actual number.
+
+a = 8; // --if value of A change to 8, the value of c is not going to change to 10 to reflect the value of 8 + value of 3.
+
+console.log(c); // 3 ---- The new value of A + existing value of B is not going to update, instead the value of C is going to be its original value at the time C was assigned which is 3.
+
+// **THEREFORE: c is not reactive --it is not reacting to the changes in A and B because this syntax in JS(vanilla) does not mean connect C to whatever value A + whatever value B. It just simply does a one time SUM of the present value A + the present value of B at the time C was assigned
