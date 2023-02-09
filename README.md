@@ -6561,6 +6561,333 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
   - Composition API
     - gives us a bunch of helper functions from Vue Library that allow us to emulate the same reactivity ideas but do so outside the confines of a specific component
 
+- Vues ref() function
+
+  - goal: emulate the reactivity behavior in google sheet within a JS file
+    - reactivity is not working on plain JS(vanilla), but can be abto to by importing some helper vue functions
+    - we can use the helper vue function outside the confines of a specific component
+    - computed properties has a similar reactivity ideas as computed properties re evaluated when data changes, but thats an example of a property that is connected to a vue configuration object ties to a component
+    - before, there is no way to take the reactivity logic and take it out of the component so it can be used independently but now with the available helper function in Vue 3.0 and the composition API, we can utilize the reactivity without even needing a component attached
+
+  ```js
+  //------- REF Function
+  const { ref } = require("vue"); // older way of importing exporting from another file as we are working with a plain JS file and depending on the version of Node, we may not necessarily have the import syntax available here because we dont have webPack running through this file
+
+  // ref() ----returns a reactive object (plain JS object)that is able to deal with reactivity and hides the value that we passed in under its value property
+  let a = ref(1);
+  let b = ref(2);
+  // {value: 1, otherMethods} --value property gives us the original value that we pass in
+  console.log(a.value); // 1
+  console.log(b.value); // 2 --verify that we can access data
+
+  /*
+  let c = a.value + b.value;
+  console.log(c); // 1 + 2 = 3
+  
+  a.value = 10;
+  console.log(c); // 3 --original value is non-reactive, we can acces it and reuse it but does not add reactivity behavior
+  */
+
+  let c = ref(a.value + b.value); // ref(3) --this syntax will  be differ from above as the c will now going to return a reactive object not the sum of a.value and b.value
+  console.log(c.value); // 3
+
+  a.value = 10;
+  console.log(c.value); // 3 --original value is non reactive even tho we change the value of a to 10
+  ```
+
+- Vue Computed() Function
+  - computed funciton allows us to tie/connect the dynamic computation of value to some kind of other reactive value
+  - similar to the idea of computed properties in a component, whenever data changes, the computed property reevaluated, this computed function basically does the exact same thing and gives us same reactivity but outside the scope of a specific component
+  - `computed(() => {})` --invoking computed function expects an argument is a function (expects an arrow function). Anything we use here in the body of arrow function, computed function is going to track those values then re-run if those values changes
+  - NOTE:
+    - the ref function specifies a value thats going to change throughtout the code
+    - the computed function allows us to calculate a derived value based on the reactive value(ref function) thats going to change
+    - this is how the data and computed properties work in our vue composition API
+      - ref as base data --the core independent data that is changing by itself the base state --to set up the thing up that is being tracked
+      - computed as computed property --a derived piece of data, calculated piece of data, a dependent piece of data that knows the change whenever the thing that's tracking is changing. --set up the calculation that is going to monitor those reactive objects
+- One More Example with Another Primitive (string) and Object
+
+  - STRING
+  - NOTE:
+    - using computed function, no need to use let for assigning variable, we can now use constant as the value now will be reassigning not the variable
+    - We can also pass in ref function array and object
+
+  ```js
+  //----------One More Example with Another Primitive (String)
+  const { ref, computed } = require("vue");
+
+  const name = ref("Boris");
+  console.log(name.value); // Boris
+
+  const title = computed(() => name.value + " the Great!");
+  console.log(title.value); // Boris the Great!
+
+  name.value = "Peter";
+  console.log(title.value); // Peter the Great!
+  ```
+
+  - OBJECT
+    - the value property will have the value of the whole object(original non reactive object)that being passed in
+
+  ```js
+  // ------------(Object)
+  const person = ref({
+    name: "Boris",
+    other: (this.name = "Peter"),
+  });
+
+  console.log(person); // reactivity object that ref function being returned
+
+  console.log(person.value); // { name: 'Boris', other: (this.name = "Peter") } --returned a JS object as the value property under person object
+
+  const title = computed(() => person.value.name + " the Great!");
+  console.log(title.value); // Boris the Great!
+
+  person.value.name = "Peter";
+  console.log(title.value); // Peter the Great!
+
+  /*
+  let title1 = person.name + " the Great!";
+  console.log(title1); // Boris the Great!
+  
+  person.name = "Peter";
+  console.log(title1); // Boris the Great!
+  
+  title1 = person.other + " the Great!";
+  console.log(title1); // Peter the Great!
+  */
+  ```
+
+- Cleaning up the Code with reactive() Function
+
+  - reactive function works similarly to ref function, but it is built and optimized specifically for objects
+  - can only use the reactive function with objects, we cannot with primitive values like strings or number
+  - he reactive function, it only accepts an object as its argument and once you provide it that you can still access your original properties normally.
+
+  ```js
+  // -------Reactive Function
+  const { reactive, computed } = require("vue");
+
+  const person1 = reactive({
+    name: "Boris",
+    other: (this.name = "Peter"),
+  });
+
+  const title1 = computed(() => person.name + " the Great!");
+  console.log(title1); // reactive object
+  console.log(title1.value); // Boris the Great!
+
+  person1.name = "Peter";
+  console.log(title1.value); // Peter the Great!
+
+  /*
+  5      -- Primitive data type (integer)
+  "hello" --Primitive data type(string)
+  "hello".toUpperCase() --refers to separate string object that creates an object that is available in JS that is totally different idea from string primitive
+  
+  **ref function 
+  ref({
+    value: 'Hello',
+    methodForReactivity: () => {},
+    anotherMethod: () => {}
+  }) -- object being pass to ref function in order to track value changing by accessing object by (nameObject.value.propertyName)
+  
+  **reactive function
+  reactive({
+    value: 'Hello',
+    reactiveMethods: () => {},
+    
+  }) --rather than wrapping this whole obj in a value property --vue dev add all the reactive functions and methods inside of the object --advantage spares the need to use the value property in accessing properties inside of an object (nameObject.propertyName)
+  */
+  ```
+
+- Multiple Properties on Reactive Object
+
+  ```js
+  //----------Multiple Properties in Reactive Object
+  const { reactive, computed } = require("vue");
+
+  const person2 = reactive({
+    firstName: "Boris",
+    lastName: "Martin",
+  });
+
+  const title2 = computed(
+    () => `${person2.firstName} ${person2.lastName} the Great!`
+  );
+  console.log(title1.value); // Boris Martin the Great!
+
+  person2.firstName = "Peter";
+  console.log(title2.value); // Peter Martin the Great!
+
+  person2.lastName = "Ford";
+  console.log(title2.value); // Peter Ford the Great!
+  ```
+
+- Multiple Level of Reactivity
+
+  - computed functions that depend on objects returned by computed functions
+  - allows us to do is to have a domino effect, a change in one reactive object triggers another update to another reactive object
+  - whole chain of reactivity that the beginning change trigger all subsequent changes to other
+
+  ```js
+  //---------Multiple Level of Reactivity
+  const { reactive, computed } = require("vue");
+
+  const person3 = reactive({
+    firstName: "Boris",
+    lastName: "Martin",
+  });
+
+  const title3 = computed(
+    () => `${person3.firstName} ${person3.lastName} the Great!`
+  );
+  const titleLength3 = computed(() => title.value.length);
+  console.log(title3.value); // Boris Martin the Great!
+  console.log(titleLength3.value); // 25
+
+  person3.firstName = "Petersss";
+  console.log(title3.value); // Petersss Martin the Great!
+  console.log(titleLength3.value); // 28 --triggers change whenever theres a changes in reactivity object(person3) being run at the title3 computed function
+
+  person3.lastName = "Ford";
+  console.log(title3.value); // Peter Ford the Great!
+  ```
+
+- Destructuring Problems
+
+  - when destructuring properties in a reactive object, we do not get reactive properties. We lose the reactivity of reactive function as we go from object to a primitive
+  - NOTE:
+    - when desrtructuring properties in reactive object, doesnt mean that its individual properties are reactive
+    - vue doesnt automatically apply reactivity to that individual property that bein accessing off the object
+
+  ```js
+  //--------Destructuring Problems
+  const { reactive, computed } = require("vue");
+
+  const person4 = reactive({
+    firstName: "Boris",
+    lastName: "Martin",
+  });
+
+  const { firstName, lastName } = person; // when destructuring from an object, vue is going to give us the original values --we lose the reactivity of the whole person object --we go from an object to a primitive and reactive function is not for primitive data type --therefore whenever we change a property in an reactive object it will not rerun because it does not have a reference or a link to the original reactive object
+
+  const title4 = computed(() => `${firstName} ${lastName} the Great!`);
+
+  console.log(title4.value); // Boris Martin the Great!
+
+  person4.firstName = "Petersss";
+  console.log(title4.value); // Boris Martin the Great!
+
+  person4.lastName = "Ford";
+  console.log(title4.value); // Boris Martin the Great!
+  ```
+
+- The toRef() Function
+
+  - use to destructure a single property to make a reactive property from a reactive object.
+  - returns a regular vue reactive object that also has a reference of value property ` reactiveObject --({value: propertyOriginalValue})`
+  - creates a similar a reactive object, but its whole purpose is exactly for the solution to the destructiong problem of reactive object
+  - unfortunately we can not use the regular destructuring syntax but we can emulate the same behaviour by using toRef function
+
+  ```js
+  // -------toRef Function
+  const { reactive, computed, toRef } = require("vue");
+
+  const person5 = reactive({
+    firstName1: "Boris",
+    lastName1: "Martin",
+  });
+
+  const firstName1 = toRef(person5, "firstName1"); // firstName1 --{value: 'Boris'} --1st argument: existing reactive object --2nd argument: string representing property that we want to make a reactive property
+  const lastName1 = toRef(person5, "lastName1"); // {value: 'Martin'} ----returns its own reactive object that can be able to get references to reactive object properties and make them reactive
+
+  const title5 = computed(
+    () => `${firstName1.value} ${lastName1.value} the Great!`
+  );
+
+  console.log(title5.value); // Boris Martin the Great!
+
+  person5.firstName = "Petersss";
+  console.log(title5.value); // Petersss Martin the Great!
+
+  person5.lastName = "Ford";
+  console.log(title5.value); // Petersss Ford the Great!
+  ```
+
+- The toRefs() Function
+
+  - use to destructure a multiple properties to make a reactive properties from a reactive object.
+  - similar to toRef(), the toRefs() also accepts a reactive object and going to return an object where every individual property is going to be reactive, and with this we can destructure properties from this returned objects.
+    - behind the scenes is it takes the entire object we passed in and it basically goes through every single property in the object, wraps it in its own reactive object, then returns a new object
+
+  ```js
+  // -------toRefs Function
+
+  const person6 = reactive({
+    firstName2: "Boris",
+    lastName2: "Martin",
+  });
+
+  const { firstName2, lastName2 } = toRefs(person6); //accepts a reactive object and going to return another reactive object where every individual property is going to be reactive with value property as reference
+  // firstName2 -- {value: 'Boris'}
+  // lastName2 -- {value: 'Boris'}
+
+  const title6 = computed(
+    () => `${firstName2.value} ${lastName2.value} the Great!`
+  );
+
+  console.log(title6.value); // Boris Martin the Great!
+
+  person6.firstName = "Petersss";
+  console.log(title6.value); // Petersss Martin the Great!
+
+  person6.lastName = "Ford";
+  console.log(title6.value); // Petersss Ford the Great!
+
+  // other example
+  const refPerson = toRefs(person6);
+
+  console.log(person6.firstName2); // "Boris "--simply take the firstName2 from person reactive object as a regular old reference to the string
+
+  console.log(refPerson.firstName2); // returns a another reactive object that wraps a value that is dynamically changing
+  ```
+
+  - ![](./images/toRefs.png)
+
+- Clatification on toRefs() Function
+  - only accepts a reactive object as its argument so that the toRefs() function can iterate over its properties, take each individual one and its respective value and make all of them reacive and returns a brande new object for each individual property
+  - it cannot accept a plain JS object
+  - ![](./images/toRefs1.png)
+  - ![](./images/toRefs2.png)
+- REVIEW:
+
+  - Composition API
+    - concept of reactivity in a plain JS file by importing various functions from vue
+    - reactivity?
+      - reacting to a change or an event
+    - can decouple or separate the dependencies between a component, Vue CLI in browser and the reactive logic that encode how it changes
+  - ref() function
+    - receives an argument
+    - wraps argument in a reactive object
+      - what is reactive object?
+        - an object thats able to keep track of changes to itself and also inform any dependencies whenever changes occured
+        - can access the original value via value property
+        - can overwrite the reactive object's value property
+    - can think of return value of ref function as data in a component. its a piece of data that is mutable
+  - computed() function
+    - can referenced values from reactive objects and rerun its piece of logic whenever any of those reactive object values change
+    - accepts function as an argument
+    - can think of a computed properties in a component
+  - reactive() function
+
+    - similar to ref() function, but only dealing with an object data type not primitive data type(string, number, boolean)
+
+  - ![](./images/sec27Review.png)
+  - ![](./images/sec27Review1.png)
+  - ![](./images/sec27Review2.png)
+  - ![](./images/sec27Review3.png)
+
 ## Section 28: Composition API I
 
 ## Section 29: Compositon API II
