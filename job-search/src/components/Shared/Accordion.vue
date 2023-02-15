@@ -20,8 +20,31 @@
 </template>
 
 <script>
+import { computed, ref } from "vue";
+
 export default {
   name: "Accordion",
+  props: {
+    header: {
+      type: String,
+      required: true,
+    },
+  },
+  setup() {
+    const isOpen = ref(false);
+
+    const open = () => {
+      isOpen.value = !isOpen.value;
+    };
+
+    const caretIcon = computed(() =>
+      isOpen.value ? ["fas", "angle-up"] : ["fas", "angle-down"]
+    ); // caretIcon is a reactive object that doesnt start out with an initial value property like header and isOpen, rather starts with a value that is dynamically computed based on the value of another reactive object --return an array as value
+
+    return { open, isOpen, caretIcon };
+  },
+
+  /*
   props: {
     header: {
       type: String,
@@ -43,6 +66,6 @@ export default {
       this.isOpen = !this.isOpen;
     },
   },
+  */
 };
-//
 </script>

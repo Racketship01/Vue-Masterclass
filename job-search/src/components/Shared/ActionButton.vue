@@ -5,6 +5,8 @@
 </template>
 
 <script>
+import { computed, toRefs } from "vue";
+
 export default {
   name: "ActionButton",
   props: {
@@ -23,12 +25,27 @@ export default {
       }, //used a validation logic anytime parent component renders an action button and give a type prop --(value) represents the actual prop value declared at parent component and passed in as an argument. Then confirm if the value is valid thru setting conditions in the body
     },
   },
+  setup(props) {
+    //const { type } = props; // type will be a regular string not a reactive because destructuring reactive object(props) individual property(type) will lose its reactivity. Solution? use toRefs() function
+    const { type } = toRefs(props); // type is no longer a string, its a reactive object with a value property and its changes over time (type.value)
+
+    const buttonClass = computed(() => {
+      return {
+        [type.value]: true,
+      };
+    });
+    // props --reactive object with the props that the parent passes in to this action component --(props) is the props object that setup method has an access
+
+    return { buttonClass };
+  },
+
   //["text", "type"],
   // data() {
   //   return {
   //     primary: this.isPrimary,
   //   };
   // },
+  /*
   computed: {
     buttonClass() {
       return {
@@ -42,7 +59,9 @@ export default {
         // secondary: !this.primary,
       };
     },
+    
   },
+  */
 };
 </script>
 

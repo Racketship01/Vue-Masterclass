@@ -1313,7 +1313,7 @@
 - Intro to Computed Properties
 
   - their function is pretty similarly to how our data properties work but they are reserved for a specific use case in vue
-  - computed properties is where we want to put any pieces of information that are dependent on other pieces of data that change, but only change as other pieces of data change around them that are derived, or in other words, that come from calculations based on other pieces of information.
+  - computed properties is where we want to put any pieces of information that are dependent on other pieces of data that change, but only change as other pieces of data change around them that are derived, or in other words, that come from **calculations based on other pieces of information**
   - Computed property --re-evaluated by vue based on some kind of dependency or some kind of other piece of information changing(property). They are derived data because they are dependent on properties that is changing.
   - also use a computed property to generate JS object to provide for css classes and that object was dependent on an existing piece of data that come literally from the components data property and can be also come from a props that we pass in
 
@@ -6596,7 +6596,8 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
   ```
 
 - Vue Computed() Function
-  - computed funciton allows us to tie/connect the dynamic computation of value to some kind of other reactive value
+
+  - computed function allows us to tie/connect the dynamic computation of value to some kind of other reactive value
   - similar to the idea of computed properties in a component, whenever data changes, the computed property reevaluated, this computed function basically does the exact same thing and gives us same reactivity but outside the scope of a specific component
   - `computed(() => {})` --invoking computed function expects an argument is a function (expects an arrow function). Anything we use here in the body of arrow function, computed function is going to track those values then re-run if those values changes
   - NOTE:
@@ -6605,6 +6606,27 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
     - this is how the data and computed properties work in our vue composition API
       - ref as base data --the core independent data that is changing by itself the base state --to set up the thing up that is being tracked
       - computed as computed property --a derived piece of data, calculated piece of data, a dependent piece of data that knows the change whenever the thing that's tracking is changing. --set up the calculation that is going to monitor those reactive objects
+
+  ```js
+  //--------Vue Computed Function from Vue Library
+
+  const { ref, computed } = require("vue");
+
+  let a = ref(1);
+  let b = ref(2);
+
+  // **computed() --keeping track of changes and re-evaluating whenever see a changes then rerun the computed function
+  let c = computed(() => a.value + b.value); // computed function returns a reactive object, exact kinds of object in A and B which is going to be a JS object with a value property set to the computation.
+  console.log(c); // reactive object
+  console.log(c.value); // 3
+
+  a.value = 10; //--tie the computation of C based on the reactivity of A and B as those values changes, then update C (similar idea to the computed property in a component)
+  console.log(c.value); // 12
+
+  b.value = 15;
+  console.log(c.value); // 25
+  ```
+
 - One More Example with Another Primitive (string) and Object
 
   - STRING
@@ -6889,6 +6911,201 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
   - ![](./images/sec27Review3.png)
 
 ## Section 28: Composition API I
+
+- Introduction to Composition API
+
+  - ![](./images/compositionAPI.png)
+  - ![](./images/compositionAPI1.png)
+  - ![](./images/compositionAPI2.png)
+  - ![](./images/compositionAPI3.png)
+
+- The setup() Method
+
+  - use to place all of the configuration logic of a component
+  - vue is going to execute setup method only once. It's going to run before the create, created and mounted lifecycle hook but after deals with props
+  - Vue is going to run setup method once before everything in the component kind of initialize and appears in browser
+  - this keyword will no longer be use /access in setup method, for technical reason, because this keyword usually refers to the current object in JS but when in setup method is running, the current component doesnt fully exist yet so we cant reference it
+  - In our setup method, we must return an object and in this object were going to define the properties that we want to make available throughout the HTML template --think of almost similar to the data and computed properties in Options API
+  - NOTE: in composition API, we must always define a setup method in the script section in our component configuration object
+
+- The ref() funtion in setup() method
+
+  - NOTE: whenever we use a reactive object to interpolate at template section, vue will automatically look for its value property, no need to reference its value e.g `{{header.value}}` instead `{{header}}`
+
+  ```js
+  import { ref } from "vue";
+
+  export default {
+    name: "Accordion",
+    setup() {
+      const header = ref("Cool Title");
+
+      const open = () => {
+        header.value = "Amazing Title";
+      };
+
+      return { header, open };
+    },
+  };
+  ```
+
+- More Practice of ref() Function
+
+  - NOTE: whenever we use a reactive object to reference at template section, vue will automatically look for its value property, no need to reference its value e.g `v-if="isOpen.value` instead `v-if="isOpen`
+
+  ```js
+  import { ref } from "vue";
+
+  export default {
+    name: "Accordion",
+    setup() {
+      const header = ref("Cool Title");
+      const isOpen = ref(false);
+
+      const open = () => {
+        isOpen.value = !isOpen.value;
+      };
+
+      return { header, open, isOpen };
+    },
+  };
+  ```
+
+- The computed() Function
+
+  - NOTE:
+    - behind the scenes, vues knows to pass the value of the reactive object not the whole reactive object itself.
+    - the icon prop of the font awesome icon library expects an array. Don't worry, it's still going to get an array even though it returns a reactive object. Vue understands that it wants to get the inherent value and provide it the same way that it does for header.
+
+  ```js
+  import { computed, ref } from "vue";
+
+  export default {
+    name: "Accordion",
+    setup() {
+      const header = ref("Cool Title");
+      const isOpen = ref(false);
+
+      const open = () => {
+        isOpen.value = !isOpen.value;
+      };
+
+      const caretIcon = computed(() =>
+        isOpen.value ? ["fas", "angle-up"] : ["fas", "angle-down"]
+      ); // caretIcon is a reactive object that doesnt start out with an initial value property like header and isOpen, rather starts with a value that is dynamically computed based on the value of another reactive object --return an array as value
+
+      return { header, open, isOpen, caretIcon };
+    },
+  };
+  ```
+
+- Accepting Props in Component
+
+  - same in Option API, it will be set above setUp() method in component configuration object
+
+  ```js
+  export default {
+    name: "Accordion",
+    props: {
+      header: {
+        type: String,
+        required: true,
+      },
+    },
+    setup() {
+      const isOpen = ref(false);
+
+      const open = () => {
+        isOpen.value = !isOpen.value;
+      };
+
+      const caretIcon = computed(() =>
+        isOpen.value ? ["fas", "angle-up"] : ["fas", "angle-down"]
+      );
+
+      return { open, isOpen, caretIcon };
+    },
+  };
+  ```
+
+- Checking in on Test Suite
+
+  - because of our good test suite as well as how Composition API and Options API are relatively similar to each other, the test suite is still going to pass just like before, our core test logiv remains the same. None of our refractor in accordion broke our test
+
+- Accepting Props in setup() Method in ActionButton.vue
+
+  - how do we get access to props in the body of setup() method?
+    - vue is going to provide props as the very first argument to the setup method
+    - if you dont need props, no need to define props as argument
+
+  ```js
+  import { computed } from "vue";
+
+  export default {
+    name: "ActionButton",
+    props: {
+      text: {
+        type: String, // data type
+        required: true, // whether that property is requred from the parent component
+
+        //NOTE: whenever a parent component renders action button anywhere in the app, the parent component must give a text prop. And if it doesn't do that, then Vue is going to output a warning in our chrome console.
+      },
+      type: {
+        type: String,
+        required: false, //if not requires, give fallback value or default value just in case parent component doesnt declare a type prop
+        default: "primary",
+        validator(value) {
+          return ["primary", "secondary"].includes(value);
+        }, //used a validation logic anytime parent component renders an action button and give a type prop --(value) represents the actual prop value declared at parent component and passed in as an argument. Then confirm if the value is valid thru setting conditions in the body
+      },
+    },
+    setup(props) {
+      const buttonClass = computed(() => {
+        return {
+          [props.type]: true,
+        };
+      });
+      // props --reactive object with the props that the parent passes in to this action component --(props) is the props object that setup method has an access
+
+      return { buttonClass };
+    },
+  };
+  ```
+
+  - ![](./images/propsInSetup.png)
+
+- Using toRefs() on Props
+
+  - can we do ES6 destructure in setup method? `const {type} = props`
+    - no, because getting a value from props in the root scope of setup will cause the value to lose reactivity
+    - ![](./images/toRefsInProp.png)
+    - NOTE:
+      - just because we have reactive object does not mean that any individual property we destructure is reactive itself
+      - if you ever wanted to destructure props or any reactive object, use toRefs() function
+  - Solution? use toRefs() function to make all individual properties reactive
+
+  ```js
+  setup(props) {
+    //const { type } = props; // type will be a regular string not a reactive because destructuring reactive object(props) individual property(type) will lose its reactivity. Solution? use toRefs() function
+    const { type } = toRefs(props); // type is no longer a string, its a reactive object with a value property and its changes over time (type.value)
+
+    const buttonClass = computed(() => {
+      return {
+        [type.value]: true,
+      };
+    });
+    // props --reactive object with the props that the parent passes in to this action component --(props) is the props object that setup method has an access
+
+    return { buttonClass };
+  },
+  ```
+
+- REVIEW:
+  - ![](./images/sec28Rev.png)
+  - ![](./images/sec28Rev1.png)
+  - ![](./images/sec28Rev2.png)
+  - ![](./images/sec28Rev3.png)
+  - ![](./images/sec28Rev4.png)
 
 ## Section 29: Compositon API II
 
