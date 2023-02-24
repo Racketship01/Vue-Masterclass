@@ -2662,7 +2662,7 @@ console.log(goodFood);
   ```
 - Improving our design
 
-  - 1st problem: DUPLICATION OF DATA --duplicating data across both job search form component and text input (as ext input component keeps track of the changes through its own data property and then it emits that handle input event to the parent where the parent updates)
+  - 1st problem: DUPLICATION OF DATA --duplicating data across both job search form component and text input (as text input component keeps track of the changes through its own data property and then it emits that handle input event to the parent where the parent updates)
 
     - SOLUTION: instead of creating separate data on each text input component --feed in data via a prop. (allows us to remove any local data storage from text input and also solve the data duplication problem. There is only one place where we are storing that data and that is in our job search form.)
 
@@ -2695,14 +2695,14 @@ console.log(goodFood);
     - first thing happens in text input then flow up event to parent then updates thru props and flows back down to text input and this rule applies everytime user type a character
 
     ```html
+    <!-- parent -->
     <template>
-      <!-- parent -->
       <text-input
         placeholder="Software engineer"
         :valueProp="role"
         @handle-input="role = $event"
       />
-      <!-- :value here is the prop that will be passed in text input child component -->
+      <!-- :valueProp here is the prop that will be passed in text input child component -->
     </template>
 
     <!-- child -->
@@ -7108,6 +7108,831 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
   - ![](./images/sec28Rev4.png)
 
 ## Section 29: Compositon API II
+
+- Composition API with v-model
+
+  - How do we create a piece of data that is going to change over time in setup method? use ref() function
+
+  ```js
+  //JobSearchForm.vue
+  import { ref } from "vue";
+
+  setup() {
+    const role = ref("");
+    const location = ref("");
+
+    return { role, location };
+  },
+  ```
+
+- Composition API with Vue Router
+
+  - NOTE:
+    - `$router` can be accessing thru `this.$router` but setup() method has no acces to this keyword and $router
+    - Solution: use helper functions from vue router libraries to give us access to $router `import {useRouter} from 'vue-router'`
+    - **useRouter**
+      - specifically related to vue router on how we navigate around the app
+      - these helper function is called composable
+      - allow us to get access to important piece of information within our setup() method
+      - invoking this function returns the vue router object
+
+  ```js
+  // JobSearchForm
+  import {useRouter} from 'vue-router';
+
+  setup() {
+    const router = useRouter(); // returns vue router object
+
+    const role = ref("");
+    const location = ref("");
+
+    const searchForJobs = () => {
+      router.push({
+        name: "JobResults",
+        query: {
+          role: role.value,
+          location: location.value,
+        }, // queryParams --?role=Developer&location=Los&Angeles
+      });
+    };
+
+    return { role, location, searchForJobs };
+  },
+  ```
+
+- Fixing Failing JobSearchForm Test
+
+  - failing as the $router is no more using at the new Composition API as we relying at the useRouter at setup() method
+  - Solution: mock out useRouter but will be going to be a little bit different
+    - import the useRouter at the Test Suite then mock it out so the mock out will return a value such as an object with a push method
+
+  ```js
+  import { useRouter } from "vue-router";
+  jest.mock("vue-router"); // same as axios, mock out everything in vue router library --includes useRouter then replace with a jest mock
+
+  it("directs user to job results page with users search parameters", async () => {
+    // const $router = { push }; // router set to plain JS object with push method (mock function)
+
+    const push = jest.fn(); // mock function for this.$router.push()
+    useRouter.mockReturnValue({ push }); //NOTE: invoking mock function will return undefined, we need mockReturnValue to return a push method then mock it
+
+    const wrapper = mount(JobSearchForm, {
+      attachTo: document.body,
+      global: {
+        stubs: {
+          FontAwesomeIcon: true,
+        },
+      },
+    });
+    const roleInput = wrapper.find("[data-test='role-input']");
+    await roleInput.setValue("Vue Developer");
+
+    const locationInput = wrapper.find("[data-test='location-input']");
+    await locationInput.setValue("Ohio");
+
+    const submitButton = wrapper.find("[data-test='form-submit-button']");
+    await submitButton.trigger("click");
+
+    // able to test component interaction with vue router w/o actually involving a vue router and by walking through the component in a way that a typical will user interact
+    expect(push).toBeCalledWith({
+      name: "JobResults",
+      query: {
+        role: "Vue Developer",
+        location: "Ohio",
+      },
+    }); //asserting if the push method has been invoked with an object
+  });
+  ```
+
+- Composition API with Vue Router Route
+
+  - useRoute() function
+    - works exactly as useRouter
+    - gives us access to the route within a given setup() method
+
+  ```js
+  // Subnav
+  import { computed } from "vue";
+  import { useRoute } from "vue-router";
+
+  setup() {
+    const route = useRoute();
+
+    const onJobResultsPage = computed(() => route.name === "JobResults");
+
+    return { onJobResultsPage };
+  },
+  ```
+
+- Composition API with Vuex Getters
+
+  - remember that mapGetters is also a helper function and we have access on every component to this.$store.getters.FILTERED_JOBS in vuex but on setup method we dont have access to this
+  - Solution? use a helper function of **useStore** from vuex library
+  - NOTE: the helper function were importing such as useStore, useRouter, useRoute are called composables --technical name for a helper function that returns some bit of reactive state/object in the vue ecosystem
+
+  ```js
+  // Subnav
+  import { computed } from "vue";
+  import { useRoute } from "vue-router";
+  import { useStore } from "vuex";
+
+  setup() {
+    const store = useStore();
+    const FILTERED_JOBS = computed(() => store.getters.FILTERED_JOBS);
+
+    const route = useRoute();
+    const onJobResultsPage = computed(() => route.name === "JobResults");
+
+    return { onJobResultsPage, FILTERED_JOBS };
+  },
+  ```
+
+- Fixing Failing Test for Subnav
+
+  - same when testing useRouter
+  - mock the useRoute and useStore
+
+  ```js
+  // Subnav test
+  import { useRoute } from "vue-router";
+  import { useStore } from "vuex";
+  jest.mock("vue-router");
+  jest.mock("vuex");
+
+  describe('Subnav', {
+    const createConfig = () => ({
+    // global settings of the component
+    global: {
+      stubs: {
+        FontAwesomeIcon: true,
+      }, // keys or properties in stub object represents the components that we want to stub out to replace whenever test utils mounts a sub component then provide a value since stub is an object and set to true --boolean set up if we have multiple different components being rendered or replace
+    },
+  });
+    describe("when user is on the job page", () => {
+    it("display job count", () => {
+
+      useRoute.mockReturnValue({ name: "JobResults" });
+      useStore.mockReturnValue({
+        getters: {
+          FILTERED_JOBS: [{ id: 1 }, { id: 2 }],
+        },
+      });
+
+      const wrapper = mount(Subnav, createConfig());
+
+      const jobCount = wrapper.find("[data-test='job-count']");
+      expect(jobCount.text()).toEqual("2 jobs matched");
+    });
+  });
+  describe("when user is not on the job page", () => {
+    it("does NOT display the job count", () => {
+      useRoute.mockReturnValue({ name: "Home" });
+      useStore.mockReturnValue({
+        getters: {
+          FILTERED_JOBS: [],
+        },
+      });
+
+      const wrapper = mount(Subnav, createConfig());
+      const jobCount = wrapper.find("[data-test='job-count']");
+      expect(jobCount.exists()).toBe(false);
+    });
+  });
+  })
+  ```
+
+- Building Composables
+
+  - Composable
+    - a composable function is a plain JS function that uses the reactivity aspects that Vue gives us
+    - allow us to use reactive ideas whether it be the reactive store from vue, the reactive route or router or even our own reactive object
+    - can use these pieces of functionality outside of any given component and reuse that logic in many component
+    -
+
+  ```js
+  // useConfirmRoute.js
+  import { computed } from "vue";
+  import { useRoute } from "vue-router";
+
+  const useConfirmRoute = (routeName) => {
+    const route = useRoute();
+    return computed(() => route.name === routeName);
+  };
+
+  export default useConfirmRoute;
+
+  // Subnav.vue
+  import useConfirmRoute from "@/composables/useConfirmRoute";
+
+  setup() {
+    const onJobResultsPage = useConfirmRoute("JobResults");
+    // const route = useRoute();
+    // const onJobResultsPage = computed(() => route.name === "JobResults");
+
+    return { onJobResultsPage};
+  },
+  ```
+
+- Testing useConfirmRoute Composable
+
+  ```js
+  // useConfirmRoute test
+  import { useRoute } from "vue-router";
+  jest.mock("vue-router");
+
+  import useConfirmRoute from "@/composables/useConfirmRoute";
+
+  describe("useConfirmRoute", () => {
+    it("determines if page route matches specified route", () => {
+      useRoute.mockReturnValue({ name: "JobResults" });
+      const routeName = "JobResults";
+      const route = useConfirmRoute(routeName);
+      expect(route.value).toBe(true); // accessing the value property of useConfirmRoute
+    });
+  });
+  ```
+
+- Simplify Subnav Test
+
+  - mock out composable function of useConfirmRoute
+
+  ```js
+  import { ref } from "vue";
+  import useConfirmRoute from "@/composables/useConfirmRoute";
+  jest.mock("@/composables/useConfirmRoute"); //instead of passing vu-router, link to the composables should be
+
+  describe("when user is on the job page", () => {
+    it("display job count", () => {
+      useConfirmRoute.mockReturnValue(ref(true)); // one way to have a reactive object that stores an internal value of a boolean is to use ref() function
+
+      useStore.mockReturnValue({
+        getters: {
+          FILTERED_JOBS: [{ id: 1 }, { id: 2 }],
+        },
+      });
+
+      const wrapper = mount(Subnav, createConfig());
+
+      const jobCount = wrapper.find("[data-test='job-count']");
+      expect(jobCount.text()).toEqual("2 jobs matched");
+    });
+  });
+  ```
+
+- Writing Composables for Getters
+
+  - simple composable function that gets vuex store and knows how to talk to a getter and return a reactive object, holding that piece of information that any component is welcome to use
+
+  ```js
+  // useFilterJobs.js composables
+  import { computed } from "vue";
+  import { useStore } from "vuex";
+
+  import { FILTERED_JOBS } from "@/store/constants";
+
+  export const useFilterJobs = () => {
+    const store = useStore();
+    return computed(() => store.getters[FILTERED_JOBS]);
+  };
+
+  // composables.test.js --useFilterJobs
+  import { useStore } from "vuex";
+  jest.mock("vuex");
+
+  import { useFilterJobs } from "@/store/composables/useFilterJobs";
+
+  describe("Composables", () => {
+    describe("useFilterJobs", () => {
+      it("retrieves filtered jobs from store", () => {
+        useStore.mockReturnValue({
+          getters: {
+            FILTERED_JOBS: [{ id: 1 }],
+          },
+        });
+        const result = useFilterJobs();
+        expect(result.value).toEqual([{ id: 1 }]);
+      });
+    });
+  });
+
+  // Subnav component
+  import { useFilterJobs } from "@/store/composables/useFilterJobs";
+
+  setup() {
+    const FILTERED_JOBS = useFilterJobs()
+    // const store = useStore();
+    // const FILTERED_JOBS = computed(() => store.getters.FILTERED_JOBS);
+
+    return {FILTERED_JOBS}
+  }
+  ```
+
+- Updating Subnav Test
+
+  ```js
+  // import { useStore } from "vuex";
+  // jest.mock("vuex");
+  import { useFilterJobs } from "@/store/composables/useFilterJobs";
+  jest.mock("@/store/composables/useFilterJobs");
+
+  describe("when user is on the job page", () => {
+    it("display job count", () => {
+      useConfirmRoute.mockReturnValue(ref(true)); // one way to have a reactive object that stores an internal value of a boolean is to use ref() function
+
+      useFilterJobs.mockReturnValue(ref([{ id: 1 }, { id: 2 }]));
+
+      const wrapper = mount(Subnav, createConfig());
+
+      const jobCount = wrapper.find("[data-test='job-count']");
+      expect(jobCount.text()).toEqual("2 jobs matched");
+    });
+  });
+  ```
+
+- Adding more Composables for Getters
+
+  - TDD
+
+  ```js
+  // composables test
+  import {
+    useUniqueJobTypes,
+    useUniqueOrganizations,
+  } from "@/store/composables";
+
+  describe("useUniqueJobTypes", () => {
+    it("retrieves unique job types from store", () => {
+      useStore.mockReturnValue({
+        getters: {
+          UNIQUE_JOB_TYPES: new Set(["Full-time"]),
+        },
+      });
+      const result = useUniqueJobTypes();
+      expect(result).toEqual(["Full-time"]);
+    });
+  });
+
+  describe("useUniqueOrganizations", () => {
+    it("retrieves unique job types from store", () => {
+      useStore.mockReturnValue({
+        getters: {
+          UNIQUE_ORGANIZATIONS: new Set(["Apple"]),
+        },
+      });
+      const result = useUniqueOrganizations();
+      expect(result).toEqual(["Apple"]);
+    });
+  });
+
+  // composables.js
+  import { UNIQUE_JOB_TYPES, UNIQUE_ORGANIZATIONS } from "@/store/constants";
+
+  export const useUniqueJobTypes = () => {
+    const store = useStore();
+    return computed(() => store.getters[UNIQUE_JOB_TYPES]);
+  };
+
+  export const useUniqueOrganizations = () => {
+    const store = useStore();
+    return computed(() => store.getters[UNIQUE_ORGANIZATIONS]);
+  };
+  ```
+
+- Refractoring JobFilterSidebarJobTypes
+
+  ```js
+  import { ref } from "vue";
+  import { useUniqueJobTypes } from "@/store/composables";
+
+  export default {
+    name: "JobFilterSidebarJobType",
+    components: {
+      Accordion,
+    },
+    setup() {
+      const selectedJobTypes = ref([]);
+      const uniqueJobTypes = useUniqueJobTypes();
+      return { selectedJobTypes, uniqueJobTypes };
+    },
+    /*
+  data() {
+    return {
+      selectedJobTypes: [],
+    };
+  },
+  computed: {
+    ...mapGetters([UNIQUE_JOB_TYPES]),
+  },
+  */
+  };
+  ```
+
+- Replacing mapMutations Functions
+
+  ```js
+  // JobFilterSidebarJobType
+  import { ref } from "vue";
+  import { useStore } from "vuex";
+  import { useRouter } from "vue-router";
+
+  setup() {
+    const store = useStore();
+    const router = useRouter();
+
+    const selectedJobTypes = ref([]);
+    const uniqueJobTypes = useUniqueJobTypes();
+
+    const selectedJobType = () => {
+      store.commit(ADD_SELECTED_JOB_TYPES(selectedJobTypes));
+      router.push({ name: "JobResults" });
+    };
+    return { selectedJobTypes, uniqueJobTypes, selectedJobType };
+  },
+
+  /*
+  methods: {
+    ...mapMutations([ADD_SELECTED_JOB_TYPES]), // this.$store.commit([ADD_SELECTED_JOB_TYPES])
+    selectedJobType() {
+      this.ADD_SELECTED_JOB_TYPES(this.selectedJobTypes);
+      this.$router.push({ name: "JobResults" });
+    },
+  },
+  */
+  ```
+
+- Fixing Failing JobFilterSibebarJobType Test
+
+  ```js
+  import { useUniqueJobTypes } from "@/store/composables";
+  jest.mock("@/store/composables");
+  import { useStore } from "vuex";
+  jest.mock("vuex");
+  import { useRouter } from "vue-router";
+  jest.mock("vue-router");
+
+  describe("JobFilterSidebarJobType", () => {
+    /*
+  const createConfig = ($store, $router) => ({
+    global: {
+      mocks: {
+        $store,
+        $router,
+      },
+    },
+    stubs: {
+      FontAwesomeIcon: true,
+    },
+  });
+  */
+
+    const createConfig = () => ({
+      stubs: {
+        FontAwesomeIcon: true,
+      },
+    });
+
+    describe("when user clicks checkbox", () => {
+      it("communicates that user has selected checkbox for job types", async () => {
+        useUniqueJobTypes.mockReturnValue(new Set(["Full-time", "Part-time"]));
+        const commit = jest.fn();
+        useStore.mockReturnValue({ commit });
+        useRouter.mockReturnValue({ push: jest.fn() });
+        /*
+      const $store = {
+        getters: {
+          UNIQUE_JOB_TYPES: new Set(["Full-time", "Part-time"]),
+        },
+        commit,
+      };
+      const $router = {
+        push: jest.fn(),
+      };
+      */
+        const wrapper = mount(JobFilterSidebarJobType, createConfig());
+
+        const clickableArea = wrapper.find("[data-test='clickable-area']");
+        await clickableArea.trigger("click");
+
+        const fullTimeInput = wrapper.find("[data-test='Full-time']"); // referencing dynamic data-test at the element in component -- :data-test=""
+        await fullTimeInput.setChecked(); // setChecked() --simulate a checkbox
+
+        expect(commit).toHaveBeenCalledWith("ADD_SELECTED_JOB_TYPES", [
+          "Full-time",
+        ]); // commit method will run and pass the name of the mutation as the first argument then afterwards pass any argument [here passing an array]
+      });
+    });
+  });
+  ```
+
+- Refractoring JobFilterSidebarOrganization
+
+  ```js
+  import { ref } from "vue";
+  import { useUniqueOrganizations } from "@/store/composables";
+  import { useStore } from "vuex";
+  import { useRouter } from "vue-router";
+  import { ADD_SELECTED_ORGANIZATIONS } from "@/store/constants";
+
+  setup() {
+    const store = useStore();
+    const router = useRouter();
+
+    const selectedOrganizations = ref([]);
+    const uniqueOrganizations = useUniqueOrganizations();
+
+    const selectOrganization = () => {
+      store.commit(ADD_SELECTED_ORGANIZATIONS, selectedOrganizations.value);
+      router.push({ name: "JobResults" });
+    };
+
+    return { selectedOrganizations, uniqueOrganizations, selectOrganization };
+  },
+
+  /*
+  data() {
+    return {
+      selectedOrganizations: [],
+    };
+  },
+  computed: {
+    ...mapGetters([UNIQUE_ORGANIZATIONS]), // top-level property --**this.UNIQUE_ORGANIATIONS
+
+    // UNIQUE_ORGANIZATIONS() {
+    //   return this.$store.getters.UNIQUE_ORGANIZATIONS;
+    // },
+  },
+  methods: {
+    ...mapMutations([ADD_SELECTED_ORGANIZATIONS]),
+
+    selectOrganization() {
+      this.ADD_SELECTED_ORGANIZATIONS(this.selectedOrganizations);
+      this.$router.push({ name: "JobResults" });
+    },
+  },
+  */
+  ```
+
+- Fixing Failing JobFilterSidebarOrganization Test
+
+  ```js
+  import { useUniqueOrganizations } from "@/store/composables";
+  jest.mock("@/store/composables");
+  import { useStore } from "vuex";
+  jest.mock("vuex");
+  import { useRouter } from "vue-router";
+  jest.mock("vue-router");
+
+  describe("JobFilterSidebarOrganization", () => {
+    const createConfig = () => ({
+      global: {
+        stubs: {
+          FontAwesomeIcon: true, // need to stub font awesome icon component being rendered at accordion component
+        },
+      },
+    });
+
+    describe("when user clicks checkbox", () => {
+      it("communicates that user has selected checkbox for organization", async () => {
+        useUniqueOrganizations.mockReturnValue(new Set(["Google", "Amazon"]));
+        const commit = jest.fn();
+        useStore.mockReturnValue({ commit });
+        useRouter.mockReturnValue({ push: jest.fn() });
+
+        const wrapper = mount(JobFilterSidebarOrganization, createConfig());
+
+        const clickableArea = wrapper.find("[data-test='clickable-area']");
+        await clickableArea.trigger("click");
+
+        const googleInput = wrapper.find("[data-test='Google']"); // referencing dynamic data-test at the elemnt in component -- :data-test=""
+        await googleInput.setChecked(); // setChecked() --simulate a checkbox
+
+        expect(commit).toHaveBeenCalledWith("ADD_SELECTED_ORGANIZATIONS", [
+          "Google",
+        ]); // commit method will run tand pass the name of the mutation as the first argument then afterwards pass any argument [here passing an array]
+      });
+    });
+  });
+  ```
+
+- Creating Reusable JobFiltersSidebarCheckboxGroup Component
+
+  ```js
+  <template>
+  <accordion :header="header">
+    <div class="mt-5">
+      <fieldset>
+        <ul class="flex flex-row flex-wrap">
+          <li v-for="value in uniqueValues" :key="value" class="w-1/2 h-8">
+            <input
+              :id="value"
+              v-model="selectedValues"
+              :value="value"
+              type="checkbox"
+              class="mr-3"
+              :data-test="value"
+              @change="selectValue"
+            />
+            <label :for="value" data-test="value">{{ value }}</label>
+          </li>
+        </ul>
+      </fieldset>
+    </div>
+  </accordion>
+  </template>
+
+  <script>
+  import { ref } from "vue";
+  import { useStore } from "vuex";
+  import { useRouter } from "vue-router";
+
+
+  import Accordion from "@/components/Shared/Accordion.vue";
+
+  export default {
+    name: "JobFilterSidebarCheckboxGroup",
+    components: {
+      Accordion,
+    },
+    props: {
+      header: {
+        type: String,
+        required: true,
+      },
+      uniqueValues: {
+        type: Set,
+        required: true,
+      },
+      mutation: {
+        type: String,
+        required: true,
+      },
+    },
+    setup(props) {
+      const store = useStore();
+      const router = useRouter();
+
+      const selectedValues = ref([]);
+
+
+      const selectValue = () => {
+        store.commit(props.mutation, selectedValues.value);
+        router.push({ name: "JobResults" });
+      };
+
+      return { selectedValues, selectValue };
+    },
+  };
+  </script>
+
+  ```
+
+- Reuse JobFiltersSidebarCheckboxGroup
+
+  ```html
+  <template>
+    <section>
+      <job-filter-sidebar-checkbox-group
+        header="Job Types"
+        :unique-values="uniqueJobTypes"
+        :mutation="ADD_SELECTED_JOB_TYPES"
+      />
+      <job-filter-sidebar-checkbox-group
+        header="Organization"
+        :unique-values="uniqueOrganizations"
+        :mutation="ADD_SELECTED_ORGANIZATIONS"
+      />
+    </section>
+  </template>
+
+  <script>
+    import JobFilterSidebarCheckboxGroup from "./JobFilterSidebarCheckboxGroup.vue";
+
+    import {
+      useUniqueOrganizations,
+      useUniqueJobTypes,
+    } from "@/store/composables";
+
+    import {
+      ADD_SELECTED_JOB_TYPES,
+      ADD_SELECTED_ORGANIZATIONS,
+    } from "@/store/constants";
+
+    export default {
+      name: "JobFilterSidebar",
+      components: {
+        JobFilterSidebarCheckboxGroup,
+      },
+      setup() {
+        const uniqueOrganizations = useUniqueOrganizations();
+        const uniqueJobTypes = useUniqueJobTypes();
+        return {
+          uniqueOrganizations,
+          uniqueJobTypes,
+          ADD_SELECTED_JOB_TYPES,
+          ADD_SELECTED_ORGANIZATIONS,
+        };
+      },
+    };
+  </script>
+  ```
+
+- Adding Tests for JobFiltersSidebarCheckboxGroup
+
+  ```js
+  import { mount } from "@vue/test-utils";
+
+  import JobFilterSidebarCheckboxGroup from "@/components/JobResults/JobFilterSideBar/JobFilterSidebarCheckboxGroup.vue";
+
+  jest.mock("@/store/composables");
+  import { useStore } from "vuex";
+  jest.mock("vuex");
+  import { useRouter } from "vue-router";
+  jest.mock("vue-router");
+
+  describe("JobFilterSidebarCheckboxGroup", () => {
+    const createConfig = (props = {}) => ({
+      stubs: {
+        FontAwesomeIcon: true,
+      },
+      props: {
+        header: "Some Header",
+        uniqueValues: new Set(["Value A", "Value B"]),
+        mutation: "SOME_MUTATION",
+        ...props,
+      },
+    });
+
+    it("renders unique list of job types for filtering jobs ", async () => {
+      const commit = jest.fn();
+      useStore.mockReturnValue({ commit });
+
+      const props = { uniqueValues: new Set(["Value A", "Value B"]) };
+      const wrapper = mount(JobFilterSidebarCheckboxGroup, createConfig(props));
+
+      const clickableArea = wrapper.find("[data-test='clickable-area']");
+      await clickableArea.trigger("click");
+
+      const checkboxLabels = wrapper.findAll("[data-test='value']");
+
+      const checkbox = checkboxLabels.map((node) => node.text());
+      expect(checkbox).toEqual(["Value A", "Value B"]);
+    });
+
+    describe("when user clicks checkbox", () => {
+      it("communicates that user has selected checkbox for job types", async () => {
+        const commit = jest.fn();
+        useStore.mockReturnValue({ commit });
+        useRouter.mockReturnValue({ push: jest.fn() });
+
+        const props = {
+          uniqueValues: new Set(["Value A"]),
+          mutation: "SOME_MUTATION",
+        };
+        const wrapper = mount(
+          JobFilterSidebarCheckboxGroup,
+          createConfig(props)
+        );
+
+        const clickableArea = wrapper.find("[data-test='clickable-area']");
+        await clickableArea.trigger("click");
+
+        const checkboxInput = wrapper.find("[data-test='Value A']"); // referencing dynamic data-test at the element in component -- :data-test=""
+        await checkboxInput.setChecked(); // setChecked() --simulate a checkbox
+
+        expect(commit).toHaveBeenCalledWith("SOME_MUTATION", ["Value A"]); // commit method will run and pass the name of the mutation as the first argument then afterwards pass any argument [here passing an array]
+      });
+
+      it("navigates user to job results page to see fresh batch of filters", async () => {
+        useStore.mockReturnValue({ commit: jest.fn() });
+
+        const push = jest.fn();
+        useRouter.mockReturnValue({ name: "JobResults", push });
+
+        const props = {
+          uniqueValues: new Set(["Value A"]),
+        };
+        const wrapper = mount(
+          JobFilterSidebarCheckboxGroup,
+          createConfig(props)
+        );
+
+        const clickableArea = wrapper.find("[data-test='clickable-area']");
+        await clickableArea.trigger("click");
+
+        const checkboxInput = wrapper.find("[data-test='Value A']");
+        await checkboxInput.setChecked();
+
+        expect(push).toHaveBeenCalledWith({ name: "JobResults" });
+      });
+    });
+  });
+  ```
+
+- REVIEW:
+  - ![](./images/sec29Rev.png)
+  - ![](./images/sec29Rev1.png)
+  - ![](./images/sec29Rev2.png)
+  - ![](./images/sec29Rev3.png)
 
 ## Section 30: Composition API III
 

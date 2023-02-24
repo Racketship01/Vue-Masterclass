@@ -4,7 +4,7 @@
       <fieldset>
         <ul class="flex flex-row flex-wrap">
           <li
-            v-for="organization in UNIQUE_ORGANIZATIONS"
+            v-for="organization in uniqueOrganizations"
             :key="organization"
             class="w-1/2 h-8"
           >
@@ -28,11 +28,13 @@
 </template>
 
 <script>
-import { mapGetters, mapMutations } from "vuex";
-import {
-  ADD_SELECTED_ORGANIZATIONS,
-  UNIQUE_ORGANIZATIONS,
-} from "@/store/constants";
+import { ref } from "vue";
+import { useUniqueOrganizations } from "@/store/composables";
+
+import { useStore } from "vuex";
+import { useRouter } from "vue-router";
+// import { mapGetters, mapMutations } from "vuex";
+import { ADD_SELECTED_ORGANIZATIONS } from "@/store/constants";
 import Accordion from "@/components/Shared/Accordion.vue";
 
 export default {
@@ -40,6 +42,22 @@ export default {
   components: {
     Accordion,
   },
+  setup() {
+    const store = useStore();
+    const router = useRouter();
+
+    const selectedOrganizations = ref([]);
+    const uniqueOrganizations = useUniqueOrganizations();
+
+    const selectOrganization = () => {
+      store.commit(ADD_SELECTED_ORGANIZATIONS, selectedOrganizations.value);
+      router.push({ name: "JobResults" });
+    };
+
+    return { selectedOrganizations, uniqueOrganizations, selectOrganization };
+  },
+
+  /*
   data() {
     return {
       selectedOrganizations: [],
@@ -63,5 +81,6 @@ export default {
       this.$router.push({ name: "JobResults" });
     },
   },
+  */
 };
 </script>

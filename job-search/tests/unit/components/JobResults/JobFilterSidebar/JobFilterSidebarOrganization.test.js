@@ -1,14 +1,17 @@
 import { mount } from "@vue/test-utils"; // --not using a shallowMount(stubbing out child component) as accordion (child component) need to test its child elements (dynamic slot content)
 
+import { useUniqueOrganizations } from "@/store/composables";
+jest.mock("@/store/composables");
+import { useStore } from "vuex";
+jest.mock("vuex");
+import { useRouter } from "vue-router";
+jest.mock("vue-router");
+
 import JobFilterSidebarOrganization from "@/components/JobResults/JobFilterSideBar/JobFilterSidebarOrganization.vue";
 
 describe("JobFilterSidebarOrganization", () => {
-  const createConfig = ($store, $router) => ({
+  const createConfig = () => ({
     global: {
-      mocks: {
-        $store,
-        $router,
-      },
       stubs: {
         FontAwesomeIcon: true, // need to stub font awesome icon component being rendered at accordion component
       },
@@ -16,16 +19,8 @@ describe("JobFilterSidebarOrganization", () => {
   });
 
   it("renders unique list of organization for filtering jobs", async () => {
-    const $store = {
-      getters: {
-        UNIQUE_ORGANIZATIONS: new Set(["Google", "Amazon"]),
-      },
-    };
-    const $router = { push: jest.fn() };
-    const wrapper = mount(
-      JobFilterSidebarOrganization,
-      createConfig($store, $router)
-    );
+    useUniqueOrganizations.mockReturnValue(new Set(["Google", "Amazon"]));
+    const wrapper = mount(JobFilterSidebarOrganization, createConfig());
 
     const clickableArea = wrapper.find("[data-test='clickable-area']"); // need to test user action --accordion is a collapsable component that will renders if trigger a click action
     await clickableArea.trigger("click");
@@ -38,18 +33,12 @@ describe("JobFilterSidebarOrganization", () => {
 
   describe("when user clicks checkbox", () => {
     it("communicates that user has selected checkbox for organization", async () => {
+      useUniqueOrganizations.mockReturnValue(new Set(["Google", "Amazon"]));
       const commit = jest.fn();
-      const $store = {
-        getters: {
-          UNIQUE_ORGANIZATIONS: new Set(["Google", "Amazon"]),
-        },
-        commit,
-      };
-      const $router = { push: jest.fn() };
-      const wrapper = mount(
-        JobFilterSidebarOrganization,
-        createConfig($store, $router)
-      );
+      useStore.mockReturnValue({ commit });
+      useRouter.mockReturnValue({ push: jest.fn() });
+
+      const wrapper = mount(JobFilterSidebarOrganization, createConfig());
 
       const clickableArea = wrapper.find("[data-test='clickable-area']");
       await clickableArea.trigger("click");
@@ -63,18 +52,12 @@ describe("JobFilterSidebarOrganization", () => {
     });
 
     it("navigates user to job results page to see fresh batch of filters", async () => {
-      const $store = {
-        getters: {
-          UNIQUE_ORGANIZATIONS: new Set(["Google", "Amazon"]),
-        },
-        commit: jest.fn(),
-      };
+      useUniqueOrganizations.mockReturnValue(new Set(["Google", "Amazon"]));
+
+      useStore.mockReturnValue({ commit: jest.fn() });
       const push = jest.fn();
-      const $router = { push };
-      const wrapper = mount(
-        JobFilterSidebarOrganization,
-        createConfig($store, $router)
-      );
+      useRouter.mockReturnValue({ push });
+      const wrapper = mount(JobFilterSidebarOrganization, createConfig());
 
       const clickableArea = wrapper.find("[data-test='clickable-area']");
       await clickableArea.trigger("click");

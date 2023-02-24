@@ -29,10 +29,10 @@ export default {
   //     value: "",
   //   };
   // },
-  emits: ["update:modelValue"],
+  emits: ["update:modelValue"], // component can emit many different events and use it in emit method //emits of array is sort of like the ultimate source of true, its a declaration that says this array is the only event that permitting a child component to emit
   methods: {
     handleInput($event) {
-      this.$emit("update:modelValue", $event.target.value); // 1st:  2nd: data
+      this.$emit("update:modelValue", $event.target.value); // 1st:emit  2nd: data
       // emitting a handle input event with the current value from the event generated from the browser whenever the user types letter in
     },
   },
