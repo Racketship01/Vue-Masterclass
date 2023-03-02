@@ -6,8 +6,24 @@ import { flushPromises, shallowMount, RouterLinkStub } from "@vue/test-utils";
 import axios from "axios";
 jest.mock("axios"); // loop through all of axios functionality then replaced that in its own mock function. We can now use functionality (e.g get) or invoke axios regularly here at test suite.
 */
+import { ref } from "vue";
+import { useFilterJobs, useFetchJobsDispatch } from "@/store/composables";
+jest.mock("@/store/composables");
+
+import useCurrentPage from "@/composables/useCurrentPage";
+jest.mock("@/composables/useCurrentPage");
+
+import usePreviousAndNextPages from "@/composables/usePreviousAndNextPages";
+jest.mock("@/composables/usePreviousAndNextPages");
 
 import JobListings from "@/components/JobResults/JobListings.vue";
+
+/*
+import { useRoute } from "vue-router";
+jest.mock("vue-router");
+import { useStore } from "vuex";
+jest.mock("vuex");
+*/
 
 describe("JobListings", () => {
   /*
@@ -20,25 +36,12 @@ describe("JobListings", () => {
   });
   */
 
+  /*
   const createRoute = (queryParams = {}) => ({
     query: {
       page: "5",
       ...queryParams,
     },
-  });
-
-  const createStore = (store = {}) => ({
-    /*
-    state: {
-      jobs: Array(15).fill({}), // mocking store state of jobs with 15 object iteration
-    },
-    */
-    getters: {
-      FILTERED_JOBS: [],
-    },
-    dispatch: jest.fn(), // jest mocking dispatch method in the store object invoking at the mounted lifecyle
-
-    ...store,
   });
 
   const createConfig = ($route, $store) => ({
@@ -52,14 +55,38 @@ describe("JobListings", () => {
       },
     },
   });
+  */
+  /*
+  const createStore = (store = {}) => ({
+    
+    state: {
+      jobs: Array(15).fill({}), // mocking store state of jobs with 15 object iteration
+    },
+    
+    getters: {
+      FILTERED_JOBS: [],
+    },
+    dispatch: jest.fn(), // jest mocking dispatch method in the store object invoking at the mounted lifecyle
+
+    ...store,
+  });
+*/
+
+  const createConfig = () => ({
+    global: {
+      stubs: {
+        "router-link": RouterLinkStub,
+      },
+    },
+  });
 
   describe("when component mounts", () => {
     it("makes call to fetch jobs from API", () => {
-      const $route = createRoute();
-      const dispatch = jest.fn();
-      const $store = createStore({ dispatch });
-      shallowMount(JobListings, createConfig($route, $store));
-      expect(dispatch).toHaveBeenCalledWith("FETCH_JOBS");
+      useFilterJobs.mockReturnValue({ value: [] });
+      useCurrentPage.mockReturnValue({ value: 2 });
+      usePreviousAndNextPages.mockReturnValue({ previousPage: 1, nextPage: 3 });
+      shallowMount(JobListings, createConfig());
+      expect(useFetchJobsDispatch).toHaveBeenCalled();
     });
   });
   /*
@@ -82,92 +109,99 @@ describe("JobListings", () => {
     axios.get.mockResolvedValue({ data: Array(15).fill({}) }); // --request to an API outside of the scope of vue component --Vue test suite isnt registering the return resolve value of this axios.get, we simulated this API reqs and response of 15 objects but not registering/ updating with component as promise not fully completed --nextTick will not work as Vue doesnt know unresolved promise, Solution? use flush Promise fn to resolve promise immediately
     */
 
-    const queryParams = {
-      page: 1,
-    };
-
-    const $route = createRoute(queryParams);
-    const numberOfJobsInStore = 15;
-    const $store = createStore({
-      getters: {
-        FILTERED_JOBS: Array(numberOfJobsInStore).fill({}),
-      },
+    useFilterJobs.mockReturnValue({ value: Array(15).fill({}) });
+    useCurrentPage.mockReturnValue({ value: 1 });
+    usePreviousAndNextPages.mockReturnValue({
+      previousPage: undefined,
+      nextPage: 2,
     });
-    const wrapper = shallowMount(JobListings, createConfig($route, $store)); // page property will be needed in this "it" test as the page will specify what to  render the max of 10 jobs
+
+    const wrapper = shallowMount(JobListings, createConfig()); // page property will be needed in this "it" test as the page will specify what to  render the max of 10 jobs
 
     await flushPromises(); // resolves all outstanding promises immediately --shoot off that promise after we mounted our component as the axios reqs going to run in the mounted hook lifecycle --after finish up all resolve promises, then the component will be updated, we now have 15 job listings because we have a jobs array of 15 elements.
 
+    useFilterJobs();
     const jobListings = wrapper.findAll("[data-test='job-listings'"); // findAll occurences of 15 arrays(declared at Array(15)) items being rendered
 
     // assertion to validate an array length --use .length()method or .toHaveLength() assertion matcher
     expect(jobListings).toHaveLength(10);
   });
 
-  describe("when query params exclude page number", () => {
-    it("displays page number 1", () => {
-      const queryParams = { page: undefined }; //falsy value that will fall to 1 (this.$route.query.page || "1")
+  it("displays page number ", () => {
+    /*
+      const queryParams = { page: undefined }; //falsy value that will fall to 1 (this.$route.query.page || "1"
+      useRoute.mockReturnValue({
+        query: {
+          page: undefined,
+        },
+      });
+      useStore.mockReturnValue();
+      */
 
-      const $route = createRoute(queryParams);
-      const $store = createStore();
-      const wrapper = shallowMount(JobListings, createConfig($route, $store));
-      expect(wrapper.text()).toMatch("Page 1");
+    useFilterJobs.mockReturnValue({ value: [] });
+    useCurrentPage.mockReturnValue(ref(1)); // when testing DOM interaction, plain value object will not be a reactive object(displayedJobs function needed a reactive currentPage value to render at template), we are not able to mock out the original reactive useCurrentPage. Solution? make it a reactive object using ref() function
+
+    usePreviousAndNextPages.mockReturnValue({
+      previousPage: undefined,
+      nextPage: 2,
     });
-  });
-
-  describe("when query params include page number", () => {
-    it("displays page numbers", () => {
-      const queryParams = { page: "3" };
-
-      const $route = createRoute(queryParams);
-      const $store = createStore();
-      const wrapper = shallowMount(JobListings, createConfig($route, $store));
-      expect(wrapper.text()).toMatch("Page 3");
-    });
+    const wrapper = shallowMount(JobListings, createConfig());
+    expect(wrapper.text()).toMatch("Page 1");
   });
 
   describe("when user is on first page", () => {
     it("does not show link to previous page", () => {
-      const queryParams = { page: "1" };
-      const $route = createRoute(queryParams);
-
-      const $store = createStore();
-      const wrapper = shallowMount(JobListings, createConfig($route, $store));
+      // const queryParams = { page: "1" };
+      useFilterJobs.mockReturnValue({ value: [] });
+      useCurrentPage.mockReturnValue(ref(1));
+      usePreviousAndNextPages.mockReturnValue({
+        previousPage: undefined,
+        nextPage: 2,
+      });
+      const wrapper = shallowMount(JobListings, createConfig());
       const previousPage = wrapper.find("[data-test = 'previous-page-link']");
       expect(previousPage.exists()).toBe(false);
     });
 
     it("show link to next page", async () => {
-      const queryParams = { page: "1" };
-      const $route = createRoute(queryParams);
-      const numberOfJobsInStore = 15;
-      const $store = createStore({
-        getters: {
-          FILTERED_JOBS: Array(numberOfJobsInStore).fill({}),
-        },
+      // const queryParams = { page: "1" };
+      useFilterJobs.mockReturnValue({ value: [] });
+      useCurrentPage.mockReturnValue(ref(1));
+      usePreviousAndNextPages.mockReturnValue({
+        previousPage: undefined,
+        nextPage: 2,
       });
-      const wrapper = shallowMount(JobListings, createConfig($route, $store));
+      const wrapper = shallowMount(JobListings, createConfig());
       await flushPromises();
       const nextPage = wrapper.find("[data-test = 'next-page-link']");
       expect(nextPage.exists()).toBe(true);
     });
   });
 
-  describe("when user is on the last page", () => {
+  describe("when user is on the last page of job results", () => {
     it("does not show link to next page", async () => {
-      const queryParams = { page: "2" };
-      const $route = createRoute(queryParams);
-      const $store = createStore();
-      const wrapper = shallowMount(JobListings, createConfig($route, $store));
+      // const queryParams = { page: "2" };
+      useFilterJobs.mockReturnValue({ value: [] });
+      useCurrentPage.mockReturnValue(ref(2));
+      usePreviousAndNextPages.mockReturnValue({
+        previousPage: 1,
+        nextPage: undefined,
+      });
+      const wrapper = shallowMount(JobListings, createConfig());
       await flushPromises();
       const nextPage = wrapper.find("[data-test = 'next-page-link']");
       expect(nextPage.exists()).toBe(false);
     });
 
     it("show link to previous page", async () => {
-      const queryParams = { page: "2" };
-      const $route = createRoute(queryParams);
-      const $store = createStore();
-      const wrapper = shallowMount(JobListings, createConfig($route, $store));
+      // const queryParams = { page: "2" };
+      useFilterJobs.mockReturnValue({ value: [] });
+      useCurrentPage.mockReturnValue(ref(2));
+      usePreviousAndNextPages.mockReturnValue({
+        previousPage: 1,
+        nextPage: undefined,
+      });
+      const wrapper = shallowMount(JobListings, createConfig());
       await flushPromises();
       const previousPage = wrapper.find("[data-test = 'previous-page-link']");
       expect(previousPage.exists()).toBe(true);

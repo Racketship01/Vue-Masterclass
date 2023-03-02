@@ -7936,7 +7936,413 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
 
 ## Section 30: Composition API III
 
+- The onMounted() Function
+
+  - refactoring options API mounted lifecycle hook in composition API
+    - NOTE: mounted() hook is automatically run by vue whenever it mounts the component
+  - for every lifecyck that exist in options API, there is a complementary function that we can import from vue that we can utilize within our setup() method that basically do the same thing
+  - onMounted()
+    - is the complementary for mounted() lifecycle hook at setup() method. It is giving us the opportunity to run some kind of oppurtunity to run some kind of logic on component mount
+    - expects function as an argument, it takes a function as an argument and its going to run that function based on when the component mounts
+    - someways comparable to the computed function that expects function as an argument but the key difference is when it comes to the computed function reevaluates every changes, while in onMounted() will only run once the component mounts
+
+  ```js
+  <script>
+  import { ref, onMounted } from "vue";
+  import axios from "axios";
+
+  export default {
+    name: "Spotlight",
+    setup() {
+      const spotlights = ref([]);
+
+      const getSpotlights = async () => {
+        const baseURL = process.env.VUE_APP_API_URL;
+        const url = `${baseURL}/spotlights`;
+        const response = await axios.get(url);
+        spotlights.value = response.data;
+      };
+      onMounted(getSpotlights); // no need to invoked function because it will produce the return value, just provide the function name then no need to invoke // knows to run whenever the component mount, no need to return at the setup(), similarly to the other component lifecycle it will run at the specific moments in the components lifecycle
+
+      return { spotlights };
+    },
+
+    /*
+    ------- OPTION API -----------
+    data() {
+      return {
+        spotlights: [],
+      };
+    },
+    async mounted() {
+      const baseURL = process.env.VUE_APP_API_URL;
+      const url = `${baseURL}/spotlights`;
+      const response = await axios.get(url);
+      // console.log(response.data);
+
+      this.spotlights = response.data;
+    },
+  */
+  };
+
+
+  </script>
+
+  ```
+
+- Refactoring JobListings Component to Use Composition API
+
+  ```js
+  import { useStore } from "vuex";
+  import { FETCH_JOBS } from "@/store/constants";
+  import JobList from "@/components/JobResults/JobList.vue";
+  import { onMounted } from "vue";
+  import { useFilterJobs } from "@/store/composables";
+
+  setup() {
+    const store = useStore();
+    const fetchJobs = async () => {
+      store.dispatch(FETCH_JOBS);
+    };
+    onMounted(fetchJobs);
+
+    const filteredJobs = useFilterJobs();
+
+    const currentPage = computed(() =>
+      Number.parseInt(route.query.page || "1")
+    );
+    const previousPage = computed(() => {
+      const previousPage = currentPage.value - 1;
+      const firstPage = 1;
+      return previousPage >= firstPage ? previousPage : undefined;
+    });
+    const nextPage = computed(() => {
+      const nextPage = currentPage.value + 1;
+      const maxPage = Math.ceil(filteredJobs.value.length / 10);
+      return nextPage <= maxPage ? nextPage : undefined;
+    });
+
+    const displayedJobs = computed(() => {
+      const pageNumber = currentPage.value;
+      const firstJobIndex = (pageNumber - 1) * 10;
+      const lastJobIndex = pageNumber * 10;
+      return filteredJobs.value.slice(firstJobIndex, lastJobIndex);
+    });
+    return { filteredJobs, currentPage, previousPage, nextPage, displayedJobs };
+  },
+  },
+  /*
+  // data() {
+  //   return {
+  //     jobs: [], // store jobs(endpoint) array being fetch in backend
+  //   };
+  // },
+  computed: {
+    // ...mapState(["jobs"]), // vuex store state
+    ...mapGetters([FILTERED_JOBS]),
+    currentPage() {
+      const pageString = this.$route.query.page || "1"; // page in query params
+      // const pageNumber = Number.parseInt(pageString); // 1
+      return Number.parseInt(pageString); // 1
+    },
+    previousPage() {
+      const previousPage = this.currentPage - 1; // 1 - 1 = 0
+      const firstPage = 1;
+      return previousPage >= firstPage ? previousPage : undefined; // undefined (not rendering previous page link at 1st page)
+    },
+    nextPage() {
+      const nextPage = this.currentPage + 1;
+      const maxPage = Math.ceil(this.FILTERED_JOBS.length / 10); // 100 / 10 = 10
+      return nextPage <= maxPage ? nextPage : undefined; //nextPage
+    },
+    displayedJobs() {
+      const pageNumber = this.currentPage;
+      const firstJobIndex = (pageNumber - 1) * 10; // 1 - 1 = 0 and so on
+      const lastJobIndex = pageNumber * 10; // 1 * 10 = 10(1st page last index) page 1 -> 10
+      return this.FILTERED_JOBS.slice(firstJobIndex, lastJobIndex);
+    },
+  },
+  async mounted() {
+    // const baseURL = process.env.VUE_APP_API_URL;
+    // const response = await axios.get(`${baseURL}/jobs`);
+    // this.jobs = response.data;
+
+    // this.$store.dispatch(FETCH_JOBS); // API call from action at vuex store
+
+    this.FETCH_JOBS(); //dispatch action to the store
+  },
+  methods: {
+    ...mapActions([FETCH_JOBS]), // provide action names and creates methods with same names on our action store which will then invoke dispatch method in action store
+  },
+  */
+  ```
+
+- Extracting Composables from JobListings I: useCurrentPage
+
+  ```js
+  // useCurrentPage js file
+  import { useRoute } from "vue-router";
+  import { computed } from "vue";
+
+  const useCurrentPage = () => {
+    const route = useRoute();
+    return computed(() => Number.parseInt(route.query.page || "1"));
+  };
+
+  export default useCurrentPage;
+
+  // useCurrentPage Test
+  import useCurrentPage from "@/composables/useCurrentPage";
+
+  import { useRoute } from "vue-router";
+  jest.mock("vue-router");
+
+  describe("useCurrentPage", () => {
+    describe("when page include query params", () => {
+      it("returns page number", () => {
+        useRoute.mockReturnValue({ query: { page: "5" } });
+        const result = useCurrentPage();
+        expect(result.value).toBe(5);
+      });
+    });
+
+    describe("when page exclude query params", () => {
+      it("default to page number 1", () => {
+        useRoute.mockReturnValue({ query: {} });
+        const result = useCurrentPage();
+        expect(result.value).toBe(1);
+      });
+    });
+  });
+
+  // Invoke useCurrentPage at the JobListings component setup method
+  ```
+
+- Extracting Previous and Next Page Logic to Composable Function
+
+  - NOTE: when we invoke reactive object as an argument in a reactive function, no need to put ".value"
+
+  ```js
+  // usePreviousAndNextPages.js
+  import { computed } from "vue";
+
+  const usePreviousAndNextPages = (currentPage, maxPage) => {
+    const previousPage = computed(() => {
+      const previousPage = currentPage.value - 1;
+      const firstPage = 1;
+      return previousPage >= firstPage ? previousPage : undefined;
+    });
+    const nextPage = computed(() => {
+      const nextPage = currentPage.value + 1;
+
+      return nextPage <= maxPage.value ? nextPage : undefined;
+    });
+
+    return { previousPage, nextPage };
+  };
+
+  export default usePreviousAndNextPages;
+
+  // JobListings.vue
+  import usePreviousAndNextPages from "@/composables/usePreviousAndNextPages";
+
+  setup() {
+    const currentPage = useCurrentPage();
+
+    const maxPage = Math.ceil(filteredJobs.value.length / 10);
+
+    const { previousPage, nextPage } = usePreviousAndNextPages(
+      currentPage,
+      maxPage
+    );
+  }
+  ```
+
+- Adding Test for usePreviousAndNextPages
+
+  ```js
+  import usePreviousAndNextPages from "@/composables/usePreviousAndNextPages";
+
+  describe("usePreviousAndNextPages", () => {
+    it("calculates page before current one", () => {
+      const currentPage = { value: 8 };
+      const maxPage = { value: 10 };
+      const { previousePage } = usePreviousAndNextPages(currentPage, maxPage);
+      expect(previousePage.value).toBe(7);
+    });
+
+    describe("when current page is the first page", () => {
+      it("does not provide previous page", () => {
+        const currentPage = { value: 1 };
+        const maxPage = { value: 1 };
+        const { previousePage } = usePreviousAndNextPages(currentPage, maxPage);
+        expect(previousePage.value).toBeUndefined(); // use to match with undefined values
+      });
+    });
+
+    it("calculates page after current one", () => {
+      const currentPage = { value: 7 };
+      const maxPage = { value: 10 };
+      const { nextPage } = usePreviousAndNextPages(currentPage, maxPage);
+      usePreviousAndNextPages(currentPage, maxPage);
+      expect(nextPage.value).toBe(8);
+    });
+
+    describe("when current page is in the last page", () => {
+      it("does not provide next page", () => {
+        const currentPage = { value: 10 };
+        const maxPage = { value: 10 };
+        const { nextPage } = usePreviousAndNextPages(currentPage, maxPage);
+        expect(nextPage.value).toBeUndefined(); // use to match with undefined values
+      });
+    });
+  });
+  ```
+
+- Move Dispatch out in JobListings Component
+
+  ```js
+  // composables.js
+  /*  ACTIONS */
+  export const useFetchJobsDispatch = async () => {
+    const store = useStore();
+    store.dispatch(FETCH_JOBS);
+  };
+
+  // composables test
+  describe("useFetchJobDispatch", () => {
+    it("calls fetch job at action API", () => {
+      const dispatch = jest.fn();
+      useStore.mockReturnValue({
+        dispatch,
+      });
+      useFetchJobsDispatch();
+      expect(dispatch).toHaveBeenCalledWith("FETCH_JOBS");
+    });
+  });
+  ```
+
+- Fixing Failing Tests for JobListing
+
+  ```js
+  // JobListings test
+  import { ref } from "vue";
+  import { useFilterJobs, useFetchJobsDispatch } from "@/store/composables";
+  jest.mock("@/store/composables");
+
+  import useCurrentPage from "@/composables/useCurrentPage";
+  jest.mock("@/composables/useCurrentPage");
+
+  import usePreviousAndNextPages from "@/composables/usePreviousAndNextPages";
+  jest.mock("@/composables/usePreviousAndNextPages");
+
+  describe("when component mounts", () => {
+    it("makes call to fetch jobs from API", () => {
+      useFilterJobs.mockReturnValue({ value: [] });
+      useCurrentPage.mockReturnValue({ value: 2 });
+      usePreviousAndNextPages.mockReturnValue({ previousPage: 1, nextPage: 3 });
+      shallowMount(JobListings, createConfig());
+      expect(useFetchJobsDispatch).toHaveBeenCalled();
+    });
+  });
+
+  it("creates a job listings for a maximum of 10 jobs", async () => {
+    useFilterJobs.mockReturnValue({ value: Array(15).fill({}) });
+    useCurrentPage.mockReturnValue({ value: 1 });
+    usePreviousAndNextPages.mockReturnValue({
+      previousPage: undefined,
+      nextPage: 2,
+    });
+
+    const wrapper = shallowMount(JobListings, createConfig());
+
+    await flushPromises();
+
+    useFilterJobs();
+    const jobListings = wrapper.findAll("[data-test='job-listings'");
+
+    expect(jobListings).toHaveLength(10);
+  });
+
+  it("displays page number ", () => {
+    useFilterJobs.mockReturnValue({ value: [] });
+    useCurrentPage.mockReturnValue(ref(1)); // when testing DOM/HTML template interaction, plain value object will not be a reactive object(displayedJobs function needed a reactive currentPage value to render at template), we are not able to mock out the original reactive useCurrentPage. Solution? make it a reactive object using ref() function
+
+    usePreviousAndNextPages.mockReturnValue({
+      previousPage: undefined,
+      nextPage: 2,
+    });
+    const wrapper = shallowMount(JobListings, createConfig());
+    expect(wrapper.text()).toMatch("Page 1");
+  });
+
+  describe("when user is on first page", () => {
+    it("does not show link to previous page", () => {
+      // const queryParams = { page: "1" };
+      useFilterJobs.mockReturnValue({ value: [] });
+      useCurrentPage.mockReturnValue(ref(1));
+      usePreviousAndNextPages.mockReturnValue({
+        previousPage: undefined,
+        nextPage: 2,
+      });
+      const wrapper = shallowMount(JobListings, createConfig());
+      const previousPage = wrapper.find("[data-test = 'previous-page-link']");
+      expect(previousPage.exists()).toBe(false);
+    });
+
+    it("show link to next page", async () => {
+      // const queryParams = { page: "1" };
+      useFilterJobs.mockReturnValue({ value: [] });
+      useCurrentPage.mockReturnValue(ref(1));
+      usePreviousAndNextPages.mockReturnValue({
+        previousPage: undefined,
+        nextPage: 2,
+      });
+      const wrapper = shallowMount(JobListings, createConfig());
+      await flushPromises();
+      const nextPage = wrapper.find("[data-test = 'next-page-link']");
+      expect(nextPage.exists()).toBe(true);
+    });
+  });
+  ```
+
+- Updating JobList Component
+
+  ```js
+  import { computed } from "vue";
+
+  export default {
+    name: "JobList",
+    props: {
+      job: {
+        type: Object,
+        required: true,
+      },
+    },
+    setup(props) {
+      const jobPageLink = computed(() => `/jobs/results/${props.job.id}`);
+
+      return { jobPageLink };
+    },
+  };
+  ```
+
+- REVIEW:
+
 ## Section 31: Intro TypeScript
+
+- Welcome to TypeScript
+  - TypeScript
+    - is JS with syntax for types
+    - is almost like an extension of JS.
+    - its like an enhanced version of JS
+    - not a brand new language with different syntax
+    - its really the core JS language but with some extra syntax related to types
+  - Advantage of using TypeScript
+    - If we assign a certain variable to any kind of data type, JS doesnt know that it is string, number, boolean etc.
+    - TS help us figure out a whole bunch of errors
+    - e.g (shown image below)
+      - TS can recognize that this object properties (user) have certain types in each properties, and regular JS does not
 
 ## Section 32: TypeScript and Vuex
 

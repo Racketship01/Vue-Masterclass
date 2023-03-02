@@ -266,6 +266,7 @@ b.value = 15;
 console.log(c.value); // 25
 */
 
+/*
 //----------One More Example with Another Primitive
 const { ref, computed, reactive, toRef, toRefs } = require("vue");
 
@@ -427,3 +428,5 @@ const refPerson = toRefs(person6);
 console.log(person6.firstName2); // "Boris "--simply take the firstName2 from person reactive object as a regular old reference to the string
 
 console.log(refPerson.firstName2); // returns a another reactive object that wraps a value that is dynamically changing
+/* 
+

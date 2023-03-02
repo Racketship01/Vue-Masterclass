@@ -38,15 +38,71 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from "vuex";
-import { FETCH_JOBS, FILTERED_JOBS } from "@/store/constants";
+/*
+import { useStore } from "vuex";
+// import { useRoute } from "vue-router";
+// import { mapActions, mapGetters } from "vuex";
+import { FETCH_JOBS } from "@/store/constants";
+
+*/
 import JobList from "@/components/JobResults/JobList.vue";
+
+import { computed, onMounted } from "vue";
+import { useFilterJobs, useFetchJobsDispatch } from "@/store/composables";
+
+import useCurrentPage from "@/composables/useCurrentPage";
+import usePreviousAndNextPages from "@/composables/usePreviousAndNextPages";
 
 export default {
   name: "JobListings",
   components: {
     JobList,
   },
+  setup() {
+    /*
+    const store = useStore();
+    const route = useRoute();
+
+    const fetchJobs = async () => store.dispatch(FETCH_JOBS);
+    
+    const currentPage = computed(() =>
+    Number.parseInt(route.query.page || "1")
+    );
+    */
+
+    onMounted(useFetchJobsDispatch);
+    const filteredJobs = useFilterJobs();
+    const currentPage = useCurrentPage();
+    const maxPage = Math.ceil(filteredJobs.value.length / 10);
+
+    const { previousPage, nextPage } = usePreviousAndNextPages(
+      currentPage,
+      maxPage
+    );
+
+    /*
+    const previousPage = computed(() => {
+      const previousPage = currentPage.value - 1;
+      const firstPage = 1;
+      return previousPage >= firstPage ? previousPage : undefined;
+    });
+    const nextPage = computed(() => {
+      const nextPage = currentPage.value + 1;
+      const maxPage = Math.ceil(filteredJobs.value.length / 10);
+      return nextPage <= maxPage ? nextPage : undefined;
+    });
+    */
+
+    const displayedJobs = computed(() => {
+      const pageNumber = currentPage.value;
+      const firstJobIndex = (pageNumber - 1) * 10;
+      const lastJobIndex = pageNumber * 10;
+      return filteredJobs.value.slice(firstJobIndex, lastJobIndex);
+    });
+    return { filteredJobs, currentPage, previousPage, nextPage, displayedJobs };
+  },
+
+  /*
   // data() {
   //   return {
   //     jobs: [], // store jobs(endpoint) array being fetch in backend
@@ -89,5 +145,6 @@ export default {
   methods: {
     ...mapActions([FETCH_JOBS]), // provide action names and creates methods with same names on our action store which will then invoke dispatch method in action store
   },
+  */
 };
 </script>
