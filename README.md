@@ -8333,6 +8333,8 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
 
 - Welcome to TypeScript
   - TypeScript
+    - ![](./images/sec31.png)
+    - ![](./images/sec31-1.png)
     - is JS with syntax for types
     - is almost like an extension of JS.
     - its like an enhanced version of JS
@@ -8341,8 +8343,55 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
   - Advantage of using TypeScript
     - If we assign a certain variable to any kind of data type, JS doesnt know that it is string, number, boolean etc.
     - TS help us figure out a whole bunch of errors
-    - e.g (shown image below)
-      - TS can recognize that this object properties (user) have certain types in each properties, and regular JS does not
+      - e.g (shown image below)
+      - ![](./images/sec31-2.png)
+      - TS can recognize that this object properties (user) have certain types in each properties, and regular JS does not.
+      - TS will warn as shown in the example the error if the developer accidentallu forget that name properties does not exist on the type of object (user)
+    - TS is also going to allow us to perform a certain operations and prohibit other operatoins
+      - e.g if it knows we're working with a string, it's going to allow us to use a string method like two uppercase in comparison. If it knows it, we have a number. It's going to say you can't execute a method like two uppercase on a number because that's not a valid method
+      - In JavaScript, again, these errors will pop up, but they're only going to pop up when we run the program.
+      - In comparison in TypeScript, we're going to be able to identify them earlier as we're actually coding in our editor.
+  - Disadvantages
+    - ![](./images/sec31-3.png)
+    - ![](./images/sec31-4.png)
+    - TS does not run in web browser. We only use the language in our code editor for development. Solution? use a compiler --use to convert TS code into plain vanilla JS
+- Primitive Types
+
+  - ![](./images/TS-primitiveData.png)
+  - NOTE:
+    - null and undefined are both unique because both an actual value in JavaScript and it's type in TypeScript is undefined and null as well.
+
+- Type Inference
+
+  - special typeScript feature
+  - "infer" means to deduce or to figure out from evidence
+  - TS can figure out a type if we give it some data
+  - General Best Practive (hearsay)
+
+    - if TS is able to figure out type correctly by simple hovering to the variable, theres no reason to explicitly annotate a type, in comparison
+    - if TS is unable to figure out or if it gets it incorrect, then that the good idea to annotate the type
+
+  - NOTE:
+    - if we dont give an initial value to a boolean then we remove the annotation, TS will not figure out if its a boolean, instead if we hover the mouse, it thinks that the type is a special type called any
+      - ![](./images/typeInference.png)
+    - same with both undefined and null, if annotaion removed, it will assume the any type --because undefined is another kind of value that are designed to indicate the absence of something or lack of something being present in program, and that lack of something can be replaced with a concrete value like number or string
+      - ![](./images/typeInference1.png)
+
+- The any type
+
+  - ![](./images/anyType.png)
+  - allows for any kind of types
+  - considered as bad idea in TS because it defeats the entire purpose of TS
+  - when using any type, basically turing TS into JS
+    - if bad, why TS allows it? it be needed some kind of escape path, as sometimes you will be needed running code before want to go back and add types later or sometimes TS will not compile at all
+
+- The unknown type and type guard
+  - unknown --is itself a type, sort of means we dont know. A little less flexibe than any type.
+    - ![](./images/unknownType.png)
+    - similarity between any and unknown can totally reassign to any other values
+    - difference is unknown can use type guard while any cannot
+  - type guard --technique to check the type in our program --guarding against certain operations --protecting us from doing something else unless we validate the correct type
+    - ![](./images/typeGuard.png)
 
 ## Section 32: TypeScript and Vuex
 

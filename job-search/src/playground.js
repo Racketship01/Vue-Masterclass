@@ -264,14 +264,14 @@ console.log(c.value); // 12
 
 b.value = 15;
 console.log(c.value); // 25
-*/
 
-/*
+
+
 //----------One More Example with Another Primitive
 const { ref, computed, reactive, toRef, toRefs } = require("vue");
 
 // ---------(String)
-/*
+
 const name = ref("Boris");
 console.log(name.value); // Boris
 
@@ -280,7 +280,7 @@ console.log(title.value); // Boris the Great!
 
 name.value = "Peter";
 console.log(title.value); // Peter the Great!
-*/
+
 
 // ------------(Object)
 const person = ref({
@@ -298,7 +298,7 @@ console.log(title.value); // Boris the Great!
 person.value.name = "Peter";
 console.log(title.value); // Peter the Great!
 
-/*
+
 let title1 = person.name + " the Great!";
 console.log(title1); // Boris the Great!
 
@@ -307,7 +307,7 @@ console.log(title1); // Boris the Great!
 
 title1 = person.other + " the Great!";
 console.log(title1); // Peter the Great!
-*/
+
 
 // -------Reactive Function
 
@@ -428,5 +428,17 @@ const refPerson = toRefs(person6);
 console.log(person6.firstName2); // "Boris "--simply take the firstName2 from person reactive object as a regular old reference to the string
 
 console.log(refPerson.firstName2); // returns a another reactive object that wraps a value that is dynamically changing
-/* 
 
+*/
+
+// ---------------------------------------- //
+
+// TYPESCRIPT
+
+const user = {
+  firstName: "Angela",
+  lastName: "Davis",
+  role: "Professor",
+};
+
+console.log(user.name);
