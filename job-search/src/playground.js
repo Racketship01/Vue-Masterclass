@@ -435,10 +435,4 @@ console.log(refPerson.firstName2); // returns a another reactive object that wra
 
 // TYPESCRIPT
 
-const user = {
-  firstName: "Angela",
-  lastName: "Davis",
-  role: "Professor",
-};
 
-console.log(user.name);

@@ -8382,16 +8382,143 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
   - ![](./images/anyType.png)
   - allows for any kind of types
   - considered as bad idea in TS because it defeats the entire purpose of TS
-  - when using any type, basically turing TS into JS
+  - when using any type, basically turning TS into JS
     - if bad, why TS allows it? it be needed some kind of escape path, as sometimes you will be needed running code before want to go back and add types later or sometimes TS will not compile at all
 
 - The unknown type and type guard
+
   - unknown --is itself a type, sort of means we dont know. A little less flexibe than any type.
     - ![](./images/unknownType.png)
     - similarity between any and unknown can totally reassign to any other values
     - difference is unknown can use type guard while any cannot
-  - type guard --technique to check the type in our program --guarding against certain operations --protecting us from doing something else unless we validate the correct type
+  - type guard --basic if statement to check the type in our program --guarding against certain operations --protecting us from doing something else unless we validate the correct type
     - ![](./images/typeGuard.png)
+
+- Array type Declarations
+
+  - NOTE: annotation will be type of data followed by array bracket e.g `const arr: string[] = ['Hi']`
+  - ![](./images/arrayType.png)
+  - ![](./images/arrayType1.png)
+  - ![](./images/arrayType2.png)
+  - ![](./images/arrayType3.png)
+
+- Object type Declarations
+
+  - how do we assign a type to an object? exact same way we assign a type to any type in TS
+
+    - but there is a general object type annotation `const objName: object = {...properties}` but is not recommended because it is not as specific. And when we are not specific, we lose many benefits of TS
+    - ![](./images/objectType.png)
+
+  - not just a generic object of key value pairs, but rather a specific annotation of three key value pairs
+    - ![](./images/objectType1.png)
+    - ![](./images/objectType2.png)
+
+- Type Literals
+
+  - a type literal is a type that represents a single value and nothing else
+
+    - ![](./images/typeLiterals3.png)
+
+    - declaring variable using let keyword `let isSmart = true` --type inefernce will be boolean. let keyword means that the variables value can change
+      - ![](./images/typeLiterals.png)
+    - declaring varibale using const `const isHandsome =  true` --type inference will be true. True in this case is both the value and the type because const keyword are permanently assigning a name to whatever value we assigned on right hand side. Its type is more specific than a just a general boolean.
+      - ![](./images/typeLiterals1.png)
+      - ![](./images/typeLiterals2.png)
+
+- Type Literals and Objects
+
+  - applying the idea of type literals to object
+    - ![](./images/typeLiteralsObject.png)
+    - even though the const plumber cannot be reassign, however that does not change the fact that our plumber object is mutable. The properties we have on plumber object they can be change.
+      - the reason is because the plumber constant must reference the same object but the internals properties can still change
+      - ![](./images/typeLiteralsObject1.png)
+    - NOTE: giving annotation of true instead of a boolean declared at a const variable, as the programs run, never be allowed to change it.
+    - ![](./images/typeLiteralsObject2.png)
+    - ![](./images/typeLiteralsObject3.png)
+    - ![](./images/typeLiteralsObject4.png)
+
+- Optional Properties
+
+  - optional properties on object type
+    - it a property that is optional that is not required
+    - ? --optional property assignment --not required but if the object provides it then must be the data type declared e.g boolean. Type interfence will be boolean or undefined --undefined is because is the default value for property that does not exist on a given object
+      - ![](./images/optionalProperty.png)
+      - ![](./images/optionalProperty1.png)
+      - ![](./images/optionalProperty2.png)
+      - ![](./images/optionalProperty3.png)
+      - ![](./images/optionalProperty4.png)
+
+- Interfaces and Types
+
+  - two constructs that are very similar to each other, they are interchangeable with one another
+  - what problem do interfaces and types solve for us? They allow us to have a reusable literal object type
+
+  - interface --a blueprint that describing a specific type of object not providing an implementation or literal object or a value syntax: `interface nameOfInterface {}` NOTE: it will be the exact literal object definition in object annotation that will be re-usable
+
+    - ![](./images/interference.png)
+    - ![](./images/interference1.png)
+    - ![](./images/interference2.png)
+
+  - type --similar to interface but the only difference is the syntax syntax: `type nameOfType = {}`
+    - ![](./images/type.png)
+
+- Declaring Types for Functions
+
+  - declaring types for both traditional and arrow functions
+    - Traditional Function
+      - NOTE: TS is unable to infer what types of values in parameters if annotation did not defined
+      - ![](./images/typeFunctions.png)
+      - first is declaring types for the **parameters** of the function
+      - ![](./images/typeFunctions1.png)
+        - syntax is similar in declaring type for variables or constants `function nameOfFunction(a: number, b: number) {fn body}`
+      - second is declaring the type of the functions **return value**
+      - ![](./images/typeFunctions2.png)
+        - NOTE:
+          - if type was being annotated at the parameter, the return value will be automaticall same as being annoted
+          - if want to explicitly declare that the return value of a function, we simply provide a colon after the parameter list and then declare the type of the return value `function nameOfFunction(a: number, b: number):number {fn body}`
+    - Arrow Function
+      - similar at the traditional function, the only difference is the syntax
+        - ![](./images/typeFunctions3.png)
+        - ![](./images/typeFunctions4.png)
+        - ![](./images/typeFunctions5.png)
+        - ![](./images/typeFunctions6.png)
+        - ![](./images/typeFunctions7.png)
+
+- Interfaces for Functions
+
+  - problem being solved bny interfaces for function? duplication of type definition in parameter and return value of functions
+    - same in interfaces for objects `interface functionName { (paarameter: type): returnValue type }`
+    - ![](./images/interfaceFunc.png)
+    - ![](./images/interfaceFunc1.png)
+    - ![](./images/interfaceFunc2.png)
+    - ![](./images/interfaceFunc3.png)
+
+- Intro to Generics
+
+  - configure the tsx in TS config to NONE at the TS playground site.
+    - ![](./images/genericType.png)
+  - prob #1: write a function that accepts an array as an argument and then return a copy of that array
+    - ![](./images/genericType1.png)
+  - prob #2: same as prob 1 but the array type would be number. Both problem has a approach that is not scalable
+    - ![](./images/genericType2.png)
+  - Solution? use generics
+    - Generics --a non-specific type --and allows us to define a function that going to accept a generic type --allow to write more reusable functions by providing generic type parameters
+      - generic type --a non specific type that cannot predict in advance, only to fin when invoking function
+      - in order to specify function that will accept a generic type as an argument. Before parameter list, provide a pair of brackets then define parameters for the expected generic types `const function name = <T>(array: T[]): T[]=> [...array]`
+      - for general convention: `<T>` generic type for something that will be the specific type later upon invoking function
+        - ![](./images/genericType3.png)
+      - for invoking: `functionName<type>([arr1, arr2])`
+        - ![](./images/genericType4.png)
+        - ![](./images/genericType5.png)
+        - ![](./images/genericType6.png)
+
+- REVIEW:
+  - ![](./images/sec31Rev.png)
+  - ![](./images/sec31Rev1.png)
+  - ![](./images/sec31Rev2.png)
+  - ![](./images/sec31Rev3.png)
+  - ![](./images/sec31Rev4.png)
+  - ![](./images/sec31Rev5.png)
 
 ## Section 32: TypeScript and Vuex
 
