@@ -434,5 +434,3 @@ console.log(refPerson.firstName2); // returns a another reactive object that wra
 // ---------------------------------------- //
 
 // TYPESCRIPT
-
-

@@ -8522,6 +8522,31 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
 
 ## Section 32: TypeScript and Vuex
 
+- Install TS for Vue
+
+  - incorporate TS in a vue project
+
+    - terminal: `vue add typescript`
+    - NOTE: HomeView.vue will be injected extra code upon installing TS. To restore the old code shown below, run this on terminal `git restore src/views/HomeView.vue`
+
+      ```html
+      // HomeView.vue
+      <template>
+        <hero />
+      </template>
+
+      <script>
+        import Hero from "@/components/JobSearch/Hero.vue";
+
+        export default {
+          name: "HomeView",
+          components: {
+            Hero,
+          },
+        };
+      </script>
+      ```
+
 ## Section 33: TypeScript and Vue
 
 ## Section 34: Building a Feauture with TypeScript
