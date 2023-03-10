@@ -8527,25 +8527,158 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
   - incorporate TS in a vue project
 
     - terminal: `vue add typescript`
+      - ![](./images/installingTS.png)
+      - ![](./images/installingTS1.png)
     - NOTE: HomeView.vue will be injected extra code upon installing TS. To restore the old code shown below, run this on terminal `git restore src/views/HomeView.vue`
 
-      ```html
-      // HomeView.vue
-      <template>
-        <hero />
-      </template>
+      - ![](./images/installingTS2.png)
+      - ![](./images/installingTS3.png)
 
-      <script>
-        import Hero from "@/components/JobSearch/Hero.vue";
+      - ![](./images/installingTS4.png) --removed the extra extends property on the upper part
+      - ![](./images/installingTS5.png)
+      - ![](./images/installingTS6.png)
+      - ![](./images/installingTS7.png)
 
-        export default {
-          name: "HomeView",
-          components: {
-            Hero,
-          },
-        };
-      </script>
-      ```
+    - `shims-vue.d.ts` --TS specific file that enables TS to recognize different aspects and components in vue. required to integrate vue with TS
+      - ![](./images/installingTS8.png)
+      - NOTE: TypeScript is a separate language, it doesn't have to be used with view. It can be used in general to build JavaScript programs. It can be used with other frontend frameworks like React for Angular.
+    - `tsconfig.json` --set of options for TS, specific config for how TS works
+      - ![](./images/installingTS9.png)
+
+  - after installing, run the vue app `npm run serve` to check if TS successfully installed
+    - ![](./images/installingTS10.png)
+    - ![](./images/installingTS11.png)
+
+- Create Job Interface
+
+  ```js
+  // types.ts --API
+  export interface Job {
+    id: number;
+    title: string;
+    organization: string;
+    degree: string;
+    jobType: string;
+    locations: string[];
+    minimumQualifications: string[];
+    preferredQualifications: string[];
+    description: string[];
+    dateAdded: string;
+  }
+  ```
+
+- Define GlobalState Interface
+
+  - rename the state.js into state.ts
+  - add a file types.ts for globalState interface at the store folder
+
+  ```ts
+  // state.ts
+  import { GlobalState } from "@/store/types";
+
+  const state = (): GlobalState => {
+    return {
+      isLoggedIn: false,
+      jobs: [],
+      selectedJobTypes: [],
+      selectedOrganizations: [],
+    };
+  };
+
+  export default state;
+
+  // types.ts --store
+  import { Job } from "@/api/types"; // interface for Job in API
+
+  export interface GlobalState {
+    isLoggedIn: boolean;
+    jobs: Job[];
+    selectedJobTypes: string[];
+    selectedOrganizations: string[];
+  }
+  ```
+
+- Update State test file to TypeScript
+
+  - rename the file from state.test.js into state.test.ts
+    - NOTE: adding the TS to the vue project is still going to allow to recognize test files that are written in TS
+    - ![](./images/stateTestTS.png)
+      - the creation of TS file gives us a lot of benefits in our test eg. here in state test, TS file knows that the state function returns object that fulfill the globeState interface
+      - ![](./images/stateTestTS1.png)
+      - ![](./images/stateTestTS2.png)
+
+- Update Constant file to TS
+
+  - rename constant.js to constant.ts
+  - ![](./images/constantTS.png)
+    - TS recognizes that its not just a string but a constant string set to fixed value
+    - ![](./images/constantTS1.png)
+
+- Provide Types for all Mutations
+
+  - rename mutations.js to mutations.ts
+    - ![](./images/mutationsTS.png)
+    - ![](./images/mutationsTS1.png)
+    - ![](./images/mutationsTS2.png)
+    - ![](./images/mutationsTS3.png)
+
+- Updating Mutations Test File I: First Solution
+
+  - rename mutations test from js to ts
+  - ![](./images/mutationsTestTS.png)
+  - ![](./images/mutationsTestTS1.png)
+    - "as" keyword --treat state object same as GlobalState
+
+- Updating Mutations Test File II: Second Solution
+
+  - 2nd possible approach will be importing the state.ts to the mutations test, instead of using the as keyword
+
+  ```js
+  // mutations test ts
+  import state from "@/store/state";
+
+  describe("LOGIN_USER", () => {
+    it("logs the user in", () => {
+      // const state = { isLoggedIn: false } as GlobalState; // "as" --treat state object same as GlobalState
+      const startingState = state();
+      mutations.LOGIN_USER(startingState);
+      expect(startingState.isLoggedIn).toEqual(true);
+    });
+  });
+  ```
+
+  - the advantage of this approach is using something that is closer to the real world, contradict to mock the complex object, but in this case this globalstate is our object
+
+  - but as for other developer better approach, "as keyword" approach are much better that this importing state
+
+- TypeScript Partial Type
+
+  - a special type in TS that does accepts an interface and it makes all the properties of that interface optional when declaring a type
+  - ![](./images/partialType.png)
+  - ![](./images/partialType1.png)
+  - ![](./images/partialType2.png)
+  - ![](./images/partialType3.png)
+  - ![](./images/partialType4.png)
+  - special keyword "partial" is a built into TS, no need to import `const variableName: Partial<interface> = {}` --partial does is takes the given interface we provide and makes all of its properties optional when it comes to its type
+
+  ```js
+  // Partial Type
+  import { GlobalState } from "@/store/types";
+
+  const state: GlobalState = {
+    isLoggedIn: true,
+    jobs: [],
+    selectedJobTypes: [],
+    selectedOrganizations: [],
+  };
+
+  const state1: Partial<GlobalState> = {};
+
+  const state2: Partial<GlobalState> = {
+    isLoggedIn: true,
+    selectedOrganizations: [],
+  };
+  ```
 
 ## Section 33: TypeScript and Vue
 

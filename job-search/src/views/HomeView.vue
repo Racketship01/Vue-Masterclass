@@ -2,7 +2,7 @@
   <hero />
 </template>
 
-<script>
+<script lang="ts">
 import Hero from "@/components/JobSearch/Hero.vue";
 
 export default {
