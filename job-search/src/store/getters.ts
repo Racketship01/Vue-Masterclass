@@ -4,42 +4,50 @@ import {
   UNIQUE_JOB_TYPES,
   INCLUDE_JOB_BY_ORGANIZATION,
   INCLUDE_JOB_BY_JOB_TYPE,
-} from "@/store/constants.js";
+} from "@/store/constants";
+
+import { GlobalState } from "@/store/types";
+import { Job } from "@/api/types";
+
+interface IncludeJobGetters {
+  INCLUDE_JOB_BY_ORGANIZATION: (job: Job) => boolean; // this getter method accepts a single parameter called that has Job type, and the return value of this getter method is going to be a boolean type
+  INCLUDE_JOB_BY_JOB_TYPE: (job: Job) => boolean;
+}
 
 const getters = {
   // ORGANIZATION
-  [UNIQUE_ORGANIZATIONS](state) {
-    const uniqueOrganizations = new Set();
+  [UNIQUE_ORGANIZATIONS](state: GlobalState) {
+    const uniqueOrganizations = new Set<string>(); //  new Set: string[]
     state.jobs.forEach((job) => uniqueOrganizations.add(job.organization));
-    return uniqueOrganizations;
+    return uniqueOrganizations; // setting a generic type for the Set returning in this getter method
   },
 
   // JOB_TYPES
-  [UNIQUE_JOB_TYPES](state) {
-    const uniqueJobTypes = new Set();
+  [UNIQUE_JOB_TYPES](state: GlobalState) {
+    const uniqueJobTypes = new Set<string>();
     state.jobs.forEach((job) => uniqueJobTypes.add(job.jobType));
     return uniqueJobTypes;
   },
 
-  [INCLUDE_JOB_BY_ORGANIZATION]: (state) => (job) => {
+  [INCLUDE_JOB_BY_ORGANIZATION]: (state: GlobalState) => (job: Job) => {
     if (state.selectedOrganizations.length === 0) return true; // if user has not selected any organization, job must be included, so im going to return true
 
     return state.selectedOrganizations.includes(job.organization); // in the individual single job and look for its organization property then see if it will be found within the state selected organization, if found, job must be included
 
     // This getter will return  a true or false value, and thats the entire responsibility of this getter
   },
-  [INCLUDE_JOB_BY_JOB_TYPE]: (state) => (job) => {
+  [INCLUDE_JOB_BY_JOB_TYPE]: (state: GlobalState) => (job: Job) => {
     if (state.selectedJobTypes.length === 0) return true;
 
     return state.selectedJobTypes.includes(job.jobType);
   },
-  [FILTERED_JOBS](state, getters) {
+  [FILTERED_JOBS](state: GlobalState, getters: IncludeJobGetters) {
     return state.jobs
       .filter(
         (job) => getters.INCLUDE_JOB_BY_ORGANIZATION(job)
         // invoking INCLUDE_JOB_BY_ORGANIZATION, vuex will automatically pass the state, then returning function in will now have access to the job(current job in iteration) being pass as the argument.
       )
-      .filter((job) => getters.INCLUDE_JOB_BY_JOB_TYPE(job));
+      .filter((job) => getters.INCLUDE_JOB_BY_JOB_TYPE(job)); // behind the scene, vue auto gives us the state and automatically invokes the getter with the state as the 1st argument. And if that getter method returns a functon, it provides the function automatically
 
     /*
     const noSelectedOrganization = state.selectedOrganizations.length === 0;

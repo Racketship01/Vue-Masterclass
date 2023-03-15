@@ -8678,6 +8678,251 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
     isLoggedIn: true,
     selectedOrganizations: [],
   };
+
+  const test = (str: any) => {};
+  ```
+
+- Creating a Store Factory Function
+
+  - define factory function at mutation test
+    - exact same thing as if we invoked state (basically gives us an object with 4 properties in state)
+    - allow parameter to accept an optional parameter config to be a partial GlobalState
+
+  ```js
+  // mutation tes
+  describe("mutations", () => {
+    const createState = (config: Partial<GlobalState> = {}): GlobalState => {
+      const initialState = state();
+      return { ...initialState, ...config };
+
+      // NOTE: partial type config will validate if have the right properties then if has argument, it will override the initialState to focus only on a given argument
+    };
+    describe("LOGIN_USER", () => {
+      it("logs the user in", () => {
+        const startingState = createState({ isLoggedIn: false });
+        mutations.LOGIN_USER(startingState);
+        expect(startingState.isLoggedIn).toBe(true);
+
+        //expect(state).toEqual({ isLoggedIn: true });
+      });
+    });
+  });
+  ```
+
+- Updating Mutations Test: Our Next Problem
+
+  ```js
+  // mutations test
+  describe("mutations", () => {
+    const createJob = (config: Partial<Job> = {}): Job => ({
+      id: 1,
+      title: "Angular Developer",
+      organization: "Vue and Me",
+      degree: "Master's",
+      jobType: "Intern",
+      locations: ["Lisbon"],
+      minimumQualifications: [],
+      preferredQualifications: [],
+      description: [],
+      dateAdded: "2021-07-04",
+      ...config,
+    });
+
+    describe("RECEIVE_JOBS", () => {
+      it("receives jobs from API response", () => {
+        // const state = { jobs: [] };
+
+        const startingState = createState({ jobs: [] });
+        const job1 = createJob();
+        const job2 = createJob();
+
+        mutations.RECEIVE_JOBS(startingState, [job1, job2]); //2nd argument --array of jobs that will be overwrite the jobs state(validating the receive_jobs mutations is correctly overwriting jobs property )
+        expect(startingState.jobs).toEqual([job1, job2]);
+      });
+    });
+  });
+  ```
+
+- Adding Types to Getters File
+
+  - ![](./images/gettersTS2.png)
+  - ![](./images/gettersTS.png)
+  - ![](./images/gettersTS1.png)
+    - No need to specify Job interface at the forEach of jobs iteration as we properly annotated GlobalState interface at state parameter. TS knows that we have an array of Job at the GlobalState and understand that each array of Job has its own property of organization while
+  - ![](./images/gettersTS3.png)
+    - getters that has a returning funtion, TS does not know the array of Job in GlobalState, therefore we need to explicitly declare the Job interface at the job parameter for returning function
+  - ![](./images/gettersTS4.png)
+
+    ```js
+    // getters TS
+    import { GlobalState } from "@/store/types";
+    import { Job } from "@/api/types";
+
+    const getters = {
+      [UNIQUE_ORGANIZATIONS](state: GlobalState) {
+      const uniqueOrganizations = new Set<string>(); //  new Set: string[]
+      state.jobs.forEach((job) => uniqueOrganizations.add(job.organization));
+      return uniqueOrganizations; // setting a generic type for the Set returning in this getter method
+    },
+    }
+    ```
+
+  - ![](./images/gettersTS5.png)
+
+    - NOTE:
+      - in `UNIQUE_ORGANIZATION` getter, we are properly annotating the state as GlobalState, but TS is assuming that the return value for uniqueOrganization is going to be a `Set`, holding unknown type. And thats because TS doesnt understand that our `Set` is holding a string for the job.organization property as we create uniqueOrganization variable at line 14, TS has no clue what values Set will contain. Solution? use the generics type
+      - if TypeScript makes the incorrect inference, if it makes the incorrect assumption, and if you need to provide a little bit more clarity, feel free to add it. Otherwise, if TypeScript is making the correct inference such as it did with Job right here, there's really no reason to add that additional explicit type unless you really want to.
+
+  ```js
+  // getters ts
+  import { GlobalState } from "@/store/types";
+  import { Job } from "@/api/types";
+
+  interface IncludeJobGetters {
+    INCLUDE_JOB_BY_ORGANIZATION: (job: Job) => boolean; // this getter method accepts a single parameter called that has Job type, and the return value of this getter method is going to be a boolean type
+    INCLUDE_JOB_BY_JOB_TYPE: (job: Job) => boolean;
+  }
+
+  [FILTERED_JOBS](state: GlobalState, getters: IncludeJobGetters) {
+    return state.jobs
+      .filter(
+        (job) => getters.INCLUDE_JOB_BY_ORGANIZATION(job)
+        // invoking INCLUDE_JOB_BY_ORGANIZATION, vuex will automatically pass the state, then returning function in will now have access to the job(current job in iteration) being pass as the argument.
+      )
+      .filter((job) => getters.INCLUDE_JOB_BY_JOB_TYPE(job)); // behind the scene, vue auto gives us the state and automatically invokes the getter with the state as the 1st argument. And if that getter method returns a functon, it provides the function automatically
+    }
+  ```
+
+- Create Util File for Factory Functions
+
+  - create regular TS file for utils that other test file can import
+
+  ```js
+  // utils.js
+  import state from "@/store/state";
+  import { GlobalState } from "@/store/types";
+  import { Job } from "@/api/types";
+
+  export const createState = (
+    config: Partial<GlobalState> = {}
+  ): GlobalState => {
+    const initialState = state();
+    return { ...initialState, ...config };
+
+    // NOTE: partial type config will validate if have the right properties then if has argument, it will override the initialState to focus only on a given argument
+  };
+
+  export const createJob = (config: Partial<Job> = {}): Job => ({
+    id: 1,
+    title: "Angular Developer",
+    organization: "Vue and Me",
+    degree: "Master's",
+    jobType: "Intern",
+    locations: ["Lisbon"],
+    minimumQualifications: [],
+    preferredQualifications: [],
+    description: [],
+    dateAdded: "2021-07-04",
+    ...config,
+  });
+  ```
+
+- Updating Getters Test file
+
+  - rename getter js test to getter ts test
+
+  ```js
+  import { createState, createJob } from "./utils";
+
+  describe("getters", () => {
+    describe("UNIQUE_ORGANIZATION", () => {
+      it("finds unique organizations from list of jobs", () => {
+        const jobs = [
+          createJob({ organization: "Google" }),
+          createJob({ organization: "Amazon" }),
+          createJob({ organization: "Google" }),
+        ];
+        const state = createState({ jobs });
+
+        const results = getters.UNIQUE_ORGANIZATIONS(state);
+        expect(results).toEqual(new Set(["Google", "Amazon"]));
+      });
+    });
+
+    describe("INCLUDE_JOB_BY_ORGANIZATION", () => {
+      describe("when the user has not selected any organization", () => {
+        it("includes job", () => {
+          const state = createState({
+            selectedOrganizations: [],
+          });
+          const job = createJob({
+            organization: "Google",
+          });
+          const includeJob = getters.INCLUDE_JOB_BY_ORGANIZATION(state)(job);
+          expect(includeJob).toBe(true);
+        });
+
+        it("identifies if job is associated woth given organizations", () => {
+          const state = createState({
+            selectedOrganizations: ["Google", "Microsoft"],
+          });
+          const job = createJob({
+            organization: "Google",
+          });
+          const includeJob = getters.INCLUDE_JOB_BY_ORGANIZATION(state)(job);
+          expect(includeJob).toBe(true);
+        });
+      });
+    });
+    describe("FILTERED_JOBS", () => {
+      it("filter jobs by organization and job type", () => {
+        const INCLUDE_JOB_BY_ORGANIZATION = jest.fn().mockReturnValue(true);
+        const INCLUDE_JOB_BY_JOB_TYPE = jest.fn().mockReturnValue(true);
+
+        const mockGetters = {
+          INCLUDE_JOB_BY_ORGANIZATION,
+          INCLUDE_JOB_BY_JOB_TYPE,
+        };
+
+        const job = createJob({ id: 1, title: "Best Job Ever" });
+        const state = createState({
+          jobs: [job],
+        });
+
+        const result = getters.FILTERED_JOBS(state, mockGetters);
+        expect(result).toEqual([job]);
+        expect(INCLUDE_JOB_BY_ORGANIZATION).toHaveBeenCalledWith(job);
+        expect(INCLUDE_JOB_BY_JOB_TYPE).toHaveBeenCalledWith(job);
+      });
+    });
+  });
+  ```
+
+- Upadatig Vuex Actions
+
+  - convert the file into TS
+  - ![](./images/actionTS.png)
+  - ![](./images/actionTS1.png)
+  - ![](./images/actionTS2.png)
+  - ![](./images/actionTS3.png)
+
+  ```js
+  import { Commit } from "vuex"; // Commit --interface that is available from the Vue library
+  import getJobs from "@/api/getJob";
+  import { FETCH_JOBS, RECEIVE_JOBS } from "@/store/constants";
+
+  interface Context {
+    commit: Commit; // interface that define specific function that takes a specific parameters with specific types and return a specific value rather than using ActionContext interface at Vuex Library
+  } // this context object will have a commit methiod that has the Commit interface
+
+  const actions = {
+    [FETCH_JOBS]: async (context: Context) => {
+      const jobListings = await getJobs();
+      context.commit(RECEIVE_JOBS, jobListings); // RECEIVE_JOBS(state, jobListings) --run an existing mutations to pass jobListings data fetch in API
+    },
+  };
+
+  export default actions;
   ```
 
 ## Section 33: TypeScript and Vue

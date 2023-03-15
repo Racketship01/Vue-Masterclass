@@ -1,31 +1,33 @@
-import getters from "@/store/getters.js";
+import getters from "@/store/getters";
+import { createState, createJob } from "./utils";
 
 describe("getters", () => {
   // ORGANIZATIONS
   describe("UNIQUE_ORGANIZATION", () => {
     it("finds unique organizations from list of jobs", () => {
-      const state = {
-        jobs: [
-          { organization: "Google" },
-          { organization: "Amazon" },
-          { organization: "Google" },
-        ],
-      };
-      const result = getters.UNIQUE_ORGANIZATIONS(state);
-      expect(result).toEqual(new Set(["Google", "Amazon"]));
+      const jobs = [
+        createJob({ organization: "Google" }),
+        createJob({ organization: "Amazon" }),
+        createJob({ organization: "Google" }),
+      ];
+      const state = createState({ jobs });
+
+      const results = getters.UNIQUE_ORGANIZATIONS(state);
+      expect(results).toEqual(new Set(["Google", "Amazon"]));
     });
   });
 
   // JOB TYPES
   describe("UNIQUE_JOB_TYPES", () => {
     it("finds unique job type from list of jobs", () => {
-      const state = {
-        jobs: [
-          { jobType: "Full-time" },
-          { jobType: "Full-time" },
-          { jobType: "Intern" },
-        ],
-      };
+      const jobs = [
+        createJob({ jobType: "Full-time" }),
+        createJob({ jobType: "Full-time" }),
+        createJob({ jobType: "Intern" }),
+      ];
+      const state = createState({
+        jobs,
+      });
       const result = getters.UNIQUE_JOB_TYPES(state);
       expect(result).toEqual(new Set(["Intern", "Full-time"]));
     });
@@ -34,23 +36,23 @@ describe("getters", () => {
   describe("INCLUDE_JOB_BY_ORGANIZATION", () => {
     describe("when the user has not selected any organization", () => {
       it("includes job", () => {
-        const state = {
+        const state = createState({
           selectedOrganizations: [],
-        };
-        const job = {
+        });
+        const job = createJob({
           organization: "Google",
-        };
+        });
         const includeJob = getters.INCLUDE_JOB_BY_ORGANIZATION(state)(job);
         expect(includeJob).toBe(true);
       });
 
       it("identifies if job is associated woth given organizations", () => {
-        const state = {
+        const state = createState({
           selectedOrganizations: ["Google", "Microsoft"],
-        };
-        const job = {
+        });
+        const job = createJob({
           organization: "Google",
-        };
+        });
         const includeJob = getters.INCLUDE_JOB_BY_ORGANIZATION(state)(job); // INCLUDE_BY_ORGANIZATION getter method automatically pass state as first argument and returns a function that accepts a job parameter. We can directly invoke in line by passing a pair of parenthesis the exact same way that we invoke any other function in JS (closures)
         expect(includeJob).toBe(true);
       });
@@ -60,23 +62,23 @@ describe("getters", () => {
   describe("INCLUDE_JOB_BY_JOB_TYPE", () => {
     describe("when the user has not selected any organization", () => {
       it("includes job", () => {
-        const state = {
+        const state = createState({
           selectedJobTypes: [],
-        };
-        const job = {
+        });
+        const job = createJob({
           jobType: "Full-time",
-        };
+        });
         const includeJob = getters.INCLUDE_JOB_BY_JOB_TYPE(state)(job);
         expect(includeJob).toBe(true);
       });
 
       it("identifies if job is associated woth given organizations", () => {
-        const state = {
+        const state = createState({
           selectedJobTypes: ["Full-time", "Part-time"],
-        };
-        const job = {
+        });
+        const job = createJob({
           jobType: "Part-time",
-        };
+        });
         const includeJob = getters.INCLUDE_JOB_BY_JOB_TYPE(state)(job);
         expect(includeJob).toBe(true);
       });
@@ -94,10 +96,10 @@ describe("getters", () => {
         INCLUDE_JOB_BY_JOB_TYPE,
       };
 
-      const job = { id: 1, title: "Best Job Ever" };
-      const state = {
+      const job = createJob({ id: 1, title: "Best Job Ever" });
+      const state = createState({
         jobs: [job],
-      };
+      });
 
       const result = getters.FILTERED_JOBS(state, mockGetters); // from the filter job getter perspective, all it need is a method called include job organization thats going to return a boolean. Why boolean? because the filter method depends on having a function that returns a true or false
       expect(result).toEqual([job]);

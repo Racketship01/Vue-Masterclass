@@ -3,7 +3,7 @@ import {
   RECEIVE_JOBS,
   ADD_SELECTED_ORGANIZATIONS,
   ADD_SELECTED_JOB_TYPES,
-} from "@/store/constants.js";
+} from "@/store/constants";
 
 import { GlobalState } from "@/store/types";
 import { Job } from "@/api/types";
