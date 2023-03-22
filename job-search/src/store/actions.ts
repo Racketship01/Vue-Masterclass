@@ -3,7 +3,7 @@ import getJobs from "@/api/getJob";
 import { FETCH_JOBS, RECEIVE_JOBS } from "@/store/constants";
 
 interface Context {
-  commit: Commit; // interface that define specific function that takes a specific parameters with specific types and return a specific value rather than using ActionContext interface at Vuex Library
+  commit: Commit; // Commit --interface that define specific function that takes a specific parameters with specific types and return a specific value rather than using ActionContext interface at Vuex Library that will be useful if we have many properties and method in the context object
 } // this context object will have a commit methiod that has the Commit interface
 
 const actions = {

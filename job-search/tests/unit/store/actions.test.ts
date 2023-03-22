@@ -2,10 +2,12 @@ import actions from "@/store/actions";
 import getJobs from "@/api/getJob";
 jest.mock("@/api/getJob");
 
+const getJobsMock = getJobs as jest.Mock; // treat getJobs as a jest mock function which indeed has mockResolvedvalue() method on it
+
 describe("actions", () => {
   describe("FETCH_JOBS", () => {
     beforeEach(() => {
-      getJobs.mockResolvedValue([
+      getJobsMock.mockResolvedValue([
         {
           id: 1,
           title: "Software Developer",

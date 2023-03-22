@@ -8689,7 +8689,7 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
     - allow parameter to accept an optional parameter config to be a partial GlobalState
 
   ```js
-  // mutation tes
+  // mutation test
   describe("mutations", () => {
     const createState = (config: Partial<GlobalState> = {}): GlobalState => {
       const initialState = state();
@@ -8901,10 +8901,13 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
 - Upadatig Vuex Actions
 
   - convert the file into TS
-  - ![](./images/actionTS.png)
-  - ![](./images/actionTS1.png)
-  - ![](./images/actionTS2.png)
-  - ![](./images/actionTS3.png)
+  - TS does not understand the context that the action pass as a parameter. The parameter context implicitly has an any type so we need to be more specific
+    - ![](./images/actionTS.png)
+  - In this action, we really need context to be an object with commit method.
+    - ![](./images/actionTS1.png)
+  - But in reality, the context object is a bit more complex, it has a lot more properties and method, but for the purpose of this action method, all it really cares is having the commit method be properly defined
+    - ![](./images/actionTS2.png)
+    - ![](./images/actionTS3.png)
 
   ```js
   import { Commit } from "vuex"; // Commit --interface that is available from the Vue library
@@ -8912,7 +8915,7 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
   import { FETCH_JOBS, RECEIVE_JOBS } from "@/store/constants";
 
   interface Context {
-    commit: Commit; // interface that define specific function that takes a specific parameters with specific types and return a specific value rather than using ActionContext interface at Vuex Library
+    commit: Commit; // Commit --interface that define specific function that takes a specific parameters with specific types and return a specific value rather than using ActionContext interface at Vuex Library that will be useful if we have many properties and method in the context object
   } // this context object will have a commit methiod that has the Commit interface
 
   const actions = {
@@ -8924,6 +8927,84 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
 
   export default actions;
   ```
+
+- Mocking API calls with TypeScript
+  - update the action JS test file into TS test file
+  - ![](./images/actionTSMockingAPI.png)
+    - TS does not understand `mockResolvedValue()`. As we jestMock the API getJobs file, TS does not understand that we use `jest.mock(path)` syntax to mock our original implementation. TS still thinks it has the original implementation and the original implementation does not have `mockResolveValue()` method thats why TS is complaining.
+      - Solution? communicate to TS that `jest.mock()` effectively changed the type of the `getJobs` to be a jest.mock function. Use the `as` syntax to treat `getJobs` as a jest mock function which indeed does have a mockResolvedValue() method on it. `jest.Mock()` --is an interface in the jest library. It is a type that describes a specific function.
+        - ![](./images/actionTSMockingAPI1.png)
+        - ![](./images/actionTSMockingAPI2.png)
+        - ![](./images/actionTSMockingAPI3.png)
+      - NOTE: `getJobsMock` and `getJobs` are both references to the exact function, we have not change anything in the implementation, instead we have changed is the type recognition for TS
+      - here in line 22, we cant still use either getJobs or getJobsMock as they are still referencing the exact same function. All this is is a different name for the same object with a different type interpretation.
+        - ![](./images/actionTSMockingAPI4.png)
+- Adding Types to Vuex Composables
+
+  - update the js file to ts file of the composables file
+  - the return value of useFilteredJobs is `ComputedRef<any>` --this is kind of the parent type representing the vue computed reactive object and has the generic syntax that thinks that the internal value that the reactive object returning is kind of wrapping in any type
+    - ![](./images/composablesTS.png)
+  - in other word, TS doesnt understand that what we are returning here is a reactive object of an array of job objects and TS doesnt understand what is the types of that internal value. Solution? importing the Job interface and use a generic bracket syntax for the generic types
+
+    - ![](./images/composablesTS1.png)
+    - ![](./images/composablesTS2.png)
+    - ![](./images/composablesTS3.png)
+
+```js
+// composables.ts
+/*  GETTERS */
+export const useFilterJobs = () => {
+  const store = useStore();
+  return computed<Job[]>(() => store.getters[FILTERED_JOBS]); // <Job[]> --represents the array of types of the internal value of the reactive object as this return an array of filtered jobs
+};
+
+export const useUniqueJobTypes = () => {
+  const store = useStore();
+  return computed<Set<string>>(() => store.getters[UNIQUE_JOB_TYPES]); // <Set<string>> --this generic is going to be a set consisting of string values or string types and then the computed function is going return a reactive object that is storing that set of string types
+};
+
+export const useUniqueOrganizations = () => {
+  const store = useStore();
+  return computed<Set<string>>(() => store.getters[UNIQUE_ORGANIZATIONS]);
+};
+
+/*  ACTIONS */
+export const useFetchJobsDispatch = async () => {
+  const store = useStore();
+  store.dispatch(FETCH_JOBS);
+};
+
+```
+
+- NOTE:
+
+  - whenever we use computed anywhere in a TS file, it accepts a generic(`<T>`) which means we can use this bracket syntax and provide the type that we want to represent. And what that type will represents is the type of the value that the reactive object will wrap
+  - There is almost 3 different levels of type definition
+    - 1: Highest level --the return value is computed object that is a type
+      - ![](./images/composablesTS6.png)
+    - 2: Specific --computed reactive object storing a set
+      - ![](./images/composablesTS4.png)
+    - 3: More specific --computed reactive object storing a set of string types
+      - ![](./images/composablesTS5.png)
+
+- Updating Composable Test
+
+  - same as the above error at Mocking API calls in action, use the `as` syntax to mock the useStore `mockReturnValue()` method
+    - ![](./images/composablesTSTest.png)
+
+- Adding Types to Index File
+
+  - update the index.js in store to index.ts
+  - ![](./images/indexStoreTS.png)
+  - ![](./images/indexStoreTS1.png)
+    - NOTE: TS understand all of our typing throughtout various part of the code base in various files because the more type annotaion that we provide, the more TS is able to understand how all these pieces work together and is thus more likely to identify any potential errors
+
+- REVIEW:
+  - ![](./images/sec32Rev.png)
+  - ![](./images/sec32Rev1.png)
+  - ![](./images/sec32Rev2.png)
+  - ![](./images/sec32Rev3.png)
+  - ![](./images/sec32Rev4.png)
 
 ## Section 33: TypeScript and Vue
 

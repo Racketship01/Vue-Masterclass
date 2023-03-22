@@ -1,6 +1,8 @@
 import { useStore } from "vuex";
 jest.mock("vuex");
 
+const useStoreMock = useStore as jest.Mock;
+
 import {
   useFilterJobs,
   useUniqueJobTypes,
@@ -11,7 +13,7 @@ import {
 describe("Composables", () => {
   describe("useFilterJobs", () => {
     it("retrieves filtered jobs from store", () => {
-      useStore.mockReturnValue({
+      useStoreMock.mockReturnValue({
         getters: {
           FILTERED_JOBS: [{ id: 1 }],
         },
@@ -23,7 +25,7 @@ describe("Composables", () => {
 
   describe("useUniqueJobTypes", () => {
     it("retrieves unique job types from store", () => {
-      useStore.mockReturnValue({
+      useStoreMock.mockReturnValue({
         getters: {
           UNIQUE_JOB_TYPES: ["Full-time"],
         },
@@ -35,7 +37,7 @@ describe("Composables", () => {
 
   describe("useUniqueOrganizations", () => {
     it("retrieves unique job types from store", () => {
-      useStore.mockReturnValue({
+      useStoreMock.mockReturnValue({
         getters: {
           UNIQUE_ORGANIZATIONS: ["Apple"],
         },
@@ -48,7 +50,7 @@ describe("Composables", () => {
   describe("useFetchJobDispatch", () => {
     it("calls fetch job at action API", () => {
       const dispatch = jest.fn();
-      useStore.mockReturnValue({
+      useStoreMock.mockReturnValue({
         dispatch,
       });
       useFetchJobsDispatch();
