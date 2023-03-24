@@ -44,7 +44,7 @@
   </header>
 </template>
 
-<script>
+<script lang="ts">
 import { mapMutations, mapState } from "vuex";
 
 import ActionButton from "@/components/Shared/ActionButton.vue";
@@ -53,7 +53,9 @@ import Subnav from "@/components/Navigation/Subnav.vue";
 
 import { LOGIN_USER } from "@/store/constants";
 
-export default {
+import { defineComponent } from "vue";
+
+export default defineComponent({
   name: "MainNav",
   components: {
     ActionButton,
@@ -96,5 +98,5 @@ export default {
 
     ...mapMutations([LOGIN_USER]), // sytactical shortcut for invoking commit method --use this syntax if component method name has same name at the mutations method name
   },
-}; // this JS object is the configuration object for this component --how component work
+}); // this JS object is the configuration object for this component --how component work
 </script>

@@ -19,10 +19,10 @@
   </div>
 </template>
 
-<script>
-import { computed, ref } from "vue";
+<script lang="ts">
+import { computed, ref, defineComponent } from "vue";
 
-export default {
+export default defineComponent({
   name: "Accordion",
   props: {
     header: {
@@ -46,7 +46,7 @@ export default {
 
   /*
   props: {
-    header: {
+    header: { 
       type: String,
       required: true,
     },
@@ -67,5 +67,5 @@ export default {
     },
   },
   */
-};
+});
 </script>

@@ -4,10 +4,10 @@
   </button>
 </template>
 
-<script>
-import { computed, toRefs } from "vue";
+<script lang="ts">
+import { computed, toRefs, defineComponent } from "vue";
 
-export default {
+export default defineComponent({
   name: "ActionButton",
   props: {
     text: {
@@ -20,7 +20,7 @@ export default {
       type: String,
       required: false, //if not requires, give fallback value or default value just in case parent component doesnt declare a type prop
       default: "primary",
-      validator(value) {
+      validator(value: string) {
         return ["primary", "secondary"].includes(value);
       }, //used a validation logic anytime parent component renders an action button and give a type prop --(value) represents the actual prop value declared at parent component and passed in as an argument. Then confirm if the value is valid thru setting conditions in the body
     },
@@ -62,7 +62,7 @@ export default {
     
   },
   */
-};
+});
 </script>
 
 <style scoped>

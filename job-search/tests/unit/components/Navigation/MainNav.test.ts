@@ -5,6 +5,8 @@ import { shallowMount, RouterLinkStub } from "@vue/test-utils"; //allow us to br
 
 import MainNav from "@/components/Navigation/MainNav.vue";
 
+import { GlobalState } from "@/store/types";
+
 describe("MainNav", () => {
   /*beforeEach() --one to solve duplications
   let wrapper; //variable still the same but the reference that its storing stays different fot every test
@@ -20,8 +22,12 @@ describe("MainNav", () => {
   });
   */
 
+  interface MockStore {
+    state: Partial<GlobalState>;
+  }
+
   // factory function
-  const createConfig = ($store) => ({
+  const createConfig = ($store: MockStore) => ({
     global: {
       mocks: {
         $store,

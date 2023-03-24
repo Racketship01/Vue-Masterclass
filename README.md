@@ -7030,7 +7030,7 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
 
 - Checking in on Test Suite
 
-  - because of our good test suite as well as how Composition API and Options API are relatively similar to each other, the test suite is still going to pass just like before, our core test logiv remains the same. None of our refractor in accordion broke our test
+  - because of our good test suite as well as how Composition API and Options API are relatively similar to each other, the test suite is still going to pass just like before, our core test logic remains the same. None of our refactor in accordion broke our test
 
 - Accepting Props in setup() Method in ActionButton.vue
 
@@ -8909,7 +8909,7 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
     - ![](./images/actionTS2.png)
     - ![](./images/actionTS3.png)
 
-  ```js
+  ```ts
   import { Commit } from "vuex"; // Commit --interface that is available from the Vue library
   import getJobs from "@/api/getJob";
   import { FETCH_JOBS, RECEIVE_JOBS } from "@/store/constants";
@@ -9007,6 +9007,162 @@ export const useFetchJobsDispatch = async () => {
   - ![](./images/sec32Rev4.png)
 
 ## Section 33: TypeScript and Vue
+
+- Adding Type Annotation for ProfileImage Component
+
+  - applying TS to actual vue component
+  - NOTE:
+    - were able to use Option API components or Composition API component in TS and
+    - we dont need to change the file name, we only need to add a couple of lines of syntax
+    - TS will not be enabled by default, need to explicitly declare `lang = "ts"` in the script tag
+    - the import special function of defineComponent vue, then wrap our configuration object. defineComponent function
+      - ![](./images/ProfileImageTS.png)
+      - ![](./images/ProfileImageTS1.png)
+        - defineComponent() function
+          - does behind the scenes is it provides all those complex types and all of those either scenarios, either options API or composition API
+          - it does is for communicationg TS that were working for a specific vue component object rather than a regular JS object
+    - we are able to use TS syntax within the defineComponent config object in defining types
+      - ![](./images/ProfileImageTS2.png)
+      - ![](./images/ProfileImageTS3.png)
+  - Updating corresponding test suite for ProfileImage Component
+    - convert js file into ts file
+      - ![](./images/ProfileImageTSTest.png)
+      - ![](./images/ProfileImageTSTest1.png)
+
+- Adding Type Annotation for MainNav Component
+
+  - add the `lang="ts"` syntax in the script tag then import the defineComponent function
+  - update the test file for mainNav component then rename file into TS
+
+  ```ts
+  // MainNav test
+  import { GlobalState } from "@/store/types";
+
+  describe("MainNav", () => {
+    interface MockStore {
+      state: Partial<GlobalState>;
+    }
+    // NOTE: no need to add the complexity of the whole store object type as the store also has properties(getters, action and mutation) and method(commit & dispatch). Use the `Partial<>` type for a much more specific test
+
+    // factory function
+    const createConfig = ($store: MockStore) => ({
+      global: {
+        mocks: {
+          $store,
+        },
+        stubs: {
+          "router-link": RouterLinkStub,
+        },
+      },
+    });
+
+    it("dispalys company name", () => {
+      const $store = {
+        state: {
+          isLoggedIn: false,
+        },
+      };
+      const wrapper = shallowMount(MainNav, createConfig($store));
+      expect(wrapper.text()).toMatch("Bobo Careers");
+    });
+  });
+  ```
+
+- Adding Type Annotation for Headline Component
+
+  - whenever were going to see TS violations in a vue component, is because the TS inference didnt work exastly as it should, to fix? expplicitly and manually tell TS the correct type
+  - Problem 1:
+
+    - ![](./images/HeadlineCompTS.png)
+    - ![](./images/HeadlineCompTS1.png)
+      - `[x: number]` is not a literal property, its just an arbitrary name that its providing
+      - the syntax is trying to say TS thinks that were going to have some kind of property, it doesnt really matter what its actual value is excepts its going to be a number. We need a string as the action data is reurning a str resulting for a violatoions
+      - to solve, explicitly declaring the correct type
+
+    ```js
+    import { defineComponent } from "vue";
+
+    interface ActionClasses {
+      [x: string]: true;
+    }
+
+    export default defineComponent({
+      computed: {
+        actionClasses(): ActionClasses {
+      return {
+        [this.action.toLowerCase()]: true,
+      };
+      },
+    });
+    ```
+
+  - Problem 2:
+
+    - ![](./images/HeadlineCompTS2.png)
+    - ![](./images/HeadlineCompTS3.png)
+      - clearInterval() argument has an optional type of either number or undefined, resulting to return of void. This is because the interval state is being declared to null. The problem is the setInterval() function return a number type
+      - to solve?
+      - ![](./images/HeadlineCompTS4.png)
+      - ![](./images/HeadlineCompTS5.png)
+        - we are going to provide clearInterval with a type number when setInterval logic executes
+        - clarify to TS that interval in data, can now be either a number or undefined by defining an interface to describe the return value of the data object
+
+    ```js
+    import { defineComponent } from "vue";
+
+    interface Data {
+      action: string;
+      interval?: number;
+    }
+
+    export default defineComponent({
+      data(): Data {
+        return {
+          action: "Build",
+          interval: undefined,
+        };
+      },
+      methods: {
+        changeTitle() {
+          this.interval = setInterval(() => {
+            const actions = ["Build", "Create", "Design", "Code"];
+            this.action = nextElementList(actions, this.action);
+          }, 3000);
+        },
+      },
+    });
+    ```
+
+- Using TS with Composition API (Accordion Component)
+
+  - ![](./images/AccordionCompTS.png)
+  - ![](./images/AccordionCompTS3.png)
+  - ![](./images/AccordionCompTS2.png)
+  - ![](./images/AccordionCompTS4.png)
+
+- Adding Type Annotations to ActionButton Component
+
+  - ![](./images/ActionButtonCompTS.png)
+  - ![](./images/ActionButtonCompTS1.png)
+  - ![](./images/ActionButtonCompTS2.png)
+
+    - to solve the violator in the const type, make the validator method into arrow function
+    - If a validator function is present in any prop, the type inference breaks. Interestingly, if the validator is an arrow-function it it works. Reference: `https://github.com/vuejs/core/issues/2738`
+
+  - ![](./images/ActionButtonCompTS3.png)
+  - ![](./images/ActionButtonCompTS4.png)
+
+- Annotating Event Handlers
+  - NOTE:
+    - for general browser events such as clicks, such as inputs, etc., anything that we react to with the v-on directive in vue, you're going to define a method that's going to accept that browser event, and you can immediately provide it with the type of event which should be available immediately in TypeScript. And as a reminder, event is just an interface that is globally available. Its going to be available globally in any project that implements TS
+      - ![](./images/TextInputCompTS.png)
+      - ![](./images/TextInputCompTS1.png)
+      - ![](./images/TextInputCompTS2.png)
+    - event.target will going to give us an actual element from the DOM represented as a JS object. Target will always be referencing a valid HTML element but TypeScript doesn't know what it is and thus it doesn't know what properties it has. --to solve? use the `as` syntax referencing to a HTMLInputElement interface
+      - ![](./images/TextInputCompTS3.png)
+      - ![](./images/TextInputCompTS4.png)
+      - ![](./images/TextInputCompTS5.png)
+      - ![](./images/TextInputCompTS6.png)
 
 ## Section 34: Building a Feauture with TypeScript
 
