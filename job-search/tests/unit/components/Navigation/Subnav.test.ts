@@ -4,6 +4,7 @@ import { mount } from "@vue/test-utils";
 // jest.mock("vuex");
 import { useFilterJobs } from "@/store/composables";
 jest.mock("@/store/composables");
+const useFilterJobsMock = useFilterJobs as jest.Mock;
 
 import Subnav from "@/components/Navigation/Subnav.vue";
 
@@ -12,6 +13,7 @@ import Subnav from "@/components/Navigation/Subnav.vue";
 import { ref } from "vue";
 import useConfirmRoute from "@/composables/useConfirmRoute";
 jest.mock("@/composables/useConfirmRoute"); //instead of passing vu-router, link to the composables should be
+const useConfirmRouteMock = useConfirmRoute as jest.Mock;
 
 describe("Subnav", () => {
   /*
@@ -47,9 +49,9 @@ describe("Subnav", () => {
       //     FILTERED_JOBS: [{ id: 1 }, { id: 2 }],
       //   },
       // };
-      useConfirmRoute.mockReturnValue(ref(true)); // one way to have a reactive object that stores an internal value of a boolean is to use ref() function
+      useConfirmRouteMock.mockReturnValue(ref(true)); // one way to have a reactive object that stores an internal value of a boolean is to use ref() function
 
-      useFilterJobs.mockReturnValue(ref([{ id: 1 }, { id: 2 }]));
+      useFilterJobsMock.mockReturnValue(ref([{ id: 1 }, { id: 2 }]));
 
       const wrapper = mount(Subnav, createConfig());
 
@@ -60,8 +62,8 @@ describe("Subnav", () => {
 
   describe("when user is not on the job page", () => {
     it("does NOT display the job count", () => {
-      useConfirmRoute.mockReturnValue(ref(false));
-      useFilterJobs.mockReturnValue(ref([]));
+      useConfirmRouteMock.mockReturnValue(ref(false));
+      useFilterJobsMock.mockReturnValue(ref([]));
 
       const wrapper = mount(Subnav, createConfig());
       const jobCount = wrapper.find("[data-test='job-count']");

@@ -1,11 +1,15 @@
-import { createStore } from "vuex"; // createStore --references for global collection of data that Vuex storing for us
+import { InjectionKey } from "vue";
+import { createStore, Store } from "vuex"; // createStore --references for global collection of data that Vuex storing for us
 
 import state from "@/store/state.js";
 import getters from "@/store/getters.js";
 import mutations from "@/store/mutations.js";
 import actions from "@/store/actions.js";
+import { GlobalState } from "./types";
 
-const store = createStore({
+export const key: InjectionKey<Store<GlobalState>> = Symbol(); // injectionkey accepts a generic type of Store as argument then Store also accepts generic type of GlobalState interface as argument
+
+const store = createStore<GlobalState>({
   // state() {
   //   return {
   //     isLoggedin: false,

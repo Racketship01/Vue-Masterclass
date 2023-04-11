@@ -13,7 +13,6 @@
               :data-test="value"
               @change="selectValue"
             />
-            <!-- :datatest ->string in the set we are iterating -->
             <label :for="value" data-test="value">{{ value }}</label>
           </li>
         </ul>
@@ -22,17 +21,17 @@
   </accordion>
 </template>
 
-<script>
-import { ref } from "vue";
+<script lang="ts">
+import { ref, defineComponent } from "vue";
 //import { useUniqueOrganizations } from "@/store/composables";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
-
+import { key } from "@/store";
 // import { mapGetters, mapMutations } from "vuex";
 // import { ADD_SELECTED_ORGANIZATIONS } from "@/store/constants";
 import Accordion from "@/components/Shared/Accordion.vue";
 
-export default {
+export default defineComponent({
   name: "JobFilterSidebarCheckboxGroup",
   components: {
     Accordion,
@@ -52,10 +51,10 @@ export default {
     },
   },
   setup(props) {
-    const store = useStore();
+    const store = useStore(key);
     const router = useRouter();
 
-    const selectedValues = ref([]);
+    const selectedValues = ref<string[]>([]);
     // const uniqueOrganizations = useUniqueOrganizations();
 
     const selectValue = () => {
@@ -65,5 +64,5 @@ export default {
 
     return { selectedValues, selectValue };
   },
-};
+});
 </script>

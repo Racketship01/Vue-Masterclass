@@ -13,14 +13,14 @@ import {
 import App from "@/App.vue"; //importing the root component from vue file
 import "@/assets/tailwind.css"; //importing tailwind package
 import router from "@/router"; // node will look for a file called index.js then import by default at the router folder
-import store from "@/store"; // vuex store
+import store, { key } from "@/store"; // vuex store
 
 library.add(faAngleDown);
 library.add(faAngleUp);
 library.add(faSearch); // adding/registering icon to the library but not yet connected to the vue
 
 createApp(App)
-  .use(store)
+  .use(store, key)
   .use(router)
   .component("font-awesome-icon", FontAwesomeIcon)
   .mount("#app"); //connect library to actual vue app by adding component method (register a global component within the whole vue app) before mount method then invoke it. And then call mount method on the return value --NOTE: special design pattern in vue --the methods that are available on this vue object will always return the same object itself. And the benefit of that design is that we can invoke as many methods in a row and we're can rest assured that we're always getting the same vue app object back which allows to call mount on it same as before

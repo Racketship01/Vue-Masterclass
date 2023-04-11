@@ -2942,7 +2942,7 @@ console.log(goodFood);
     <router-view />
   </template>
   ```
-  - NOTE: we dont need to use v-bind syntax to a prop if its not dynamic or it is not an array or an object or connected to the computed data or computed properties e.g **`to=""`** props at the router-link as this component is not changing as will be serve as a navigation
+  - NOTE: we dont need to use v-bind syntax to a prop `:to=""` if its not dynamic or it is not an array or an object or connected to the computed data or computed properties e.g **`to=""`** props at the router-link as this component is not changing as will be serve as a navigation
 - Keep MainNav Constant, Dynamically Render Component
 
   ```html
@@ -3626,7 +3626,7 @@ console.log(goodFood);
   ```js
   <job-list v-for="job in jobs" :key="job.id" :job="job" />
   ```
-- Compuite Dynamic Job Page
+- Compute Dynamic Job Page
   ```js
   // JobList.vue
   <script>
@@ -8132,6 +8132,7 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
       const firstPage = 1;
       return previousPage >= firstPage ? previousPage : undefined;
     });
+
     const nextPage = computed(() => {
       const nextPage = currentPage.value + 1;
 
@@ -8503,7 +8504,7 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
     - ![](./images/genericType2.png)
   - Solution? use generics
     - Generics --a non-specific type --and allows us to define a function that going to accept a generic type --allow to write more reusable functions by providing generic type parameters
-      - generic type --a non specific type that cannot predict in advance, only to fin when invoking function
+      - generic type --a non specific type that cannot predict in advance, only to find when invoking function
       - in order to specify function that will accept a generic type as an argument. Before parameter list, provide a pair of brackets then define parameters for the expected generic types `const function name = <T>(array: T[]): T[]=> [...array]`
       - for general convention: `<T>` generic type for something that will be the specific type later upon invoking function
         - ![](./images/genericType3.png)
@@ -8931,7 +8932,7 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
 - Mocking API calls with TypeScript
   - update the action JS test file into TS test file
   - ![](./images/actionTSMockingAPI.png)
-    - TS does not understand `mockResolvedValue()`. As we jestMock the API getJobs file, TS does not understand that we use `jest.mock(path)` syntax to mock our original implementation. TS still thinks it has the original implementation and the original implementation does not have `mockResolveValue()` method thats why TS is complaining.
+    - TS does not understand `mockResolvedValue()`. As we jestMock the API getJobs file, TS does not understand that we use `jest.mock(path)` syntax to mock our original implementation. TS still thinks it has the original implementation and the original implementation does not have `mockResolvedValue()` method thats why TS is complaining.
       - Solution? communicate to TS that `jest.mock()` effectively changed the type of the `getJobs` to be a jest.mock function. Use the `as` syntax to treat `getJobs` as a jest mock function which indeed does have a mockResolvedValue() method on it. `jest.Mock()` --is an interface in the jest library. It is a type that describes a specific function.
         - ![](./images/actionTSMockingAPI1.png)
         - ![](./images/actionTSMockingAPI2.png)
@@ -9153,16 +9154,244 @@ export const useFetchJobsDispatch = async () => {
   - ![](./images/ActionButtonCompTS4.png)
 
 - Annotating Event Handlers
+
   - NOTE:
+    - the core TS lang includes built in interfaces for browser events
     - for general browser events such as clicks, such as inputs, etc., anything that we react to with the v-on directive in vue, you're going to define a method that's going to accept that browser event, and you can immediately provide it with the type of event which should be available immediately in TypeScript. And as a reminder, event is just an interface that is globally available. Its going to be available globally in any project that implements TS
       - ![](./images/TextInputCompTS.png)
       - ![](./images/TextInputCompTS1.png)
       - ![](./images/TextInputCompTS2.png)
-    - event.target will going to give us an actual element from the DOM represented as a JS object. Target will always be referencing a valid HTML element but TypeScript doesn't know what it is and thus it doesn't know what properties it has. --to solve? use the `as` syntax referencing to a HTMLInputElement interface
+    - event.target will going to give us an actual element from the DOM represented as a JS object. Target will always be referencing a valid HTML element but TypeScript doesn't know what it is and thus it doesn't know what properties it has. --to solve? use the `as` syntax referencing to a HTMLInputElement interface and treat as an actual element
       - ![](./images/TextInputCompTS3.png)
       - ![](./images/TextInputCompTS4.png)
       - ![](./images/TextInputCompTS5.png)
       - ![](./images/TextInputCompTS6.png)
+
+- Adding Type Annotations to HeaderContiner Component
+
+  - add `lang` syntax at the `<script>` tag then import defineComponent and invoke at the config object
+
+- Adding Type Annotations to Subnav Component
+
+  - add `lang` syntax at the `<script>` tag then import defineComponent and invoke at the config object
+  - for test, use the `as` syntax fo jest.mock composable as the TS doesnt recongnize the mockReturnedValue()
+    - ![](./images/subnavCompTS.png)
+
+- Adding Types for Composables I
+
+  - ![](./images/composablesTypes.png)
+  - ![](./images/composablesTypes1.png)
+  - ![](./images/composablesTypes2.png)
+  - ![](./images/composablesTypes3.png)
+  - ![](./images/composablesTypes4.png)
+    - NOTE:
+      - parseInt method expects to receive a string type as its 1st arguments
+      - route.query.page could be another type of value which is this location query value array and can only take an argument of either string or an array
+  - ![](./images/composablesTypes5.png)
+
+- Adding Types for Composables II
+
+  - currentPage and maxPage being pass as a parameter are reactive object that have a value property, and TS cant figure out what their types are.
+    - ![](./images/composablesTypes6.png)
+  - in our test, we use a simpler JS objects that simply had a value property rather than using a complete vue reactive object such as ref function to avoid decoupled in implementation
+    - ![](./images/composablesTypes7.png)
+
+- Annotating Axios Request (Spotlight Component)
+
+  - TS does not interference types for an endpoint(e.g spotlight), to solve? use interface and declare an annotation of generic type to that endpoint
+    - ![](./images/axiosTypes.png)
+    - ![](./images/axiosTypes1.png)
+    - ![](./images/axiosTypes2.png)
+    - ![](./images/axiosTypes3.png)
+    - ![](./images/axiosTypes4.png)
+  - One more additional place where we can provie more description to TS about what its receiving in get() method.
+    - ![](./images/axiosTypes5.png)
+    - ![](./images/axiosTypes6.png)
+    - By default, TS is only looking at your code in the editor before its actually running in the browser.
+    - TS cannot make an API request and figure out what the shape of the response from endpoint going to look like. to solve? use an interface and declare an annotation of generic type similar to the response from response from endpoint gonng to look like
+    - ![](./images/axiosTypes7.png)
+
+- Annotating getJobs API Function
+
+  - same scenario at annotation for axios request
+
+  ```ts
+  import axios from "axios";
+  import { Job } from "@/api/types";
+
+  const getJobs = async () => {
+    const baseURL = process.env.VUE_APP_API_URL;
+    const response = await axios.get<Job[]>(`${baseURL}/jobs`); // TS cannot make an API reqs and interfer what the shape of the response from endpoint going to look like, to solve? same as above enpoint declaring generic type annotation
+    return response.data;
+  };
+
+  export default getJobs;
+
+  // test
+  import axios from "axios";
+  jest.mock("axios");
+
+  import getJobs from "@/api/getJob";
+
+  const axiosGetMock = axios.get as jest.Mock; // not just axios but also the get() method
+
+  describe("getJob", () => {
+    beforeEach(() => {
+      axiosGetMock.mockResolvedValue({
+        data: [
+          {
+            id: 1,
+            title: "Java Engineer",
+          },
+        ],
+      });
+    });
+  });
+  ```
+
+- Adding Annotation Type for JobList Component
+
+  - NOTE:
+    - theres no concept of interfaces in JS, only in TS.
+      - ![](./images/propType.png)
+    - Thats why `type: Object` in props property, TS doesnt understand that it is going to be specifically a `props.job` so it cant validate `.id` of what idea is going to be, it assumes that job is going to be some kind of object with properties of id, if it exists, and going to add value to some kind of data type of any and if not exist, undefined
+      - ![](./images/propType1.png)
+    - how can we do to TS in order to understand while still using the old school vue syntax of props?
+      - we will import and use special type from vue called `PropType`
+        - PropType --the way its work is same as we use the `as` keyword and provide the specific object type by using generic type argument to PropType
+        - `type: Object as PropType<Job>` --proptype --data type that is fundamentally a prop that implements the job interface
+      - ![](./images/propType2.png)
+  - Test Suite:
+    - ![](./images/propType3.png)
+    - ![](./images/propType4.png)
+    - ![](./images/propType5.png)
+    - ![](./images/propType6.png)
+
+- Adding Annotation Type for JobListings Component
+
+  - convert the script tag into `lang="ts"` and import defineComponent method in vue and invoke at the config object
+  - update the test file for JobListings component
+    - ![](./images/jobListingsType.png)
+    - ![](./images/jobListingsType1.png)
+
+- Adding Annotation Type for JobFilterSidebar Component
+
+  - convert the script tag into `lang="ts"` and import defineComponent method in vue and invoke at the config object
+
+- Writing test for JobFilterSidebar Component
+
+  - NOTE: prop() --method that is going to return the complete props object where the keys and properties are going to be the props
+
+  ```js
+  import { shallowMount } from "@vue/test-utils";
+  import JobFilterSidebar from "@/components/JobResults/JobFilterSideBar/JobFilterSidebar.vue";
+
+  import { useUniqueJobTypes, useUniqueOrganizations } from "@/store/composables";
+  jest.mock("@/store/composables");
+
+  const useUniqueJobTypesMock = useUniqueJobTypes as jest.Mock;
+  const useUniqueOrganizationsMock = useUniqueOrganizations as jest.Mock;
+
+  describe("JobFilterSidebar", () => {
+    it("allow user to filter jobs by organization", () => {
+      useUniqueOrganizationsMock.mockReturnValue(new Set(["Google", "Amazon"]));
+      useUniqueJobTypesMock.mockReturnValue(new Set(["Full-time", "Part-time"]));
+      const wrapper = shallowMount(JobFilterSidebar);
+      const organizationFilter: any = wrapper.findComponent(
+        "[data-test='filter-organizations']"
+      );
+
+      // @ts-ignore
+      const { header, uniqueValues, mutation } = organizationFilter.props(); // return complete props object from the component
+      expect(header).toBe("Organization");
+      expect(uniqueValues).toEqual(new Set(["Google", "Amazon"]));
+      expect(mutation).toBe("ADD_SELECTED_ORGANIZATIONS");
+    });
+
+    it("allow user to filter jobs by job types", () => {
+      useUniqueOrganizationsMock.mockReturnValue(new Set(["Google", "Amazon"]));
+      useUniqueJobTypesMock.mockReturnValue(new Set(["Full-time", "Part-time"]));
+      const wrapper = shallowMount(JobFilterSidebar);
+      const jobTypeFilter: any = wrapper.findComponent(
+        "[data-test='filter-jobTypes']"
+      );
+
+      // @ts-ignore
+      const { header, uniqueValues, mutation } = jobTypeFilter.props(); // return complete props object from the component
+      expect(header).toBe("Job Types");
+      expect(uniqueValues).toEqual(new Set(["Full-time", "Part-time"]));
+      expect(mutation).toBe("ADD_SELECTED_JOB_TYPES");
+    });
+  });
+
+  ```
+
+- Adding Annotation Type for JobFilterSidebarCheckboxGroup Component
+
+  - onvert the script tag into `lang="ts"` and import defineComponent method in vue and invoke at the config object
+  - ![](./images/jobFIlterSidebarCheckboxGroupTypes.png.png)
+  - ![](./images/jobFIlterSidebarCheckboxGroupTypes1.png.png)
+  - ![](./images/jobFIlterSidebarCheckboxGroupTypes2.png.png)
+  - NOTE:
+    - when using useStore() function from vuex in actual component, it doesnt recognize interference.
+
+- Annotating Store for useStore in Component
+
+  - ![](./images/useStoreType.png)
+  - ![](./images/useStoreType1.png)
+    - NOTE:
+      - `const key: InjectionKey<Store<State>> = Symbol()` --injection key function accepts a generic type of Store, then the generic Store also accepts an interface of State --Symbol() is a brand new primitive type in ES6 and represents basically an immutable key for a property for an object
+  - ![](./images/useStoreType2.png)
+  - ![](./images/useStoreType3.png)
+  - ![](./images/useStoreType4.png)
+
+  ```js
+  // index.ts for store
+  import { InjectionKey } from "vue";
+  import { createStore, Store } from "vuex";
+
+  export const key: InjectionKey<Store<GlobalState>> = Symbol(); // injectionkey accepts a generic type of Store as argument then Store also accepts generic type of GlobalState interface as argument
+
+  const store =
+    createStore <
+    GlobalState >
+    {
+      state,
+      mutations,
+      getters,
+      actions,
+      strict: process.env.NODE_ENV !== "production",
+    };
+  export default store;
+
+  // main.ts
+  import store, { key } from "@/store";
+
+  createApp(App)
+    .use(store, key)
+    .use(router)
+    .component("font-awesome-icon", FontAwesomeIcon)
+    .mount("#app");
+
+  // JobFilterSidebarCheckboxGroup component
+  import { key } from "@/store";
+
+  setup() {
+    const store = useStore(key);
+    const router = useRouter();
+
+    const selectedValues = ref<string[]>([]);
+
+
+    const selectValue = () => {
+      store.commit(props.mutation, selectedValues.value);
+      router.push({ name: "JobResults" });
+    };
+
+    return { selectedValues, selectValue };
+  }
+
+  ```
 
 ## Section 34: Building a Feauture with TypeScript
 

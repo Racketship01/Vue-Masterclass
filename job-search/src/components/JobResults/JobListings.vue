@@ -1,4 +1,4 @@
-<!-- serves as a parent component that renders when we go to /jobs/results || ultimate intenyt is to render a job lists component for every job we get from the back end-->
+<!-- serves as a parent component that renders when we go to /jobs/results || ultimate intent is to render a job lists component for every job we get from the back end-->
 <template>
   <main class="flex-auto p-8 bg-brand-gray-2">
     <ol>
@@ -37,7 +37,7 @@
   </main>
 </template>
 
-<script>
+<script lang="ts">
 /*
 import { useStore } from "vuex";
 // import { useRoute } from "vue-router";
@@ -47,13 +47,13 @@ import { FETCH_JOBS } from "@/store/constants";
 */
 import JobList from "@/components/JobResults/JobList.vue";
 
-import { computed, onMounted } from "vue";
+import { computed, onMounted, defineComponent } from "vue";
 import { useFilterJobs, useFetchJobsDispatch } from "@/store/composables";
 
 import useCurrentPage from "@/composables/useCurrentPage";
 import usePreviousAndNextPages from "@/composables/usePreviousAndNextPages";
 
-export default {
+export default defineComponent({
   name: "JobListings",
   components: {
     JobList,
@@ -73,8 +73,7 @@ export default {
     onMounted(useFetchJobsDispatch);
     const filteredJobs = useFilterJobs();
     const currentPage = useCurrentPage();
-    const maxPage = Math.ceil(filteredJobs.value.length / 10);
-
+    const maxPage = computed(() => Math.ceil(filteredJobs.value.length / 10));
     const { previousPage, nextPage } = usePreviousAndNextPages(
       currentPage,
       maxPage
@@ -146,5 +145,5 @@ export default {
     ...mapActions([FETCH_JOBS]), // provide action names and creates methods with same names on our action store which will then invoke dispatch method in action store
   },
   */
-};
+});
 </script>

@@ -9,12 +9,16 @@ jest.mock("axios"); // loop through all of axios functionality then replaced tha
 import { ref } from "vue";
 import { useFilterJobs, useFetchJobsDispatch } from "@/store/composables";
 jest.mock("@/store/composables");
+const useFilterJobsMock = useFilterJobs as jest.Mock;
+const useFetchJobsDispatchMock = useFetchJobsDispatch as jest.Mock;
 
 import useCurrentPage from "@/composables/useCurrentPage";
 jest.mock("@/composables/useCurrentPage");
+const useCurrentPageMock = useCurrentPage as jest.Mock;
 
 import usePreviousAndNextPages from "@/composables/usePreviousAndNextPages";
 jest.mock("@/composables/usePreviousAndNextPages");
+const usePreviousAndNextPagesMock = usePreviousAndNextPages as jest.Mock;
 
 import JobListings from "@/components/JobResults/JobListings.vue";
 
@@ -82,9 +86,12 @@ describe("JobListings", () => {
 
   describe("when component mounts", () => {
     it("makes call to fetch jobs from API", () => {
-      useFilterJobs.mockReturnValue({ value: [] });
-      useCurrentPage.mockReturnValue({ value: 2 });
-      usePreviousAndNextPages.mockReturnValue({ previousPage: 1, nextPage: 3 });
+      useFilterJobsMock.mockReturnValue({ value: [] });
+      useCurrentPageMock.mockReturnValue({ value: 2 });
+      usePreviousAndNextPagesMock.mockReturnValue({
+        previousPage: 1,
+        nextPage: 3,
+      });
       shallowMount(JobListings, createConfig());
       expect(useFetchJobsDispatch).toHaveBeenCalled();
     });
@@ -109,9 +116,9 @@ describe("JobListings", () => {
     axios.get.mockResolvedValue({ data: Array(15).fill({}) }); // --request to an API outside of the scope of vue component --Vue test suite isnt registering the return resolve value of this axios.get, we simulated this API reqs and response of 15 objects but not registering/ updating with component as promise not fully completed --nextTick will not work as Vue doesnt know unresolved promise, Solution? use flush Promise fn to resolve promise immediately
     */
 
-    useFilterJobs.mockReturnValue({ value: Array(15).fill({}) });
-    useCurrentPage.mockReturnValue({ value: 1 });
-    usePreviousAndNextPages.mockReturnValue({
+    useFilterJobsMock.mockReturnValue({ value: Array(15).fill({}) });
+    useCurrentPageMock.mockReturnValue({ value: 1 });
+    usePreviousAndNextPagesMock.mockReturnValue({
       previousPage: undefined,
       nextPage: 2,
     });
@@ -138,10 +145,10 @@ describe("JobListings", () => {
       useStore.mockReturnValue();
       */
 
-    useFilterJobs.mockReturnValue({ value: [] });
-    useCurrentPage.mockReturnValue(ref(1)); // when testing DOM interaction, plain value object will not be a reactive object(displayedJobs function needed a reactive currentPage value to render at template), we are not able to mock out the original reactive useCurrentPage. Solution? make it a reactive object using ref() function
+    useFilterJobsMock.mockReturnValue({ value: [] });
+    useCurrentPageMock.mockReturnValue(ref(1)); // when testing DOM interaction, plain value object will not be a reactive object(displayedJobs function needed a reactive currentPage value to render at template), we are not able to mock out the original reactive useCurrentPage. Solution? make it a reactive object using ref() function
 
-    usePreviousAndNextPages.mockReturnValue({
+    usePreviousAndNextPagesMock.mockReturnValue({
       previousPage: undefined,
       nextPage: 2,
     });
@@ -152,9 +159,9 @@ describe("JobListings", () => {
   describe("when user is on first page", () => {
     it("does not show link to previous page", () => {
       // const queryParams = { page: "1" };
-      useFilterJobs.mockReturnValue({ value: [] });
-      useCurrentPage.mockReturnValue(ref(1));
-      usePreviousAndNextPages.mockReturnValue({
+      useFilterJobsMock.mockReturnValue({ value: [] });
+      useCurrentPageMock.mockReturnValue(ref(1));
+      usePreviousAndNextPagesMock.mockReturnValue({
         previousPage: undefined,
         nextPage: 2,
       });
@@ -165,9 +172,9 @@ describe("JobListings", () => {
 
     it("show link to next page", async () => {
       // const queryParams = { page: "1" };
-      useFilterJobs.mockReturnValue({ value: [] });
-      useCurrentPage.mockReturnValue(ref(1));
-      usePreviousAndNextPages.mockReturnValue({
+      useFilterJobsMock.mockReturnValue({ value: [] });
+      useCurrentPageMock.mockReturnValue(ref(1));
+      usePreviousAndNextPagesMock.mockReturnValue({
         previousPage: undefined,
         nextPage: 2,
       });
@@ -181,9 +188,9 @@ describe("JobListings", () => {
   describe("when user is on the last page of job results", () => {
     it("does not show link to next page", async () => {
       // const queryParams = { page: "2" };
-      useFilterJobs.mockReturnValue({ value: [] });
-      useCurrentPage.mockReturnValue(ref(2));
-      usePreviousAndNextPages.mockReturnValue({
+      useFilterJobsMock.mockReturnValue({ value: [] });
+      useCurrentPageMock.mockReturnValue(ref(2));
+      usePreviousAndNextPagesMock.mockReturnValue({
         previousPage: 1,
         nextPage: undefined,
       });
@@ -195,9 +202,9 @@ describe("JobListings", () => {
 
     it("show link to previous page", async () => {
       // const queryParams = { page: "2" };
-      useFilterJobs.mockReturnValue({ value: [] });
-      useCurrentPage.mockReturnValue(ref(2));
-      usePreviousAndNextPages.mockReturnValue({
+      useFilterJobsMock.mockReturnValue({ value: [] });
+      useCurrentPageMock.mockReturnValue(ref(2));
+      usePreviousAndNextPagesMock.mockReturnValue({
         previousPage: 1,
         nextPage: undefined,
       });

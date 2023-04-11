@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/65</span>
+                <span class='fraction'>0/69</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/65</span>
+                <span class='fraction'>0/69</span>
             </div>
         
             
@@ -128,7 +128,15 @@
 <a name='L63'></a><a href='#L63'>63</a>
 <a name='L64'></a><a href='#L64'>64</a>
 <a name='L65'></a><a href='#L65'>65</a>
-<a name='L66'></a><a href='#L66'>66</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -210,11 +218,13 @@
 <span class="cstat-no" title="statement not covered" >        header="Job Types"</span>
 <span class="cstat-no" title="statement not covered" >        :unique-values="uniqueJobTypes"</span>
 <span class="cstat-no" title="statement not covered" >        :mutation="ADD_SELECTED_JOB_TYPES"</span>
+<span class="cstat-no" title="statement not covered" >        data-test="filter-jobTypes"</span>
 <span class="cstat-no" title="statement not covered" >      /&gt;</span>
 <span class="cstat-no" title="statement not covered" >      &lt;job-filter-sidebar-checkbox-group</span>
 <span class="cstat-no" title="statement not covered" >        header="Organization"</span>
 <span class="cstat-no" title="statement not covered" >        :unique-values="uniqueOrganizations"</span>
 <span class="cstat-no" title="statement not covered" >        :mutation="ADD_SELECTED_ORGANIZATIONS"</span>
+<span class="cstat-no" title="statement not covered" >        data-test="filter-organizations"</span>
 <span class="cstat-no" title="statement not covered" >      /&gt;</span>
 <span class="cstat-no" title="statement not covered" >      &lt;!-- &lt;job-filter-sidebar-job-type /&gt;</span>
 <span class="cstat-no" title="statement not covered" >      &lt;job-filter-sidebar-organization /&gt; --&gt;</span>
@@ -222,7 +232,9 @@
 <span class="cstat-no" title="statement not covered" >  &lt;/div&gt;</span>
 <span class="cstat-no" title="statement not covered" >&lt;/template&gt;</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >&lt;script&gt;</span>
+<span class="cstat-no" title="statement not covered" >&lt;script lang="ts"&gt;</span>
+<span class="cstat-no" title="statement not covered" >import { defineComponent } from "vue";</span>
+<span class="cstat-no" title="statement not covered" ></span>
 <span class="cstat-no" title="statement not covered" >import ActionButton from "@/components/Shared/ActionButton.vue";</span>
 <span class="cstat-no" title="statement not covered" >import Accordion from "@/components/Shared/Accordion.vue";</span>
 <span class="cstat-no" title="statement not covered" ></span>
@@ -237,7 +249,7 @@
 <span class="cstat-no" title="statement not covered" >  ADD_SELECTED_ORGANIZATIONS,</span>
 <span class="cstat-no" title="statement not covered" >} from "@/store/constants";</span>
 <span class="cstat-no" title="statement not covered" ></span>
-<span class="cstat-no" title="statement not covered" >export default {</span>
+<span class="cstat-no" title="statement not covered" >export default defineComponent({</span>
 <span class="cstat-no" title="statement not covered" >  name: "JobFilterSidebar",</span>
 <span class="cstat-no" title="statement not covered" >  components: {</span>
 <span class="cstat-no" title="statement not covered" >    ActionButton,</span>
@@ -256,7 +268,7 @@
 <span class="cstat-no" title="statement not covered" >      ADD_SELECTED_ORGANIZATIONS,</span>
 <span class="cstat-no" title="statement not covered" >    };</span>
 <span class="cstat-no" title="statement not covered" >  },</span>
-<span class="cstat-no" title="statement not covered" >};</span>
+<span class="cstat-no" title="statement not covered" >});</span>
 <span class="cstat-no" title="statement not covered" >&lt;/script&gt;</span>
 &nbsp;</pre></td></tr></table></pre>
 
@@ -265,7 +277,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-03-23T06:59:29.338Z
+                at 2023-04-11T09:33:44.214Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>
