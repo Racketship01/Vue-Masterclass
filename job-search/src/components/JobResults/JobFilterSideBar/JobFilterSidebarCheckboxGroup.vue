@@ -13,7 +13,7 @@
               :data-test="value"
               @change="selectValue"
             />
-            <label :for="value" data-test="value">{{ value }}</label>
+            <label :v-for="value" data-test="value">{{ value }}</label>
           </li>
         </ul>
       </fieldset>
@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts">
-import { ref, defineComponent } from "vue";
+import { ref, defineComponent, PropType } from "vue";
 //import { useUniqueOrganizations } from "@/store/composables";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
@@ -42,7 +42,7 @@ export default defineComponent({
       required: true,
     },
     uniqueValues: {
-      type: Set,
+      type: Set as PropType<{ [value: string]: any }>,
       required: true,
     },
     mutation: {
@@ -62,7 +62,7 @@ export default defineComponent({
       router.push({ name: "JobResults" });
     };
 
-    return { selectedValues, selectValue };
+    return { selectedValues, selectValue, props };
   },
 });
 </script>

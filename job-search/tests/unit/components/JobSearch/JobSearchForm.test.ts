@@ -1,6 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { useRouter } from "vue-router";
 jest.mock("vue-router"); // same as axios, mock out everything in vue router library --includes useRouter then replace with a jest mock
+const useRouterMock = useRouter as jest.Mock;
 
 import JobSearchForm from "@/components/JobSearch/JobSearchForm.vue";
 
@@ -10,7 +11,7 @@ describe("JobSearchForm", () => {
       // const $router = { push }; // router set to plain JS object with push method (mock function)
 
       const push = jest.fn(); // mock function for this.$router.push()
-      useRouter.mockReturnValue({ push }); //NOTE: invoking mock function will return undefined, we need mockReturnValue to return a push method then mock it
+      useRouterMock.mockReturnValue({ push }); //NOTE: invoking mock function will return undefined, we need mockReturnValue to return a push method then mock it
 
       const wrapper = mount(JobSearchForm, {
         attachTo: document.body,

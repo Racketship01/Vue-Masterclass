@@ -6112,7 +6112,7 @@ describe("JobFilterSidebarOrganization", () => {
   ![](./images/refactorVuexTest.png)
 - Refactoring our Components
   ![](./images/refactorComponent.png)
-- ## REVIEW:
+- REVIEW:
   - ![](./images/sec25Rev.png)
   - ![](./images/sec25Rev1.png)
   - ![](./images/sec25Rev2.png)
@@ -8329,6 +8329,8 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
   ```
 
 - REVIEW:
+  - ![](./images/sec30Rev.png)
+  - ![](./images/sec30Rev1.png)
 
 ## Section 31: Intro TypeScript
 
@@ -8487,7 +8489,7 @@ export const ADD_SELECTED_JOB_TYPES = "ADD_SELECTED_JOB_TYPES";
 
 - Interfaces for Functions
 
-  - problem being solved bny interfaces for function? duplication of type definition in parameter and return value of functions
+  - problem being solved by interfaces for function? duplication of type definition in parameter and return value of functions
     - same in interfaces for objects `interface functionName { (paarameter: type): returnValue type }`
     - ![](./images/interfaceFunc.png)
     - ![](./images/interfaceFunc1.png)
@@ -9071,13 +9073,13 @@ export const useFetchJobsDispatch = async () => {
 
 - Adding Type Annotation for Headline Component
 
-  - whenever were going to see TS violations in a vue component, is because the TS inference didnt work exastly as it should, to fix? expplicitly and manually tell TS the correct type
+  - whenever were going to see TS violations in a vue component, is because the TS inference didnt work exastly as it should, to fix? explicitly and manually tell TS the correct type
   - Problem 1:
 
     - ![](./images/HeadlineCompTS.png)
     - ![](./images/HeadlineCompTS1.png)
       - `[x: number]` is not a literal property, its just an arbitrary name that its providing
-      - the syntax is trying to say TS thinks that were going to have some kind of property, it doesnt really matter what its actual value is excepts its going to be a number. We need a string as the action data is reurning a str resulting for a violatoions
+      - the syntax is trying to say TS thinks that were going to have some kind of property, it doesnt really matter what its actual value is, excepts its going to be a number. We need a string as the action data is reurning a str resulting for a violatoions
       - to solve, explicitly declaring the correct type
 
     ```js
@@ -9328,7 +9330,7 @@ export const useFetchJobsDispatch = async () => {
 
 - Adding Annotation Type for JobFilterSidebarCheckboxGroup Component
 
-  - onvert the script tag into `lang="ts"` and import defineComponent method in vue and invoke at the config object
+  - convert the script tag into `lang="ts"` and import defineComponent method in vue and invoke at the config object
   - ![](./images/jobFIlterSidebarCheckboxGroupTypes.png.png)
   - ![](./images/jobFIlterSidebarCheckboxGroupTypes1.png.png)
   - ![](./images/jobFIlterSidebarCheckboxGroupTypes2.png.png)
@@ -9393,7 +9395,72 @@ export const useFetchJobsDispatch = async () => {
 
   ```
 
+- Updating Tests for JobFiltersSidebarCheckboxGroup Component
+
+  - Declare type for props interpolated at the template section by using `PropType` to the option API syntax of props
+
+  ```js
+    props: {
+      header: {
+        type: String,
+        required: true,
+      },
+      uniqueValues: {
+        type: Set as PropType<{ [value: string]: any }>,
+        required: true,
+      },
+      mutation: {
+        type: String,
+        required: true,
+      },
+    },
+  ```
+
+  - ![](./images/JobFilterCheckboxTsTest.png)
+    - setChecked() error --means part of the objects private interface, which means its a method that the developers of vue test utils dont actually want to use but can technically able to use it because in JS there is no real concept of privacy. TS want it to be private
+  - ![](./images/JobFilterCheckboxTsTest1.png)
+    - setChecked is private means its part of the interbal implementation of the DOMWrapper class --its a method that the developers of vue test utils use in their own code buy they dont want us to be using is in our end
+    - solution?
+    - ![](./images/JobFilterCheckboxTsTest2.png)
+    - instead of using setChecked() method, use the setvalue() method then set it to boolean of true for checkbox input
+
+- Adding Annotation Type for JobSearchForm Component
+
+  - convert the script tag into `lang="ts"` and import defineComponent method in vue and invoke at the config object
+  - and for the test file for this component, change the file into ts file. Upon converting into TS, jest.Mock useRouter
+
+- Adding Types for Utility Functions
+
+  - convert the file extension into .ts
+  - ![](./images/nextElementTS.png)
+  - ![](./images/nextElementTS1.png)
+  - ![](./images/nextElementTS2.png)
+
+- Adding Type Annotations to Hero and App Components
+
+  - ![](./images/Hero&AppTS.png)
+  - component being shown upon searching `<script>` are the component not still turn into ts component
+  - the convert the script tag into `lang="ts"` and import defineComponent method in vue and invoke at the config object
+
+- Updating Composable to useStoreKey()
+
+  - ![](./images/UpdateKeyAtComposables.png)
+
+- Updating Router File
+
+  - convert the index.js file into .ts in the router folder
+    - ![](./images/updateRouterTS.png)
+
+- REVIEW:
+  - ![](./images/sec33Rev.png)
+  - ![](./images/sec33Rev1.png)
+  - ![](./images/sec33Rev2.png)
+  - ![](./images/sec33Rev3.png)
+  - ![](./images/sec33Rev4.png)
+
 ## Section 34: Building a Feauture with TypeScript
+
+- User Story
 
 ## Section 35: Clearing Job Filters
 

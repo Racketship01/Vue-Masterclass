@@ -5,8 +5,11 @@ import JobFilterSidebarCheckboxGroup from "@/components/JobResults/JobFilterSide
 jest.mock("@/store/composables");
 import { useStore } from "vuex";
 jest.mock("vuex");
+const useStoreMock = useStore as jest.Mock;
+
 import { useRouter } from "vue-router";
 jest.mock("vue-router");
+const useRouterMock = useRouter as jest.Mock;
 
 describe("JobFilterSidebarCheckboxGroup", () => {
   const createConfig = (props = {}) => ({
@@ -23,7 +26,7 @@ describe("JobFilterSidebarCheckboxGroup", () => {
 
   it("renders unique list of job types for filtering jobs ", async () => {
     const commit = jest.fn();
-    useStore.mockReturnValue({ commit });
+    useStoreMock.mockReturnValue({ commit });
 
     const props = { uniqueValues: new Set(["Value A", "Value B"]) };
     const wrapper = mount(JobFilterSidebarCheckboxGroup, createConfig(props));
@@ -40,8 +43,8 @@ describe("JobFilterSidebarCheckboxGroup", () => {
   describe("when user clicks checkbox", () => {
     it("communicates that user has selected checkbox for job types", async () => {
       const commit = jest.fn();
-      useStore.mockReturnValue({ commit });
-      useRouter.mockReturnValue({ push: jest.fn() });
+      useStoreMock.mockReturnValue({ commit });
+      useRouterMock.mockReturnValue({ push: jest.fn() });
 
       const props = {
         uniqueValues: new Set(["Value A"]),
@@ -53,16 +56,17 @@ describe("JobFilterSidebarCheckboxGroup", () => {
       await clickableArea.trigger("click");
 
       const checkboxInput = wrapper.find("[data-test='Value A']"); // referencing dynamic data-test at the element in component -- :data-test=""
-      await checkboxInput.setChecked(); // setChecked() --simulate a checkbox
+      await checkboxInput.setValue(true); // boolean of true for checkbox input
+      //await checkboxInput.setChecked(); // setChecked() --simulate a checkbox
 
       expect(commit).toHaveBeenCalledWith("SOME_MUTATION", ["Value A"]); // commit method will run and pass the name of the mutation as the first argument then afterwards pass any argument [here passing an array]
     });
 
     it("navigates user to job results page to see fresh batch of filters", async () => {
-      useStore.mockReturnValue({ commit: jest.fn() });
+      useStoreMock.mockReturnValue({ commit: jest.fn() });
 
       const push = jest.fn();
-      useRouter.mockReturnValue({ name: "JobResults", push });
+      useRouterMock.mockReturnValue({ name: "JobResults", push });
 
       const props = {
         uniqueValues: new Set(["Value A"]),
@@ -73,7 +77,7 @@ describe("JobFilterSidebarCheckboxGroup", () => {
       await clickableArea.trigger("click");
 
       const checkboxInput = wrapper.find("[data-test='Value A']");
-      await checkboxInput.setChecked();
+      await checkboxInput.setValue(true);
 
       expect(push).toHaveBeenCalledWith({ name: "JobResults" });
     });

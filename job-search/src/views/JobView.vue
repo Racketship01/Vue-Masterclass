@@ -1,9 +1,17 @@
 <template>
-  <div>Job Page</div>
+  <div>Job Page for job {{ currentJobId }}</div>
 </template>
 
-<script>
-export default {
+<script lang="ts">
+import { defineComponent } from "vue";
+import { useRoute } from "vue-router";
+
+export default defineComponent({
   name: "JobView",
-};
+  setup() {
+    const route = useRoute();
+    const currentJobId = route.params.currentJobId;
+    return { currentJobId };
+  },
+});
 </script>
