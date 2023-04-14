@@ -9462,6 +9462,15 @@ export const useFetchJobsDispatch = async () => {
 
 - User Story
 
+  - ![](./images/sec34User.png)
+  - ![](./images/sec34User1.png)
+
+- Adding /degrees Endpoint
+
+  - ![](./images/degreesEndpoint.png)
+
+- TDD for API Call: getDegrees API Call
+
 ## Section 35: Clearing Job Filters
 
 ## Section 36: Adding Skills
