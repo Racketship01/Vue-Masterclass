@@ -1,5 +1,5 @@
 import getters from "@/store/getters";
-import { createState, createJob } from "./utils";
+import { createState, createJob, createDegree } from "./utils";
 
 describe("getters", () => {
   // ORGANIZATIONS
@@ -33,6 +33,21 @@ describe("getters", () => {
     });
   });
 
+  // DEGREES
+  describe("UNIQUE_DEGREES", () => {
+    it("extract unique degrees values ", () => {
+      const degrees = [
+        createDegree({ degree: "Master's" }),
+        createDegree({ degree: "Bachelor's" }),
+      ];
+      const state = createState({
+        degrees,
+      });
+      const result = getters.UNIQUE_DEGREES(state);
+      expect(result).toEqual(["Master's", "Bachelor's"]);
+    });
+  });
+
   describe("INCLUDE_JOB_BY_ORGANIZATION", () => {
     describe("when the user has not selected any organization", () => {
       it("includes job", () => {
@@ -46,7 +61,7 @@ describe("getters", () => {
         expect(includeJob).toBe(true);
       });
 
-      it("identifies if job is associated woth given organizations", () => {
+      it("identifies if job is associated with given organizations", () => {
         const state = createState({
           selectedOrganizations: ["Google", "Microsoft"],
         });
@@ -85,18 +100,47 @@ describe("getters", () => {
     });
   });
 
+  describe("INCLUDE_JOB_BY_DEGREE", () => {
+    describe("when the user has not selected any degree", () => {
+      it("includes job", () => {
+        const state = createState({
+          selectedDegrees: [],
+        });
+        const job = createJob({
+          degree: "Master's",
+        });
+        const includeJob = getters.INCLUDE_JOB_BY_DEGREE(state)(job);
+        expect(includeJob).toBe(true);
+      });
+
+      it("identifies if job is associated with given degrees", () => {
+        const state = createState({
+          selectedDegrees: ["Master's", "Bachelor's"],
+        });
+        const job = createJob({
+          degree: "Master's",
+        });
+        const includeJob = getters.INCLUDE_JOB_BY_DEGREE(state)(job);
+        expect(includeJob).toBe(true);
+      });
+    });
+  });
+
   describe("FILTERED_JOBS", () => {
-    it("filter jobs by organization and job type", () => {
+    it("filter jobs by organization, job type and degree", () => {
       const INCLUDE_JOB_BY_ORGANIZATION = jest.fn().mockReturnValue(true);
       const INCLUDE_JOB_BY_JOB_TYPE = jest.fn().mockReturnValue(true);
+      const INCLUDE_JOB_BY_DEGREE = jest.fn().mockReturnValue(true);
       // jest.fn() just mock the fn and return a value of undefined, thats not going to work with filter as filter needs a true or false. Solution? invoking mock return value and passing in the return value we want (mockResolvedValue() ---for async) (mockReturnValue() ----sync)
 
       const mockGetters = {
         INCLUDE_JOB_BY_ORGANIZATION,
         INCLUDE_JOB_BY_JOB_TYPE,
+        INCLUDE_JOB_BY_DEGREE,
       };
 
       const job = createJob({ id: 1, title: "Best Job Ever" });
+
       const state = createState({
         jobs: [job],
       });
@@ -105,6 +149,7 @@ describe("getters", () => {
       expect(result).toEqual([job]);
       expect(INCLUDE_JOB_BY_ORGANIZATION).toHaveBeenCalledWith(job);
       expect(INCLUDE_JOB_BY_JOB_TYPE).toHaveBeenCalledWith(job);
+      expect(INCLUDE_JOB_BY_DEGREE).toBeCalledWith(job);
     });
   });
 });

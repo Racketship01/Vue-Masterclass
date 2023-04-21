@@ -42,7 +42,7 @@ export default defineComponent({
       required: true,
     },
     uniqueValues: {
-      type: Set as PropType<{ [value: string]: any }>,
+      type: [Array, Set] as PropType<string[] | Set<string>>,
       required: true,
     },
     mutation: {
@@ -62,7 +62,7 @@ export default defineComponent({
       router.push({ name: "JobResults" });
     };
 
-    return { selectedValues, selectValue, props };
+    return { selectedValues, selectValue };
   },
 });
 </script>

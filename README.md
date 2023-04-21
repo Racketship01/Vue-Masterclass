@@ -3529,7 +3529,7 @@ console.log(goodFood);
   - NPM library for making HTTP requests
   - `npm install --save axios`
   - ![](./images/axios.png)
-  - importing this library in old import syntax **[const varName = require(path/packageName)]**, for outside of the browser environment as new import syntax is not guaranteed to be supported in JS file or in node version. But it is supported in our vue app because webpack is transpiring in a plain JS file that going to run with Node
+  - importing this library in old import syntax **[const varName = require(path/packageName)]**, for outside of the browser environment as new import syntax is not guaranteed to be supported in JS file or in node version. But it is supported in our vue app because webpack is transpiling in a plain JS file that going to run with Node
 
   ```js
   //Axios Package --HTTP Request
@@ -3606,6 +3606,7 @@ console.log(goodFood);
       console.log(response.data);
     });
   };
+  fetchJobVer1();
 
   // Async/Await Syntax
   const fetchJobVer2 = async () => {
@@ -9470,6 +9471,481 @@ export const useFetchJobsDispatch = async () => {
   - ![](./images/degreesEndpoint.png)
 
 - TDD for API Call: getDegrees API Call
+
+  ```ts
+  // create interface for degree at types.ts --API
+  export interface Degree {
+    id: number;
+    degree: string;
+  }
+
+  // create a file for getDegrees.ts
+  import axios from "axios";
+  import { Degree } from "@/api/types";
+
+  const getDegrees = async () => {
+    const baseURL = process.env.VUE_APP_API_URL;
+    const response = await axios.get<Degree[]>(`${baseURL}/degrees`); // TS cannot make an API reqs and interfer what the shape of the response from endpoint going to look like, to solve? same as above enpoint declaring generic type annotation
+    return response.data;
+  };
+
+  export default getDegrees;
+
+  // create a test for getDegrees.ts
+  import axios from "axios";
+  jest.mock("axios");
+
+  import getDegrees from "@/api/getDegrees";
+
+  const axiosGetMock = axios.get as jest.Mock;
+
+  describe("getDegrees", () => {
+    beforeEach(() => {
+      axiosGetMock.mockResolvedValue({
+        data: [
+          {
+            id: 1,
+            degree: "Master's",
+          },
+        ],
+      });
+    });
+
+    it("fetches degrees", async () => {
+      await getDegrees();
+      expect(axios.get).toHaveBeenCalledWith("http://myfakeapi.com/degrees");
+    });
+
+    it("extracts degrees data from response", async () => {
+      const data = await getDegrees();
+      expect(data).toEqual([
+        {
+          id: 1,
+          degree: "Master's",
+        },
+      ]);
+    });
+  });
+  ```
+
+- TDD for State: Starting State for Degrees
+
+  ```ts
+  // for the test, add an it function for store degree
+  import state from "@/store/state";
+
+  describe("state", () => {
+    it("stores degrees for job requirements", () => {
+      const startingState = state();
+      expect(startingState.degrees).toEqual([]);
+    });
+  });
+
+  // at types.ts --store, add degrees property on the GlobalState interface then set to the Degree interface
+  import { Job, Degree } from "@/api/types"; // interface for Job in API
+
+  export interface GlobalState {
+    isLoggedIn: boolean;
+    jobs: Job[];
+    degrees: Degree[];
+    selectedJobTypes: string[];
+    selectedOrganizations: string[];
+  }
+
+  // add degrees property on state.ts then set to empty array
+  import { GlobalState } from "@/store/types";
+
+  const state = (): GlobalState => {
+    return {
+      isLoggedIn: false,
+      jobs: [],
+      degrees: [],
+      selectedJobTypes: [],
+      selectedOrganizations: [],
+    };
+  };
+
+  export default state;
+  ```
+
+- TDD for Mutations: RECEIVE_DEGREES
+
+  ```ts
+  // create a helper function to degree --utils.ts
+  import { Degree } from "@/api/types";
+  export const createDegree = (config: Partial<Degree> = {}): Degree => ({
+    id: 1,
+    degree: "Associate",
+    ...config,
+  });
+
+  // in test, add describe funtion for RECEIVE_DEGREES
+  describe("RECEIVE_DEGREES", () => {
+    it("receives degrees from API response", () => {
+      const startingState = createState({ degrees: [] });
+      const degree1 = createDegree();
+      const degree2 = createDegree();
+      mutations.RECEIVE_DEGREES(startingState, [degree1, degree2]);
+      expect(startingState.degrees).toEqual([degree1, degree2]);
+    });
+  });
+
+  // create a constant dynamic for RECEIVE_DEGREES
+
+  export const RECEIVE_DEGREES = "RECEIVE_DEGREES";
+
+  // create RECEIVE_DEGREES in mutations.ts
+  import { GlobalState } from "@/store/types";
+  import { Degree } from "@/api/types";
+
+  [RECEIVE_DEGREES](state: GlobalState, degrees: Degree[]) {
+    state.degrees = degrees;
+  },
+  ```
+
+- TDD for Actions: FETCH DEGREES
+
+  ```ts
+  // for test
+  import getDegrees from "@/api/getDegrees";
+  jest.mock("@/api/getDegrees");
+  const getDegreesMock = getDegrees as jest.Mock;
+
+  describe("action", () => {
+    describe("FETCH_DEGRESS", () => {
+      beforeEach(() => {
+        getDegreesMock.mockResolvedValue([
+          {
+            id: 1,
+            dgrees: "Master's",
+          },
+        ]);
+      });
+
+      it("makes request to  fetches degree", async () => {
+        const context = { commit: jest.fn() };
+
+        await actions.FETCH_DEGREES(context);
+        expect(getDegrees).toHaveBeenCalled();
+      });
+
+      it("sends message to save received degree in store", async () => {
+        const commit = jest.fn();
+        const context = { commit };
+        await actions.FETCH_DEGREES(context);
+        expect(commit).toHaveBeenCalledWith("RECEIVE_DEGREES", [
+          {
+            id: 1,
+            dgrees: "Master's",
+          },
+        ]);
+      });
+    });
+  });
+
+  // adding constant for FETCH_DEGREES
+  export const FETCH_DEGREES = "FETCH_DEGREES";
+
+  // create FETCH_DEGREES actions
+  import getDegrees from "@/api/getDegrees";
+  import {
+    FETCH_DEGREES,
+    RECEIVE_DEGREES,
+  } from "@/store/constants";
+
+  [FETCH_DEGREES]: async (context: Context) => {
+    const degree = await getDegrees();
+    context.commit(RECEIVE_DEGREES, degree);
+  },
+  ```
+
+- TDD for Getters: UNIQUE_DEGREES
+
+  ```ts
+  // for tes, create a describe function for UNIQUE_DEGREES
+
+  describe("UNIQUE_DEGREES", () => {
+    it("extract unique degrees values ", () => {
+      const degrees = [
+        createDegree({ degree: "Master's" }),
+        createDegree({ degree: "Bachelor's" }),
+      ];
+      const state = createState({
+        degrees,
+      });
+      const result = getters.UNIQUE_DEGREES(state);
+      expect(result).toEqual(["Master's", "Bachelor's"]);
+    });
+  });
+  ```
+
+- TDD for State: selectedDegrees
+
+  ```ts
+  // add it function in the state test for the selectedDegrees
+  it("stores degrees that the user would like to filter jobs by", () => {
+    const startingState = state();
+    expect(startingState.selectedDegrees).toEqual([]);
+  });
+
+  // add selectedDegrees at the GlobalState store type
+  import { Job, Degree } from "@/api/types"; // interface for Job in API
+
+  export interface GlobalState {
+    isLoggedIn: boolean;
+    jobs: Job[];
+    degrees: Degree[];
+    selectedJobTypes: string[];
+    selectedOrganizations: string[];
+    selectedDegrees: string[];
+  }
+
+  // create selectedDegrees property at the store state to an empty array
+  import { GlobalState } from "@/store/types";
+
+  const state = (): GlobalState => {
+    return {
+      isLoggedIn: false,
+      jobs: [],
+      degrees: [],
+      selectedJobTypes: [],
+      selectedOrganizations: [],
+      selectedDegrees: [],
+    };
+  };
+
+  export default state;
+  ```
+
+- TDD for Getters: INCLUDE_JOB_BY_DEGREE
+
+  ```ts
+  // add describe function test for INCLUDE_JOB_BY_DEGREE
+  describe("INCLUDE_JOB_BY_DEGREE", () => {
+    describe("when the user has not selected any degree", () => {
+      it("includes job", () => {
+        const state = createState({
+          selectedDegrees: [],
+        });
+        const job = createJob({
+          degree: "Master's",
+        });
+        const includeJob = getters.INCLUDE_JOB_BY_DEGREE(state)(job);
+        expect(includeJob).toBe(true);
+      });
+
+      it("identifies if job is associated with given degrees", () => {
+        const state = createState({
+          selectedDegrees: ["Master's", "Bachelor's"],
+        });
+        const job = createJob({
+          degree: "Master's",
+        });
+        const includeJob = getters.INCLUDE_JOB_BY_DEGREE(state)(job);
+        expect(includeJob).toBe(true);
+      });
+    });
+  });
+
+  // add dynamic constant name for INCLUDE_JOB_BY_DEGREE
+  export const INCLUDE_JOB_BY_DEGREE = "INCLUDE_JOB_BY_DEGREE";
+
+  // then create INCLUDE_JOB_BY_DEGREE getter for selectedDegrees state
+  [INCLUDE_JOB_BY_DEGREE]: (state: GlobalState) => (job: Job) => {
+    if (state.selectedDegrees.length === 0) return true;
+
+    return state.selectedDegrees.includes(job.degree);
+  },
+  ```
+
+- TDD for Getters: FILTERED_JOBS
+
+  ```ts
+  // add the INCLUDE_JOB_BY_DEGREE in the describe function of FILTERED_JOBS at the getters test
+  describe("FILTERED_JOBS", () => {
+    it("filter jobs by organization, job type and degree", () => {
+      const INCLUDE_JOB_BY_ORGANIZATION = jest.fn().mockReturnValue(true);
+      const INCLUDE_JOB_BY_JOB_TYPE = jest.fn().mockReturnValue(true);
+      const INCLUDE_JOB_BY_DEGREE = jest.fn().mockReturnValue(true);
+
+      const mockGetters = {
+        INCLUDE_JOB_BY_ORGANIZATION,
+        INCLUDE_JOB_BY_JOB_TYPE,
+        INCLUDE_JOB_BY_DEGREE,
+      };
+
+      const job = createJob({ id: 1, title: "Best Job Ever" });
+
+      const state = createState({
+        jobs: [job],
+      });
+
+      const result = getters.FILTERED_JOBS(state, mockGetters);
+
+      expect(result).toEqual([job]);
+      expect(INCLUDE_JOB_BY_ORGANIZATION).toHaveBeenCalledWith(job);
+      expect(INCLUDE_JOB_BY_JOB_TYPE).toHaveBeenCalledWith(job);
+      expect(INCLUDE_JOB_BY_DEGREE).toBeCalledWith(job);
+    });
+  });
+
+  // add dynamic constant
+  export const INCLUDE_JOB_BY_DEGREE = "INCLUDE_JOB_BY_DEGREE";
+
+  // add another filter method for INCLUDE_JOB_BY_DEGREE under FILTERED_JOBS getter
+  [FILTERED_JOBS](state: GlobalState, getters: IncludeJobGetters) {
+    return state.jobs
+      .filter(
+        (job) => getters.INCLUDE_JOB_BY_ORGANIZATION(job)
+      )
+      .filter((job) => getters.INCLUDE_JOB_BY_JOB_TYPE(job))
+      .filter((job) => getters.INCLUDE_JOB_BY_DEGREE(job));
+  },
+  ```
+
+- TDD for Mutations: ADD_SELECTED_DEGREES
+
+  ```ts
+  // add describe function for ADD_SELECTED_DEGREES test
+  describe("ADD_SELECTED_DEGREES", () => {
+    it("keeps track of which the user has chosen to filter jobs by", () => {
+      const startingState = createState({ selectedDegrees: [] });
+      mutations.ADD_SELECTED_DEGREES(startingState, ["Master's", "Bachelor's"]);
+      expect(startingState.selectedDegrees).toEqual(["Master's", "Bachelor's"]);
+    });
+  });
+
+  // create dynamic constant varbibale for ADD_SELECTED_DEGREES then import to the mutations file
+  export const ADD_SELECTED_DEGREES = "ADD_SELECTED_DEGREES";
+
+  // then create a mutation for ADD_SELECTED_DEGREES
+  [ADD_SELECTED_DEGREES](state: GlobalState, degrees: string[]) {
+    state.selectedDegrees = degrees;
+  },
+  ```
+
+- TDD for Composables: useUniqueDegrees
+
+  ```ts
+  // add describe function for useUniqueDegrees composables
+  describe("useUniqueDegrees", () => {
+    it("retrieves unique degrees from store", () => {
+      useStoreMock.mockReturnValue({
+        getters: {
+          UNIQUE_DEGREES: ["Master's"],
+        },
+      });
+      const result = useUniqueDegrees();
+      expect(result.value).toEqual(["Master's"]);
+    });
+  });
+
+  //  then create useUniqueDegrees composables
+  export const useUniqueDegrees = () => {
+    const store = useStore(key);
+    return computed<string[]>(() => store.getters[UNIQUE_DEGREES]);
+  };
+  ```
+
+- TDD for Component: JobFiltersSidebar
+
+  ```ts
+  // import useUniqueDegrees from composables then mock it --add "it" function for filter jobs by degrees
+  import {
+    useUniqueDegrees,
+  } from "@/store/composables";
+  jest.mock("@/store/composables");
+
+  const useUniqueDegreesMock = useUniqueDegrees as jest.Mock;
+
+  it("allow user to filter jobs by degrees", () => {
+    useUniqueOrganizationsMock.mockReturnValue(new Set(["Google", "Amazon"]));
+    useUniqueJobTypesMock.mockReturnValue(new Set(["Full-time", "Part-time"]));
+    useUniqueDegreesMock.mockReturnValue(["Master's", "Bachelor's"]);
+
+    const wrapper = shallowMount(JobFilterSidebar);
+    const degreesFilter = wrapper.findComponent("[data-test='filter-degrees']");
+
+    // @ts-ignore
+    const { header, uniqueValues, mutation } = degreesFilter.props(); // props() method --return the complete props object from the component
+    expect(header).toBe("Degrees");
+    expect(uniqueValues).toEqual(["Master's", "Bachelor's"]);
+    expect(mutation).toBe("ADD_SELECTED_DEGREES");
+  });
+
+  // create a constant for useUniqueDegrees in the setup config, then interpolate at the template of the component
+  import {
+  useUniqueDegrees,
+  } from "@/store/composables";
+
+  setup() {
+
+    const uniqueDegrees = useUniqueDegrees();
+    return {
+      uniqueDegrees,
+    };
+  },
+
+  // template
+  <job-filter-sidebar-checkbox-group
+        header="Degrees"
+        :unique-values="uniqueDegrees"
+        :mutation="ADD_SELECTED_DEGREES"
+        data-test="filter-degrees"
+      />
+  ```
+
+- TDD for Composable: useFetchDegreesDispatch
+
+  ```ts
+  // add describe function block for useFetchDegreesDispatch
+  import { useFetchDegreesDispatch } from "@/store/composables";
+
+  describe("useFetchDegreesDispatch", () => {
+    it("calls fetch degrees at action API", () => {
+      const dispatch = jest.fn();
+      useStoreMock.mockReturnValue({
+        dispatch,
+      });
+      useFetchDegreesDispatch();
+      expect(dispatch).toHaveBeenCalledWith("FETCH_DEGREES");
+    });
+  });
+
+  // then create an useFetchDegreesDispatch composables
+  export const useFetchDegreesDispatch = async () => {
+    const store = useStore(key);
+    store.dispatch(FETCH_DEGREES);
+  };
+  ```
+
+- TDD for lifecycle hook: onMounted()
+
+  ```ts
+  // add "it" function for useFetchDegreesDispatch test
+  import {
+  useFetchDegreesDispatch,
+  } from "@/store/composables";
+
+  it("makes call to fetch degrees from API", () => {
+      useFilterJobsMock.mockReturnValue({ value: [] });
+      useCurrentPageMock.mockReturnValue({ value: 2 });
+      usePreviousAndNextPagesMock.mockReturnValue({
+        previousPage: 1,
+        nextPage: 3,
+      });
+      shallowMount(JobListings, createConfig());
+      expect(useFetchDegreesDispatch).toHaveBeenCalled();
+    });
+
+    // then invoked useFetchDegreesDispatch method to on on onMounted() method in JobListings component
+    set() {
+      onMounted(useFetchDegreesDispatch);
+    }
+  ```
+
+- Trying out code in browser
+  - ![](./images/TSnewFeatures.png)
 
 ## Section 35: Clearing Job Filters
 

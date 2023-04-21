@@ -435,6 +435,7 @@ console.log(refPerson.firstName2); // returns a another reactive object that wra
 
 // TYPESCRIPT --change this playground from js file to ts file
 
+/*
 // Partial Type
 import { GlobalState } from "@/store/types";
 
@@ -451,3 +452,4 @@ const state2: Partial<GlobalState> = {
   isLoggedIn: true,
   selectedOrganizations: [],
 };
+*/

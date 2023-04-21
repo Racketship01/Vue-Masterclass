@@ -7,7 +7,9 @@ import {
   useFilterJobs,
   useUniqueJobTypes,
   useUniqueOrganizations,
+  useUniqueDegrees,
   useFetchJobsDispatch,
+  useFetchDegreesDispatch,
 } from "@/store/composables";
 
 describe("Composables", () => {
@@ -27,11 +29,11 @@ describe("Composables", () => {
     it("retrieves unique job types from store", () => {
       useStoreMock.mockReturnValue({
         getters: {
-          UNIQUE_JOB_TYPES: ["Full-time"],
+          UNIQUE_JOB_TYPES: new Set(["Full-time"]),
         },
       });
       const result = useUniqueJobTypes();
-      expect(result.value).toEqual(["Full-time"]);
+      expect(result.value).toEqual(new Set(["Full-time"]));
     });
   });
 
@@ -39,11 +41,23 @@ describe("Composables", () => {
     it("retrieves unique job types from store", () => {
       useStoreMock.mockReturnValue({
         getters: {
-          UNIQUE_ORGANIZATIONS: ["Apple"],
+          UNIQUE_ORGANIZATIONS: new Set(["Apple"]),
         },
       });
       const result = useUniqueOrganizations();
-      expect(result.value).toEqual(["Apple"]);
+      expect(result.value).toEqual(new Set(["Apple"]));
+    });
+  });
+
+  describe("useUniqueDegrees", () => {
+    it("retrieves unique degrees from store", () => {
+      useStoreMock.mockReturnValue({
+        getters: {
+          UNIQUE_DEGREES: ["Master's"],
+        },
+      });
+      const result = useUniqueDegrees();
+      expect(result.value).toEqual(["Master's"]);
     });
   });
 
@@ -55,6 +69,17 @@ describe("Composables", () => {
       });
       useFetchJobsDispatch();
       expect(dispatch).toHaveBeenCalledWith("FETCH_JOBS");
+    });
+  });
+
+  describe("useFetchDegreesDispatch", () => {
+    it("send to calls fetch degrees at action API", () => {
+      const dispatch = jest.fn();
+      useStoreMock.mockReturnValue({
+        dispatch,
+      });
+      useFetchDegreesDispatch();
+      expect(dispatch).toHaveBeenCalledWith("FETCH_DEGREES");
     });
   });
 });

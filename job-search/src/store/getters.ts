@@ -2,8 +2,10 @@ import {
   FILTERED_JOBS,
   UNIQUE_ORGANIZATIONS,
   UNIQUE_JOB_TYPES,
+  UNIQUE_DEGREES,
   INCLUDE_JOB_BY_ORGANIZATION,
   INCLUDE_JOB_BY_JOB_TYPE,
+  INCLUDE_JOB_BY_DEGREE,
 } from "@/store/constants";
 
 import { GlobalState } from "@/store/types";
@@ -12,6 +14,7 @@ import { Job } from "@/api/types";
 interface IncludeJobGetters {
   INCLUDE_JOB_BY_ORGANIZATION: (job: Job) => boolean; // this getter method accepts a single parameter called that has Job type, and the return value of this getter method is going to be a boolean type
   INCLUDE_JOB_BY_JOB_TYPE: (job: Job) => boolean;
+  INCLUDE_JOB_BY_DEGREE: (job: Job) => boolean;
 }
 
 const getters = {
@@ -21,14 +24,6 @@ const getters = {
     state.jobs.forEach((job) => uniqueOrganizations.add(job.organization));
     return uniqueOrganizations; // setting a generic type for the Set returning in this getter method
   },
-
-  // JOB_TYPES
-  [UNIQUE_JOB_TYPES](state: GlobalState) {
-    const uniqueJobTypes = new Set<string>();
-    state.jobs.forEach((job) => uniqueJobTypes.add(job.jobType));
-    return uniqueJobTypes;
-  },
-
   [INCLUDE_JOB_BY_ORGANIZATION]: (state: GlobalState) => (job: Job) => {
     if (state.selectedOrganizations.length === 0) return true; // if user has not selected any organization, job must be included, so im going to return true
 
@@ -36,18 +31,37 @@ const getters = {
 
     // This getter will return  a true or false value, and thats the entire responsibility of this getter
   },
+
+  // JOB_TYPES
+  [UNIQUE_JOB_TYPES](state: GlobalState) {
+    const uniqueJobTypes = new Set<string>();
+    state.jobs.forEach((job) => uniqueJobTypes.add(job.jobType));
+    return uniqueJobTypes;
+  },
   [INCLUDE_JOB_BY_JOB_TYPE]: (state: GlobalState) => (job: Job) => {
     if (state.selectedJobTypes.length === 0) return true;
 
     return state.selectedJobTypes.includes(job.jobType);
   },
+
+  //DEGREES
+  [UNIQUE_DEGREES](state: GlobalState) {
+    return state.degrees.map((degree) => degree.degree);
+  },
+  [INCLUDE_JOB_BY_DEGREE]: (state: GlobalState) => (job: Job) => {
+    if (state.selectedDegrees.length === 0) return true;
+
+    return state.selectedDegrees.includes(job.degree);
+  },
+
   [FILTERED_JOBS](state: GlobalState, getters: IncludeJobGetters) {
     return state.jobs
       .filter(
         (job) => getters.INCLUDE_JOB_BY_ORGANIZATION(job)
         // invoking INCLUDE_JOB_BY_ORGANIZATION, vuex will automatically pass the state, then returning function in will now have access to the job(current job in iteration) being pass as the argument.
       )
-      .filter((job) => getters.INCLUDE_JOB_BY_JOB_TYPE(job)); // behind the scene, vue auto gives us the state and automatically invokes the getter with the state as the 1st argument. And if that getter method returns a functon, it provides the function automatically
+      .filter((job) => getters.INCLUDE_JOB_BY_JOB_TYPE(job))
+      .filter((job) => getters.INCLUDE_JOB_BY_DEGREE(job)); // behind the scene, vue auto gives us the state and automatically invokes the getter with the state as the 1st argument. And if that getter method returns a functon, it provides the function automatically
 
     /*
     const noSelectedOrganization = state.selectedOrganizations.length === 0;

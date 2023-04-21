@@ -7,10 +7,13 @@ import axios from "axios";
 jest.mock("axios"); // loop through all of axios functionality then replaced that in its own mock function. We can now use functionality (e.g get) or invoke axios regularly here at test suite.
 */
 import { ref } from "vue";
-import { useFilterJobs, useFetchJobsDispatch } from "@/store/composables";
+import {
+  useFilterJobs,
+  useFetchJobsDispatch,
+  useFetchDegreesDispatch,
+} from "@/store/composables";
 jest.mock("@/store/composables");
 const useFilterJobsMock = useFilterJobs as jest.Mock;
-const useFetchJobsDispatchMock = useFetchJobsDispatch as jest.Mock;
 
 import useCurrentPage from "@/composables/useCurrentPage";
 jest.mock("@/composables/useCurrentPage");
@@ -94,6 +97,17 @@ describe("JobListings", () => {
       });
       shallowMount(JobListings, createConfig());
       expect(useFetchJobsDispatch).toHaveBeenCalled();
+    });
+
+    it("makes call to fetch degrees from API", () => {
+      useFilterJobsMock.mockReturnValue({ value: [] });
+      useCurrentPageMock.mockReturnValue({ value: 2 });
+      usePreviousAndNextPagesMock.mockReturnValue({
+        previousPage: 1,
+        nextPage: 3,
+      });
+      shallowMount(JobListings, createConfig());
+      expect(useFetchDegreesDispatch).toHaveBeenCalled();
     });
   });
   /*
