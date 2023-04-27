@@ -4604,6 +4604,15 @@ console.log(goodFood);
     - solution: manually invoking a method at the template boilerplate ` @click="LOGIN_USER()"`
 
 - REVIEW
+  - ![](./images/sec20.png)
+  - ![](./images/sec20-1.png)
+  - ![](./images/sec20-2.png)
+  - ![](./images/sec20-3.png)
+  - ![](./images/sec20-4.png)
+  - ![](./images/sec20-5.png)
+  - ![](./images/sec20-6.png)
+  - ![](./images/sec20-7.png)
+  - ![](./images/sec20-8.png)
 
 ## Section 21: Vuex II: Actions
 
@@ -9945,9 +9954,249 @@ export const useFetchJobsDispatch = async () => {
   ```
 
 - Trying out code in browser
+
   - ![](./images/TSnewFeatures.png)
 
+- REVIEW:
+  - ![](./images/sec34-Rev.png)
+  - ![](./images/sec34-Rev1.png)
+  - ![](./images/sec34-Rev2.png)
+
 ## Section 35: Clearing Job Filters
+
+- User Story
+
+  - ![](./images/sec35UserStory.png)
+
+- TDD for CLEAR_USER_JOB_FILTER_SELECTIONS Mutation
+
+  ```ts
+  // test file for mutations
+  describe("CLEAR_USER_JOB_FILTER_SELECTIONS", () => {
+    it("removes all job filters", () => {
+      const startingState = createState({
+        selectedOrganizations: ["Google"],
+        selectedJobTypes: ["Full-time"],
+        selectedDegrees: ["Master's"],
+      });
+      mutations.CLEAR_USER_JOB_FILTER_SELECTIONS(startingState);
+      expect(startingState.selectedOrganizations).toEqual([]);
+      expect(startingState.selectedJobTypes).toEqual([]);
+      expect(startingState.selectedDegrees).toEqual([]);
+    });
+  });
+
+  // constant.ts
+  export const CLEAR_USER_JOB_FILTER_SELECTIONS =
+    "CLEAR_USER_JOB_FILTER_SELECTIONS";
+
+  // mutations.ts
+  [CLEAR_USER_JOB_FILTER_SELECTIONS](state: GlobalState) {
+    state.selectedOrganizations = [];
+    state.selectedJobTypes = [];
+    state.selectedDegrees = [];
+  },
+  ```
+
+- Wiring up Click Handler In JobFiltersSidebar
+
+  ```html
+  <template>
+    <action-button
+      text="Clear Filters"
+      type="secondary"
+      @click="clearUserJobFilterSelections"
+    />
+  </template>
+
+  <script>
+    import { useStore } from "vuex";
+    import { CLEAR_USER_JOB_FILTER_SELECTIONS } from "@/store/constants";
+
+    setup(){
+      const store = useStore(key);
+      const clearUserJobFilterSelections = () => {
+      store.commit(CLEAR_USER_JOB_FILTER_SELECTIONS);
+    };
+
+    return { clearUserJobFilterSelections}
+    }
+  </script>
+  ```
+
+- The subscribe() Method on a Store
+
+  - subscribe() method
+    - if we want something to listen to an event elsewhere, and whenever that event elsewhere occurs, we also want to take an action where the subscribe method is being invoked. Visual e.g --subscribing in a magazine that automatically has a new issue whenever new issue releases
+    - subscribe method accepts is a funtion inline, and inside the arrow function, the 1st argument is going to be the mutation object (represent an object representing the mutation that is running).
+    - subscribe on what going on on vuex store, then the vue will do is everytime it commits a mutation, it will emit message and we can react to that emission in a local component subscribe is being invoked
+
+  ```ts
+  <input
+    :id="value"
+    v-model="selectedValues"
+    :value="value"
+    type="checkbox"
+    class="mr-3"
+    :data-test="value"
+    @change="selectValue"
+  />
+
+  import { CLEAR_USER_JOB_FILTER_SELECTIONS } from "@/store/constants";
+
+  setup(){
+    const selectedValues = ref<string[]>([]);
+
+
+    store.subscribe((mutation) => {
+      if (mutation.type === CLEAR_USER_JOB_FILTER_SELECTIONS) {
+        selectedValues.value = [];
+      }
+    }); // everytime we commit a mutation, this function will automatically run and listen to the changes in the vuex store state --NOTE: this function will run every single time a mutation runs, we dont want this logic, we only want this function to be run whenever the mutation has given type (mutation.type)
+  }
+  ```
+
+- Fixing Failing Tests in JobFiltersSidebarCheckboxGroup Component
+
+  - add the subscribe method jest mock function into useStoreMock.mockReturnValue() method
+
+  ```ts
+  // JobFilterSidebarCheckboxGroup test
+  useStoreMock.mockReturnValue({ commit: jest.fn(), subscribe: jest.fn() });
+
+  // warning error in JobFilterSidebar test for useStore(key) method
+  jest.mock("vuex"); //simply mocking our vuex including useStore with a jest mock function by default and return undefined but tortally fine because the only use case of useStore is to call the commit method for clearUseJobFilterSelections method
+  ```
+
+- Refactoring Accordion Component
+
+  - In JobFilterSidebar component, add the accordion component then use the JobFilterSidebarCheckboxGroup as the slot
+
+  ```html
+  <template>
+    <accordion header="Degrees">
+      <job-filter-sidebar-checkbox-group
+        :unique-values="uniqueDegrees"
+        :mutation="ADD_SELECTED_DEGREES"
+        data-test="filter-degrees"
+      />
+    </accordion>
+  </template>
+
+  <script>
+    import Accordion from "@/components/Shared/Accordion.vue";
+
+    export default defineComponent({
+      components: {
+        Accordion,
+      },
+    });
+  </script>
+  ```
+
+  - In JobFilterSidebarCheckboxGroup test, refactor the test suite by removing the config data for header props and the global stub for fontAwesome
+  - delete clickable.trigger("click") as this one only use in accordion
+
+  ```ts
+  const createConfig = (props = {}) => ({
+    // stubs: {
+    //   FontAwesomeIcon: true,
+    // },
+    props: {
+      // header: "Some Header",
+      uniqueValues: new Set(["Value A", "Value B"]),
+      mutation: "SOME_MUTATION",
+      ...props,
+    },
+  });
+
+  it(() => {
+    // const clickableArea = wrapper.find("[data-test='clickable-area']");
+    // await clickableArea.trigger("click");
+  });
+  ```
+
+  - NOTE: using shallowMount() in test suite, child component is being stub out, therefore if the child component is being nested with another child component it is not being rendered. e.g the accordion component being rendered in the JobFilterSidebar are nested with another child component of JobFilterSidebarCheckboxGroup, meaning the test library is stubbing out the accordion component, its not using the real implementation which means were never actually getting to provide the slotted content for accordion, resulting to failure in JobFilterSidebar test
+
+- Breaking JobFiltersSidebar Into Smaller Components
+
+  - turn into small component the job filter for degrees, job types and organiztion. Then rendered it in the JobFilterSidebar component
+
+  ```html
+  <!-- JobFilterSidebarDegrees Component (same component for job types and organization)-->
+  <template>
+    <job-filter-sidebar-checkbox-group
+      :unique-values="uniqueDegrees"
+      :mutation="ADD_SELECTED_DEGREES"
+      data-test="filter-degrees"
+    />
+  </template>
+
+  <script lang="ts">
+    import { defineComponent } from "vue";
+    import { useUniqueDegrees } from "@/store/composables";
+    import { ADD_SELECTED_DEGREES } from "@/store/constants";
+
+    import JobFilterSidebarCheckboxGroup from "./JobFilterSidebarCheckboxGroup.vue";
+
+    export default defineComponent({
+      name: "JobFilterSidebarDegrees",
+      components: { JobFilterSidebarCheckboxGroup },
+      setup() {
+        const uniqueDegrees = useUniqueDegrees();
+
+        return {
+          uniqueDegrees,
+          ADD_SELECTED_DEGREES,
+        };
+      },
+    });
+  </script>
+  ```
+
+- Breaking up Former JobFiltersSidebar Component Tests
+
+  ```ts
+  // JobFilterSidebar test --due to breaking the component into smaller component for the job filter criteria, test become much more simple
+
+  import { shallowMount } from "@vue/test-utils";
+  import JobFilterSidebar from "@/components/JobResults/JobFilterSideBar/JobFilterSidebar.vue";
+
+  jest.mock("vuex"); //simply mocking our vuex including useStore with a jest mock function by default and return undefined but tortally fine because the only use case of useStore is to call the commit method for clearUseJobFilterSelections method
+
+  describe("JobFilterSidebar", () => {
+    it("sets up panel for user to filter jobs by one or more criteria", () => {
+      const wrapper = shallowMount(JobFilterSidebar);
+      expect(wrapper.exists()).toBe(true);
+    });
+  });
+
+  // JobFilterSidebarDegrees --test for each smaller component for job filter criteria
+
+  import { shallowMount } from "@vue/test-utils";
+  import JobFilterSidebarDegrees from "@/components/JobResults/JobFilterSideBar/JobFilterSidebarDegrees.vue";
+
+  import { useUniqueDegrees } from "@/store/composables";
+  jest.mock("@/store/composables");
+  const useUniqueDegreesMock = useUniqueDegrees as jest.Mock;
+
+  describe("JobFilterSidebarDegrees", () => {
+    it("allow user to filter jobs by degrees", () => {
+      useUniqueDegreesMock.mockReturnValue(["Master's", "Bachelor's"]);
+
+      const wrapper = shallowMount(JobFilterSidebarDegrees);
+      const degreesFilter = wrapper.findComponent({
+        name: "JobFilterSidebarCheckboxGroup",
+      }); // since we are stubbing out the child component of job-filter-sidebar-checkbox-group, we can still find the component, instead of the data-test attribute to destruture the props
+
+      // @ts-ignore
+      const { uniqueValues, mutation } = degreesFilter.props(); // props() method --return the complete props object from the component
+
+      expect(uniqueValues).toEqual(["Master's", "Bachelor's"]);
+      expect(mutation).toBe("ADD_SELECTED_DEGREES");
+    });
+  });
+  ```
 
 ## Section 36: Adding Skills
 

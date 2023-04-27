@@ -13,11 +13,11 @@ const useRouterMock = useRouter as jest.Mock;
 
 describe("JobFilterSidebarCheckboxGroup", () => {
   const createConfig = (props = {}) => ({
-    stubs: {
-      FontAwesomeIcon: true,
-    },
+    // stubs: {
+    //   FontAwesomeIcon: true,
+    // },
     props: {
-      header: "Some Header",
+      // header: "Some Header",
       uniqueValues: new Set(["Value A", "Value B"]),
       mutation: "SOME_MUTATION",
       ...props,
@@ -26,13 +26,13 @@ describe("JobFilterSidebarCheckboxGroup", () => {
 
   it("renders unique list of job types for filtering jobs ", async () => {
     const commit = jest.fn();
-    useStoreMock.mockReturnValue({ commit });
+    useStoreMock.mockReturnValue({ commit, subscribe: jest.fn() });
 
     const props = { uniqueValues: new Set(["Value A", "Value B"]) };
     const wrapper = mount(JobFilterSidebarCheckboxGroup, createConfig(props));
 
-    const clickableArea = wrapper.find("[data-test='clickable-area']");
-    await clickableArea.trigger("click");
+    // const clickableArea = wrapper.find("[data-test='clickable-area']");
+    // await clickableArea.trigger("click");
 
     const checkboxLabels = wrapper.findAll("[data-test='value']");
 
@@ -43,7 +43,7 @@ describe("JobFilterSidebarCheckboxGroup", () => {
   describe("when user clicks checkbox", () => {
     it("communicates that user has selected checkbox for job types", async () => {
       const commit = jest.fn();
-      useStoreMock.mockReturnValue({ commit });
+      useStoreMock.mockReturnValue({ commit, subscribe: jest.fn() });
       useRouterMock.mockReturnValue({ push: jest.fn() });
 
       const props = {
@@ -52,8 +52,8 @@ describe("JobFilterSidebarCheckboxGroup", () => {
       };
       const wrapper = mount(JobFilterSidebarCheckboxGroup, createConfig(props));
 
-      const clickableArea = wrapper.find("[data-test='clickable-area']");
-      await clickableArea.trigger("click");
+      // const clickableArea = wrapper.find("[data-test='clickable-area']");
+      // await clickableArea.trigger("click");
 
       const checkboxInput = wrapper.find("[data-test='Value A']"); // referencing dynamic data-test at the element in component -- :data-test=""
       await checkboxInput.setValue(true); // boolean of true for checkbox input
@@ -63,7 +63,7 @@ describe("JobFilterSidebarCheckboxGroup", () => {
     });
 
     it("navigates user to job results page to see fresh batch of filters", async () => {
-      useStoreMock.mockReturnValue({ commit: jest.fn() });
+      useStoreMock.mockReturnValue({ commit: jest.fn(), subscribe: jest.fn() });
 
       const push = jest.fn();
       useRouterMock.mockReturnValue({ name: "JobResults", push });
@@ -73,8 +73,8 @@ describe("JobFilterSidebarCheckboxGroup", () => {
       };
       const wrapper = mount(JobFilterSidebarCheckboxGroup, createConfig(props));
 
-      const clickableArea = wrapper.find("[data-test='clickable-area']");
-      await clickableArea.trigger("click");
+      // const clickableArea = wrapper.find("[data-test='clickable-area']");
+      // await clickableArea.trigger("click");
 
       const checkboxInput = wrapper.find("[data-test='Value A']");
       await checkboxInput.setValue(true);

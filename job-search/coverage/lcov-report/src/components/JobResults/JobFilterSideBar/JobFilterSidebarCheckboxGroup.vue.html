@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">95.52% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>68/68</span>
+                <span class='fraction'>64/67</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">95.52% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>68/68</span>
+                <span class='fraction'>64/67</span>
             </div>
         
             
@@ -130,15 +130,7 @@
 <a name='L65'></a><a href='#L65'>65</a>
 <a name='L66'></a><a href='#L66'>66</a>
 <a name='L67'></a><a href='#L67'>67</a>
-<a name='L68'></a><a href='#L68'>68</a>
-<a name='L69'></a><a href='#L69'>69</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<a name='L68'></a><a href='#L68'>68</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -188,6 +180,12 @@
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">3x</span>
@@ -200,26 +198,24 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">&lt;template&gt;
-  &lt;accordion :header="header"&gt;
-    &lt;div class="mt-5"&gt;
-      &lt;fieldset&gt;
-        &lt;ul class="flex flex-row flex-wrap"&gt;
-          &lt;li v-for="value in uniqueValues" :key="value" class="w-1/2 h-8"&gt;
-            &lt;input
-              :id="value"
-              v-model="selectedValues"
-              :value="value"
-              type="checkbox"
-              class="mr-3"
-              :data-test="value"
-              @change="selectValue"
-            /&gt;
-            &lt;label :v-for="value" data-test="value"&gt;{{ value }}&lt;/label&gt;
-          &lt;/li&gt;
-        &lt;/ul&gt;
-      &lt;/fieldset&gt;
-    &lt;/div&gt;
-  &lt;/accordion&gt;
+  &lt;div class="mt-5"&gt;
+    &lt;fieldset&gt;
+      &lt;ul class="flex flex-row flex-wrap"&gt;
+        &lt;li v-for="value in uniqueValues" :key="value" class="w-1/2 h-8"&gt;
+          &lt;input
+            :id="value"
+            v-model="selectedValues"
+            :value="value"
+            type="checkbox"
+            class="mr-3"
+            :data-test="value"
+            @change="selectValue"
+          /&gt;
+          &lt;label :v-for="value" data-test="value"&gt;{{ value }}&lt;/label&gt;
+        &lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/fieldset&gt;
+  &lt;/div&gt;
 &lt;/template&gt;
 &nbsp;
 &lt;script lang="ts"&gt;
@@ -228,20 +224,15 @@ import { ref, defineComponent, PropType } from "vue";
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 import { key } from "@/store";
+import { CLEAR_USER_JOB_FILTER_SELECTIONS } from "@/store/constants";
+&nbsp;
 // import { mapGetters, mapMutations } from "vuex";
 // import { ADD_SELECTED_ORGANIZATIONS } from "@/store/constants";
-import Accordion from "@/components/Shared/Accordion.vue";
 &nbsp;
 export default defineComponent({
   name: "JobFilterSidebarCheckboxGroup",
-  components: {
-    Accordion,
-  },
+  components: {},
   props: {
-    header: {
-      type: String,
-      required: true,
-    },
     uniqueValues: {
       type: [Array, Set] as PropType&lt;string[] | Set&lt;string&gt;&gt;,
       required: true,
@@ -257,6 +248,12 @@ export default defineComponent({
 &nbsp;
     const selectedValues = ref&lt;string[]&gt;([]);
     // const uniqueOrganizations = useUniqueOrganizations();
+&nbsp;
+    store.subscribe((mutation) =&gt; {
+<span class="cstat-no" title="statement not covered" >      if (mutation.type === CLEAR_USER_JOB_FILTER_SELECTIONS) {</span>
+<span class="cstat-no" title="statement not covered" >        selectedValues.value = [];</span>
+<span class="cstat-no" title="statement not covered" >      }</span>
+    }); // everytime we commit a mutation, this function will automatically run and listen to the changes in the vuex store state --NOTE: this function will run every single time a mutation runs, we dont want this logic, we only want this function to be run whenever the mutation has given type (mutation.type)
 &nbsp;
     const selectValue = () =&gt; {
       store.commit(props.mutation, selectedValues.value);
@@ -274,7 +271,7 @@ export default defineComponent({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-04-21T08:02:43.929Z
+                at 2023-04-27T08:49:29.936Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

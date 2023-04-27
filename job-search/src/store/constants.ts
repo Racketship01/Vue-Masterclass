@@ -1,6 +1,10 @@
 // USER
 export const LOGIN_USER = "LOGIN_USER"; // dynamically referencing to mutation method name whenever we are committing these mutations to the vuex store to ensure that we have no chance of typos in multiple components
 
+// CLEAR
+export const CLEAR_USER_JOB_FILTER_SELECTIONS =
+  "CLEAR_USER_JOB_FILTER_SELECTIONS";
+
 // JOBS
 export const RECEIVE_JOBS = "RECEIVE_JOBS";
 export const FETCH_JOBS = "FETCH_JOBS";
