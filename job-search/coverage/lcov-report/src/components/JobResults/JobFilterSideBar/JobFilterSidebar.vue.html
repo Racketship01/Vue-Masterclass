@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.48% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>65/66</span>
+                <span class='fraction'>71/71</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/1</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>1/2</span>
+                <span class='fraction'>0/0</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">98.48% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>65/66</span>
+                <span class='fraction'>71/71</span>
             </div>
         
             
@@ -129,7 +129,12 @@
 <a name='L64'></a><a href='#L64'>64</a>
 <a name='L65'></a><a href='#L65'>65</a>
 <a name='L66'></a><a href='#L66'>66</a>
-<a name='L67'></a><a href='#L67'>67</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -186,7 +191,12 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -200,7 +210,8 @@
     class="flex flex-col p-4 bg-white border-r border-solid border-brand-gray-1 w-96"
   &gt;
     &lt;section class="pb-5"&gt;
-      &lt;div class="flex flex-row justify-between"&gt;
+      &lt;job-filter-sidebar-prompt /&gt;
+      &lt;!-- &lt;div class="flex flex-row justify-between"&gt;
         &lt;h3 class="my-4 text-base font-semibold"&gt;What do you want to do?&lt;/h3&gt;
         &lt;div class="flex items-center text-sm"&gt;
           &lt;action-button
@@ -209,7 +220,7 @@
             @click="clearUserJobFilterSelections"
           /&gt;
         &lt;/div&gt;
-      &lt;/div&gt;
+      &lt;/div&gt; --&gt;
 &nbsp;
       &lt;accordion header="Degrees"&gt;
         &lt;job-filter-sidebar-degrees /&gt;
@@ -228,37 +239,41 @@
 &nbsp;
 &lt;script lang="ts"&gt;
 import { defineComponent } from "vue";
-import { useStore } from "vuex";
-import { key } from "@/store";
+// import { useStore } from "vuex";
+// import { key } from "@/store";
 &nbsp;
 import Accordion from "@/components/Shared/Accordion.vue";
-import ActionButton from "@/components/Shared/ActionButton.vue";
+//import ActionButton from "@/components/Shared/ActionButton.vue";
 import JobFilterSidebarDegrees from "./JobFilterSidebarDegrees.vue";
 import JobFilterSidebarOrganizations from "./JobFilterSidebarOrganizations.vue";
 import JobFilterSidebarJobTypes from "./JobFilterSidebarJobTypes.vue";
+import JobFilterSidebarPrompt from "./JobFilterSidebarPrompt.vue";
 &nbsp;
-import { CLEAR_USER_JOB_FILTER_SELECTIONS } from "@/store/constants";
+//import { CLEAR_USER_JOB_FILTER_SELECTIONS } from "@/store/constants";
 &nbsp;
 export default defineComponent({
   name: "JobFilterSidebar",
   components: {
     Accordion,
-    ActionButton,
+    //ActionButton,
     JobFilterSidebarDegrees,
     JobFilterSidebarOrganizations,
     JobFilterSidebarJobTypes,
+    JobFilterSidebarPrompt,
   },
+  /*
   setup() {
     const store = useStore(key);
 &nbsp;
-    const clearUserJobFilterSelections = <span class="fstat-no" title="function not covered" >() =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >      store.commit(CLEAR_USER_JOB_FILTER_SELECTIONS);</span>
+    const clearUserJobFilterSelections = () =&gt; {
+      store.commit(CLEAR_USER_JOB_FILTER_SELECTIONS);
     };
 &nbsp;
     return {
       clearUserJobFilterSelections,
     };
   },
+  */
 });
 &lt;/script&gt;
 &nbsp;</pre></td></tr></table></pre>
@@ -268,7 +283,7 @@ export default defineComponent({
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2023-04-27T08:49:29.936Z
+                at 2023-04-28T11:34:54.088Z
             </div>
         <script src="../../../../prettify.js"></script>
         <script>

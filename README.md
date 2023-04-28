@@ -10198,6 +10198,80 @@ export const useFetchJobsDispatch = async () => {
   });
   ```
 
+- Creating JobFilterSidebarPrompt Component
+  - create another small comopnent for clear filter features, then renders at the JobFilterSidebar component
+
+```html
+<template>
+  <div class="flex flex-row justify-between">
+    <h3 class="my-4 text-base font-semibold">What do you want to do?</h3>
+    <div class="flex items-center text-sm">
+      <action-button
+        text="Clear Filters"
+        type="secondary"
+        @click="clearUserJobFilterSelections"
+      />
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+  import { defineComponent } from "vue";
+  import { useStore } from "vuex";
+  import { key } from "@/store";
+
+  import ActionButton from "@/components/Shared/ActionButton.vue";
+
+  import { CLEAR_USER_JOB_FILTER_SELECTIONS } from "@/store/constants";
+
+  export default defineComponent({
+    name: "JobFilterSidebarPrompt",
+    components: {
+      ActionButton,
+    },
+    setup() {
+      const store = useStore(key);
+
+      const clearUserJobFilterSelections = () => {
+        store.commit(CLEAR_USER_JOB_FILTER_SELECTIONS);
+      };
+
+      return {
+        clearUserJobFilterSelections,
+      };
+    },
+  });
+</script>
+```
+
+- Adding Tests for JobFiltersSidebarPrompt Component
+
+  ```ts
+  // JobFilterSidebarPrompt test
+  import { mount } from "@vue/test-utils";
+
+  import { useStore } from "vuex";
+  jest.mock("vuex");
+  const useStoreMock = useStore as jest.Mock;
+
+  import JobFilterSidebarPrompt from "@/components/JobResults/JobFilterSideBar/JobFilterSidebarPrompt.vue";
+
+  describe("JobFilterSidebarPrompt", () => {
+    describe("when user clicks clear filter button", () => {
+      it("sends message to clear all of users job search filters", async () => {
+        const commit = jest.fn();
+        useStoreMock.mockReturnValue({ commit });
+        const wrapper = mount(JobFilterSidebarPrompt);
+        const button = wrapper.find("[data-test='clear-user-job-filters']");
+        await button.trigger("click");
+        expect(commit).toHaveBeenLastCalledWith(
+          "CLEAR_USER_JOB_FILTER_SELECTIONS"
+        );
+      });
+    });
+  });
+  ```
+
 ## Section 36: Adding Skills
 
 ## Section 37: Congratulations
