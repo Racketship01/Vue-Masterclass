@@ -4,6 +4,7 @@ export interface GlobalState {
   isLoggedIn: boolean;
   jobs: Job[];
   degrees: Degree[];
+  skillsSearch: string;
   selectedJobTypes: string[];
   selectedOrganizations: string[];
   selectedDegrees: string[];

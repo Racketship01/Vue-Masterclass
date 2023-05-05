@@ -4,6 +4,7 @@
     class="flex items-center w-full h-12 mt-14 border border-solid border-brand-gray-3 rounded-3xl"
     @submit.prevent="searchForJobs"
   >
+    <!-- submit.prevent --special syntax to prevent the browser to refresh as the submit is an event that automatically refresh page -->
     <font-awesome-icon :icon="['fas', 'search']" class="ml-4 mr-3" />
 
     <div class="flex flex-nowrap flex-1 h-full text-base font-light">

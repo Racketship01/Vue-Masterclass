@@ -15,6 +15,10 @@
         </div>
       </div> -->
 
+      <accordion header="Skills and Qualifications">
+        <job-filter-sidebar-skills />
+      </accordion>
+
       <accordion header="Degrees">
         <job-filter-sidebar-degrees />
       </accordion>
@@ -31,28 +35,42 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-// import { useStore } from "vuex";
-// import { key } from "@/store";
+import { defineComponent, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useStore } from "vuex";
+import { key } from "@/store";
 
 import Accordion from "@/components/Shared/Accordion.vue";
 //import ActionButton from "@/components/Shared/ActionButton.vue";
+import JobFilterSidebarPrompt from "./JobFilterSidebarPrompt.vue";
+import JobFilterSidebarSkills from "./JobFilterSidebarSkills.vue";
 import JobFilterSidebarDegrees from "./JobFilterSidebarDegrees.vue";
 import JobFilterSidebarOrganizations from "./JobFilterSidebarOrganizations.vue";
 import JobFilterSidebarJobTypes from "./JobFilterSidebarJobTypes.vue";
-import JobFilterSidebarPrompt from "./JobFilterSidebarPrompt.vue";
 
-//import { CLEAR_USER_JOB_FILTER_SELECTIONS } from "@/store/constants";
+import { ADD_INPUT_SKILLS } from "@/store/constants";
 
 export default defineComponent({
   name: "JobFilterSidebar",
   components: {
     Accordion,
     //ActionButton,
+    JobFilterSidebarSkills,
     JobFilterSidebarDegrees,
     JobFilterSidebarOrganizations,
     JobFilterSidebarJobTypes,
     JobFilterSidebarPrompt,
+  },
+  setup() {
+    const parseSkillsSearch = () => {
+      const route = useRoute();
+      const role = route.query.role || ""; //check if there is are any query params present at the JobResults component
+
+      const store = useStore(key);
+      store.commit(ADD_INPUT_SKILLS, role);
+    };
+
+    onMounted(parseSkillsSearch);
   },
   /*
   setup() {

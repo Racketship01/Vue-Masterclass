@@ -21,6 +21,7 @@ describe("JobFilterSidebar", () => {
     const wrapper = shallowMount(JobFilterSidebar);
     expect(wrapper.exists()).toBe(true);
   });
+
   /*
   it("allow user to filter jobs by organization", () => {
     useUniqueOrganizationsMock.mockReturnValue(new Set(["Google", "Amazon"]));

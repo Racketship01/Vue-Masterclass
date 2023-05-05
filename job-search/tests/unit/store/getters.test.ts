@@ -126,17 +126,43 @@ describe("getters", () => {
     });
   });
 
+  describe("INCLUDE_JOB_BY_SKILLS", () => {
+    it("identifies if job matcher users skills", () => {
+      const state = createState({ skillsSearch: "Vue" });
+      const job = createJob({ title: "Vue Developer" });
+      const includeSkills = getters.INCLUDE_JOB_BY_SKILLS(state)(job);
+      expect(includeSkills).toBe(true);
+    });
+    it("handles inconsistent character casing", () => {
+      const state = createState({ skillsSearch: "vUe" });
+      const job = createJob({ title: "Vue Developer" });
+      const includeSkills = getters.INCLUDE_JOB_BY_SKILLS(state)(job);
+      expect(includeSkills).toBe(true);
+    });
+
+    describe("when the user has not entered anu skill", () => {
+      it("includes job", () => {
+        const state = createState({ skillsSearch: "" });
+        const job = createJob({ title: "Vue Developer" });
+        const includeSkills = getters.INCLUDE_JOB_BY_SKILLS(state)(job);
+        expect(includeSkills).toBe(true);
+      });
+    });
+  });
+
   describe("FILTERED_JOBS", () => {
-    it("filter jobs by organization, job type and degree", () => {
+    it("filter jobs by organization, job type ,degree and skills", () => {
       const INCLUDE_JOB_BY_ORGANIZATION = jest.fn().mockReturnValue(true);
       const INCLUDE_JOB_BY_JOB_TYPE = jest.fn().mockReturnValue(true);
       const INCLUDE_JOB_BY_DEGREE = jest.fn().mockReturnValue(true);
+      const INCLUDE_JOB_BY_SKILLS = jest.fn().mockReturnValue(true);
       // jest.fn() just mock the fn and return a value of undefined, thats not going to work with filter as filter needs a true or false. Solution? invoking mock return value and passing in the return value we want (mockResolvedValue() ---for async) (mockReturnValue() ----sync)
 
       const mockGetters = {
         INCLUDE_JOB_BY_ORGANIZATION,
         INCLUDE_JOB_BY_JOB_TYPE,
         INCLUDE_JOB_BY_DEGREE,
+        INCLUDE_JOB_BY_SKILLS,
       };
 
       const job = createJob({ id: 1, title: "Best Job Ever" });
@@ -149,7 +175,8 @@ describe("getters", () => {
       expect(result).toEqual([job]);
       expect(INCLUDE_JOB_BY_ORGANIZATION).toHaveBeenCalledWith(job);
       expect(INCLUDE_JOB_BY_JOB_TYPE).toHaveBeenCalledWith(job);
-      expect(INCLUDE_JOB_BY_DEGREE).toBeCalledWith(job);
+      expect(INCLUDE_JOB_BY_DEGREE).toHaveBeenCalledWith(job);
+      expect(INCLUDE_JOB_BY_SKILLS).toHaveBeenCalledWith(job);
     });
   });
 });

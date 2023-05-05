@@ -3260,7 +3260,7 @@ console.log(goodFood);
 - Navigating to Job Results Page when submitting form
 
   - `@submit.prevent=""` --special syntax to prevent the browser to refresh as the submit is an event that automatically refresh page
-  - how to attach query params to the route/url? vue do it automatically but we need to provide a key of query to the object weve created as a method to the submit event.
+  - how to attach query params to the route/url? vue do it automatically but we need to provide a key of query to the object we've created as a method to the submit event.
 
   ```html
   <template>
@@ -10029,7 +10029,7 @@ export const useFetchJobsDispatch = async () => {
   - subscribe() method
     - if we want something to listen to an event elsewhere, and whenever that event elsewhere occurs, we also want to take an action where the subscribe method is being invoked. Visual e.g --subscribing in a magazine that automatically has a new issue whenever new issue releases
     - subscribe method accepts is a funtion inline, and inside the arrow function, the 1st argument is going to be the mutation object (represent an object representing the mutation that is running).
-    - subscribe on what going on on vuex store, then the vue will do is everytime it commits a mutation, it will emit message and we can react to that emission in a local component subscribe is being invoked
+    - subscribe on what going on on vuex store, then the vue will do is everytime it commits a mutation, it will emit message and we can react to that emission in a local component that subscribe is being invoked
 
   ```ts
   <input
@@ -10273,5 +10273,406 @@ export const useFetchJobsDispatch = async () => {
   ```
 
 ## Section 36: Adding Skills
+
+- User Story
+  - ![](./images/sec36UserStory.png)
+- Create Component to Track Skills and Qualifications
+
+  ```html
+  <template>
+    <div class="mt-5">
+      <input
+        class="p-3 h-12 border border-solid border-brand-gray-1 shadow-gray rounded w-full text-base"
+        placeholder="Computer programming, Financial degree, Project Management"
+      />
+    </div>
+  </template>
+
+  <script lang="ts">
+    import { defineComponent } from "vue";
+
+    export default defineComponent({
+      name: "JobFilterSidebarSkills",
+    });
+  </script>
+
+  // NOTE: then render to the JobFilterSidebar Component
+  ```
+
+- Add New Search Term to Vuex State
+
+  ```ts
+  // state test --add it function for skills search features
+  it("stores users search term for skills and qualifications", () => {
+    const startingState = state();
+    expect(startingState.skillsSearch).toEqual("");
+  });
+
+  // types.ts store --add GlobalState for skillsSearch
+  export interface GlobalState {
+    isLoggedIn: boolean;
+    jobs: Job[];
+    degrees: Degree[];
+    skillsSearch: string;
+    selectedJobTypes: string[];
+    selectedOrganizations: string[];
+    selectedDegrees: string[];
+  }
+
+  // state.ts --add skillsSearch property state
+  const state = (): GlobalState => {
+    return {
+      isLoggedIn: false,
+      jobs: [],
+      degrees: [],
+      skillsSearch: "",
+      selectedJobTypes: [],
+      selectedOrganizations: [],
+      selectedDegrees: [],
+    };
+  };
+  ```
+
+- Add Mutation to Update Skills Search Term
+
+  ```ts
+  // mutations test --add describe function for ADD_INPUT_SKILLS mutation
+  describe("ADD_INPUT_SKILLS", () => {
+    it("filter job by user input of skills search", () => {
+      const startingState = createState({
+        skillsSearch: "",
+      });
+      mutations.ADD_INPUT_SKILLS(startingState, "Computer Engineer");
+      expect(startingState.skillsSearch).toEqual("Computer Engineer");
+    });
+  });
+
+  // constant.ts --add constant for ADD_INPUT_SKILLS
+  export const ADD_INPUT_SKILLS = "ADD_INPUT_SKILLS";
+
+  // mutations.ts --add mutation for ADD_INPUT_SKILLS
+  [ADD_INPUT_SKILLS](state: GlobalState, skills: string) {
+    state.skillsSearch = skills;
+  },
+  ```
+
+- Filtering the Jobs by skillsSearch
+
+  ```ts
+  // getters test --add describe function for INCLUDE_JOB_BY_SKILLS
+  describe("INCLUDE_JOB_BY_SKILLS", () => {
+    const state = createState({ skillsSearch: "Vue" });
+    const job = createJob({ title: "Vue Developer" });
+    const includeSkills = getters.INCLUDE_JOB_BY_SKILLS(state)(job);
+    expect(includeSkills).toBe(true);
+  });
+
+  // constant.ts
+  export const INCLUDE_JOB_BY_SKILLS = "INCLUDE_JOB_BY_SKILLS";
+
+  // getters.ts
+  [INCLUDE_JOB_BY_SKILLS]: (state: GlobalState) => (job: Job) => {
+    return job.title.includes(state.skillsSearch);
+  },
+  // then filter this getter method in FILTERED_JOBS
+  ```
+
+- Two More Tests for INCLUDE_JOB_BY_SKILL
+
+  - NOTE:
+    - JS and TS cares about character casing
+    - includes() method will not find a match if there is a mismatch in casing
+
+  ```ts
+  describe("INCLUDE_JOB_BY_SKILLS", () => {
+    it("handles inconsistent character casing", () => {
+      const state = createState({ skillsSearch: "vUe" });
+      const job = createJob({ title: "Vue Developer" });
+      const includeSkills = getters.INCLUDE_JOB_BY_SKILLS(state)(job);
+      expect(includeSkills).toBe(true);
+    });
+
+    describe("when the user has not entered anu skill", () => {
+      it("includes job", () => {
+        const state = createState({ skillsSearch: "" });
+        const job = createJob({ title: "Vue Developer" });
+        const includeSkills = getters.INCLUDE_JOB_BY_SKILLS(state)(job);
+        expect(includeSkills).toBe(true);
+      });
+    });
+  });
+
+  // SKILLS
+  [INCLUDE_JOB_BY_SKILLS]: (state: GlobalState) => (job: Job) => {
+    if (state.skillsSearch === "") return true;
+
+    return job.title.toLowerCase().includes(state.skillsSearch.toLowerCase());
+  }, // getters that return a funtion with a parameter
+  ```
+
+- Wiring up Search State in Vuex Store
+
+  - NOTE:
+    - is there a better way of communicating(two way binding) to the store when the component changes e.g (input checkbox)? the answer is yes!
+      - there is an alternative syntax that can utilize with the computed() function, and it is passing an object --`computed({})`
+        - the object must have two methods `computed({get(){}, set(){}})` --directly connected the computed data in a local component to the vuex store state
+          - **get method**
+            - means reading
+            - get access to a specific property on our store
+            - if store state updates, get method will rerun to get the new value
+            - create a connection from vuex store to v-model
+          - **set method**
+            - means writing
+            - create connection from local data to vuex store state by commiting mutatin to override store state
+            - `set(value)` --value is the 1st parameter that represent whatever the user has typed
+
+  ```html
+  // JobFilterSidebarSkills
+  <template>
+    <div class="mt-5">
+      <input v-model="skillsSearchInput" />
+    </div>
+  </template>
+
+  <script lang="ts">
+    import { defineComponent, computed } from "vue";
+    import { useStore } from "vuex";
+    import { key } from "@/store";
+
+    import { ADD_INPUT_SKILLS } from "@/store/constants";
+
+    export default defineComponent({
+      name: "JobFilterSidebarSkills",
+      setup() {
+        const store = useStore(key);
+        const skillsSearchInput = computed({
+          get() {
+            return store.state.skillsSearch;
+
+            // create connection from vuex store to v-model -- get access to the store state
+          },
+          set(value) {
+            store.commit(ADD_INPUT_SKILLS, value);
+
+            // create connection from local data thru v-model to vuex store state by commiting a mutation --value represents most latest up to date value from user typing
+          },
+        });
+
+        return { skillsSearchInput };
+      },
+    });
+  </script>
+  ```
+
+  - ![](./images/get&setMethod.png)
+
+- The Lazy Input Modifier
+  - input modifier (v-model.lazy)
+    - allow us to modify how an input works
+    - something we actually add to the v-model syntax that customizes or modifies how the input works
+    - de-bouncing --means is basically delaying an operation up until a right moment or going to delay doing any of reactive updating until the typing is done
+  ```html
+  // JobFilterSidebarSkills
+  <template>
+    <div class="mt-5">
+      <input v-model.lazy="skillsSearchInput" />
+    </div>
+  </template>
+  ```
+- The trim Input Modifier
+  - trim input modifier
+    - same logic in JS string method for trim, it removes the whitespace from both the beginning and end of a string
+  ```html
+  // JobFilterSidebarSkills
+  <template>
+    <div class="mt-5">
+      <input v-model.lazy.trim="skillsSearchInput" />
+    </div>
+  </template>
+  ```
+- Adding Test for Reading to Store from Skills Search Component
+
+  ```ts
+  // JobFilterSidebarSkills
+  import { shallowMount } from "@vue/test-utils";
+
+  import { useStore } from "vuex";
+  jest.mock("vuex");
+  const useStoreMock = useStore as jest.Mock;
+
+  import JobFilterSidebarSkills from "@/components/JobResults/JobFilterSideBar/JobFilterSidebarSkills.vue";
+
+  describe("JobFilterSidebarSkills", () => {
+    it("populates search input from store", () => {
+      useStoreMock.mockReturnValue({
+        state: {
+          skillsSearch: "Programmer",
+        },
+        commit: jest.fn(),
+      });
+      const wrapper = shallowMount(JobFilterSidebarSkills);
+      const skillsSearchInput = wrapper.find(
+        "[data-test='skills-search-input']"
+      );
+      const inputElement = skillsSearchInput.element as HTMLInputElement; // represent DOM wrapper for input element from vue test utils
+      expect(inputElement.value).toBe("Programmer"); // value --represent the user input type
+    });
+  });
+  ```
+
+- Adding Test for Writing to Store from Skills Search Component
+
+  ```ts
+  it("tells store that the user has entered skills search ", async () => {
+    const commit = jest.fn();
+    useStoreMock.mockReturnValue({
+      state: {
+        skillsSearch: "",
+      },
+      commit,
+    });
+
+    const wrapper = shallowMount(JobFilterSidebarSkills);
+    const skillsSearchInput = wrapper.find("[data-test='skills-search-input']");
+    await skillsSearchInput.setValue("Vue Developer"); // setValue() method is use to populate input element with a value --it is asynchronous needed to await
+    expect(commit).toHaveBeenCalledWith("ADD_INPUT_SKILLS", "Vue Developer");
+  });
+  ```
+
+- Adding Test for Trimming Input
+
+  ```ts
+  it("removes whitespace from user input", async () => {
+    const commit = jest.fn();
+    useStoreMock.mockReturnValue({
+      state: {
+        skillsSearch: "",
+      },
+      commit,
+    });
+
+    const wrapper = shallowMount(JobFilterSidebarSkills);
+    const skillsSearchInput = wrapper.find("[data-test='skills-search-input']");
+    await skillsSearchInput.setValue("   Vue Developer   ");
+    expect(commit).toHaveBeenCalledWith("ADD_INPUT_SKILLS", "Vue Developer");
+  });
+  ```
+
+- Updating the FILTERED_JOBS getters
+
+  - add the INCLUDE_JOB_BY_SKILLS getters in the FILTERED_JOBS getters
+
+  ```ts
+  // getters.ts
+  interface IncludeJobGetters {
+    INCLUDE_JOB_BY_ORGANIZATION: (job: Job) => boolean;
+    INCLUDE_JOB_BY_JOB_TYPE: (job: Job) => boolean;
+    INCLUDE_JOB_BY_DEGREE: (job: Job) => boolean;
+    INCLUDE_JOB_BY_SKILLS: (job: Job) => boolean;
+  }
+
+  const getters = {
+    // SKILLS
+    [INCLUDE_JOB_BY_SKILLS]: (state: GlobalState) => (job: Job) => {
+      if (state.skillsSearch === "") return true;
+
+      return job.title.toLowerCase().includes(state.skillsSearch.toLowerCase());
+    }, // getters that return a funtion with parameter
+
+    // JOBS
+    [FILTERED_JOBS](state: GlobalState, getters: IncludeJobGetters) {
+      return state.jobs
+        .filter((job) => getters.INCLUDE_JOB_BY_SKILLS(job))
+        .filter((job) => getters.INCLUDE_JOB_BY_ORGANIZATION(job))
+        .filter((job) => getters.INCLUDE_JOB_BY_JOB_TYPE(job))
+        .filter((job) => getters.INCLUDE_JOB_BY_DEGREE(job));
+    },
+  };
+
+  // getters test
+  describe("FILTERED_JOBS", () => {
+    it("filter jobs by organization, job type ,degree and skills", () => {
+      const INCLUDE_JOB_BY_ORGANIZATION = jest.fn().mockReturnValue(true);
+      const INCLUDE_JOB_BY_JOB_TYPE = jest.fn().mockReturnValue(true);
+      const INCLUDE_JOB_BY_DEGREE = jest.fn().mockReturnValue(true);
+      const INCLUDE_JOB_BY_SKILLS = jest.fn().mockReturnValue(true);
+
+      const mockGetters = {
+        INCLUDE_JOB_BY_ORGANIZATION,
+        INCLUDE_JOB_BY_JOB_TYPE,
+        INCLUDE_JOB_BY_DEGREE,
+        INCLUDE_JOB_BY_SKILLS,
+      };
+
+      const job = createJob({ id: 1, title: "Best Job Ever" });
+
+      const state = createState({
+        jobs: [job],
+      });
+
+      const result = getters.FILTERED_JOBS(state, mockGetters);
+      expect(result).toEqual([job]);
+      expect(INCLUDE_JOB_BY_ORGANIZATION).toHaveBeenCalledWith(job);
+      expect(INCLUDE_JOB_BY_JOB_TYPE).toHaveBeenCalledWith(job);
+      expect(INCLUDE_JOB_BY_DEGREE).toHaveBeenCalledWith(job);
+      expect(INCLUDE_JOB_BY_SKILLS).toHaveBeenCalledWith(job);
+    });
+  });
+  ```
+
+- Clearing the Search Input when Clearing Filters
+
+  ```ts
+  // mutations.ts --override the skillsSearch state into empty string
+  [CLEAR_USER_JOB_FILTER_SELECTIONS](state: GlobalState) {
+    state.selectedOrganizations = [];
+    state.selectedJobTypes = [];
+    state.selectedDegrees = [];
+    state.skillsSearch = "";
+  },
+
+  // mutations test
+  describe("CLEAR_USER_JOB_FILTER_SELECTIONS", () => {
+    it("removes all job filters", () => {
+      const startingState = createState({
+        selectedOrganizations: ["Google"],
+        selectedJobTypes: ["Full-time"],
+        selectedDegrees: ["Master's"],
+        skillsSearch: "Vue Developer",
+      });
+      mutations.CLEAR_USER_JOB_FILTER_SELECTIONS(startingState);
+      expect(startingState.selectedOrganizations).toEqual([]);
+      expect(startingState.selectedJobTypes).toEqual([]);
+      expect(startingState.selectedDegrees).toEqual([]);
+      expect(startingState.skillsSearch).toEqual("");
+    });
+  });
+
+  ```
+
+- Reading Search Term from Query Params
+
+  ```ts
+  // JobFilterSidebar.vue
+  import { onMounted } from "vue";
+  import { useRoute } from "vue-router";
+  import { useStore } from "vuex";
+  import { key } from "@/store";
+
+  import { ADD_INPUT_SKILLS } from "@/store/constants";
+
+  setup() {
+    const parseSkillsSearch = () => {
+      const route = useRoute();
+      const role = route.query.role || ""; //check if there is are any query params present at the JobResults component
+
+      const store = useStore(key);
+      store.commit(ADD_INPUT_SKILLS, role);
+    };
+
+    onMounted(parseSkillsSearch);
+
+  },
+  ```
 
 ## Section 37: Congratulations

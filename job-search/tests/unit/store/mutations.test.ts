@@ -103,17 +103,29 @@ describe("mutations", () => {
     });
   });
 
+  describe("ADD_INPUT_SKILLS", () => {
+    it("filter job by user input of skills search", () => {
+      const startingState = createState({
+        skillsSearch: "",
+      });
+      mutations.ADD_INPUT_SKILLS(startingState, "Computer Engineer");
+      expect(startingState.skillsSearch).toEqual("Computer Engineer");
+    });
+  });
+
   describe("CLEAR_USER_JOB_FILTER_SELECTIONS", () => {
     it("removes all job filters", () => {
       const startingState = createState({
         selectedOrganizations: ["Google"],
         selectedJobTypes: ["Full-time"],
         selectedDegrees: ["Master's"],
+        skillsSearch: "Vue Developer",
       });
       mutations.CLEAR_USER_JOB_FILTER_SELECTIONS(startingState);
       expect(startingState.selectedOrganizations).toEqual([]);
       expect(startingState.selectedJobTypes).toEqual([]);
       expect(startingState.selectedDegrees).toEqual([]);
+      expect(startingState.skillsSearch).toBe("");
     });
   });
 });
