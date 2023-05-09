@@ -10675,4 +10675,28 @@ export const useFetchJobsDispatch = async () => {
   },
   ```
 
+- Fixing Failing Tests for JobFiltersSidebar Component
+
+  ```ts
+  // JobFilterSidebar test --add it function for query param and ADD_INPUT_SKILLS mutations
+  it("reads query params to filter initial job skills", () => {
+    useRouteMock.mockReturnValue({
+      query: {
+        role: "Vue Developer",
+      },
+    });
+
+    const commit = jest.fn();
+    useStoreMock.mockReturnValue({
+      commit,
+    });
+    shallowMount(JobFilterSidebar);
+    expect(commit).toHaveBeenCalledWith("ADD_INPUT_SKILLS", "Vue Developer");
+  });
+  ```
+
+- REVIEW
+  - ![](./images/sec36Rev.png)
+  - ![](./images/sec36Rev1.png)
+
 ## Section 37: Congratulations

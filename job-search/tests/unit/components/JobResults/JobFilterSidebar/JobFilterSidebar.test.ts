@@ -1,7 +1,14 @@
 import { shallowMount } from "@vue/test-utils";
 import JobFilterSidebar from "@/components/JobResults/JobFilterSideBar/JobFilterSidebar.vue";
 
+import { useStore } from "vuex";
 jest.mock("vuex"); //simply mocking our vuex including useStore with a jest mock function by default and return undefined but tortally fine because the only use case of useStore is to call the commit method for clearUseJobFilterSelections method
+const useStoreMock = useStore as jest.Mock;
+
+import { useRoute } from "vue-router";
+import { ADD_INPUT_SKILLS } from "@/store/constants";
+jest.mock("vue-router");
+const useRouteMock = useRoute as jest.Mock;
 
 /*
 import {
@@ -18,8 +25,29 @@ const useUniqueDegreesMock = useUniqueDegrees as jest.Mock;
 
 describe("JobFilterSidebar", () => {
   it("sets up panel for user to filter jobs by one or more criteria", () => {
+    useRouteMock.mockReturnValue({
+      query: {},
+    });
+
+    useStoreMock.mockReturnValue({
+      commit: jest.fn(),
+    });
     const wrapper = shallowMount(JobFilterSidebar);
     expect(wrapper.exists()).toBe(true);
+  });
+  it("reads query params to filter initial job skills", () => {
+    useRouteMock.mockReturnValue({
+      query: {
+        role: "Vue Developer",
+      },
+    });
+
+    const commit = jest.fn();
+    useStoreMock.mockReturnValue({
+      commit,
+    });
+    shallowMount(JobFilterSidebar);
+    expect(commit).toHaveBeenCalledWith("ADD_INPUT_SKILLS", "Vue Developer");
   });
 
   /*
@@ -73,3 +101,4 @@ describe("JobFilterSidebar", () => {
   });
 */
 });
+9;
