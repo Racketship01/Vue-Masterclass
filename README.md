@@ -9341,11 +9341,11 @@ export const useFetchJobsDispatch = async () => {
 - Adding Annotation Type for JobFilterSidebarCheckboxGroup Component
 
   - convert the script tag into `lang="ts"` and import defineComponent method in vue and invoke at the config object
-  - ![](./images/jobFIlterSidebarCheckboxGroupTypes.png.png)
-  - ![](./images/jobFIlterSidebarCheckboxGroupTypes1.png.png)
-  - ![](./images/jobFIlterSidebarCheckboxGroupTypes2.png.png)
+  - ![](./images/jobFIlterSidebarCheckboxGroupTypes.png)
+  - ![](./images/jobFIlterSidebarCheckboxGroupTypes1.png)
+  - ![](./images/jobFIlterSidebarCheckboxGroupTypes2.png)
   - NOTE:
-    - when using useStore() function from vuex in actual component, it doesnt recognize interference.
+    - when using useStore() function from vuex in actual component, it doesnt recognize type interference.
 
 - Annotating Store for useStore in Component
 
@@ -10065,7 +10065,7 @@ export const useFetchJobsDispatch = async () => {
   useStoreMock.mockReturnValue({ commit: jest.fn(), subscribe: jest.fn() });
 
   // warning error in JobFilterSidebar test for useStore(key) method
-  jest.mock("vuex"); //simply mocking our vuex including useStore with a jest mock function by default and return undefined but tortally fine because the only use case of useStore is to call the commit method for clearUseJobFilterSelections method
+  jest.mock("vuex"); //simply mocking our vuex including useStore with a jest mock function by default and return undefined but totally fine because the only use case of useStore is to call the commit method for clearUseJobFilterSelections method
   ```
 
 - Refactoring Accordion Component
