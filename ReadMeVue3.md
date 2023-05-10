@@ -15,8 +15,8 @@
   - similarly with jest syntax
   - ![](./images/BasicVitestSyntax.png)
 - Setup Vitest Globally
-  - ![](./images/SetVitestGlobally.png)
-  - ![](./images/SetVitestGlobally1.png)
+  - ![](./images/setVitestGlobally.png)
+  - ![](./images/setVitestGlobally1.png)
 - Setup Vue Testing Library
   - installing vue testing library, jest-dom and user-event
     - ![](./images/setupVitest.png)
