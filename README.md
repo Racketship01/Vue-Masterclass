@@ -10698,5 +10698,3 @@ export const useFetchJobsDispatch = async () => {
 - REVIEW
   - ![](./images/sec36Rev.png)
   - ![](./images/sec36Rev1.png)
-
-## Section 37: Congratulations
